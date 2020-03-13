@@ -1,0 +1,48 @@
+QMainWindow {
+    color: rgb(255, 255, 255);
+    background-color: rgb(35, 0, 0);
+}
+
+QWidget {
+    color:rgb(196, 160, 0);
+    background-color: rgb(40, 40, 40);
+}
+
+QWidget::disabled {
+    color:rgb(0, 0, 0);
+    background-color: rgb(40, 40, 40);
+}
+
+QGroupBox {
+    border: 1px solid gray;
+    border-color: rgb(196, 160, 0);
+    margin-top: 29px;
+    font-size: 16px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+QLineEdit::disabled {
+    color:rgb(0, 0, 0);
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 5px 150px;
+    color: rgb(255, 255, 0);
+        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #616161, stop: 0.5 #505050,
+                                      stop: 0.6 #434343, stop:1 #656565);
+}
+
+QHeaderView::section {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #616161, stop: 0.5 #505050,
+                                      stop: 0.6 #434343, stop:1 #656565);
+    color: yellow;
+    padding-left: 4px;
+    border: 1px solid #6c6c6c;
+}
