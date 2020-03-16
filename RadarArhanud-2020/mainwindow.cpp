@@ -7,9 +7,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    radarWidget = new RadarWidget(this);
-    ui->graphicsView->setViewport(radarWidget);
-
     ui->gridLayout->removeWidget(ui->graphicsView);
     ui->gridLayout->removeWidget(ui->frameBottom);
     ui->gridLayout->removeWidget(ui->frameLeft);

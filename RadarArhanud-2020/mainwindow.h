@@ -2,8 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
-#include "radarwidget.h"
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -20,7 +19,6 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    RadarWidget *radarWidget;
 };
 
 #endif // MAINWINDOW_H

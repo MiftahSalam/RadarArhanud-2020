@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
+QT       += core gui opengl network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,12 +16,21 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     frameleft.cpp \
     framebottom.cpp \
-    radarwidget.cpp
+    radarwidget.cpp \
+    radargraphicview.cpp \
+    radarscene.cpp \
+    arpatrackitem.cpp \
+    echo/radar.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
     framebottom.h \
-    radarwidget.h
+    radargraphicview.h \
+    radarwidget.h \
+    radarscene.h \
+    arpatrackitem.h \
+    echo/radar.h \
+    echo/radar_global.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
@@ -32,3 +41,8 @@ DISTFILES += \
 
 RESOURCES += \
     resource.qrc
+
+unix:!macx: LIBS += -L/usr/share/RMAP/lib/ -lqmapcontrol
+
+INCLUDEPATH += /usr/share/RMAP/include
+DEPENDPATH += /usr/share/RMAP/include

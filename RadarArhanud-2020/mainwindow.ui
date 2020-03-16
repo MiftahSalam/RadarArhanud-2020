@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="RadarGraphicView" name="graphicsView"/>
     </item>
     <item row="0" column="1" rowspan="2">
      <widget class="FrameLeft" name="frameLeft">
@@ -54,6 +54,11 @@
    <extends>QFrame</extends>
    <header>framebottom.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RadarGraphicView</class>
+   <extends>QGraphicsView</extends>
+   <header>radargraphicview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

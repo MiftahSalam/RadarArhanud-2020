@@ -1,21 +1,22 @@
-#include <QtGui>
-#include <QtOpenGL>
+#include <QOpenGLFunctions_3_0>
 #include <stdlib.h>
 #include <math.h>
 
 #include "radarwidget.h"
-//#include "drawutil.h"
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
 #endif
 
-RadarWidget::RadarWidget(QWidget *parent/*, RadarInfo *ri*/)
-    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)/*,m_ri(ri)*/
+RadarWidget::RadarWidget(QWidget *parent)
+    : QOpenGLWidget(parent)
 {
+    m_ri = new RI(this);
+    spokeDrawer = RD::make_Draw(m_ri,0);
 
+    connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,int,u_int8_t*,size_t)),
+            this,SLOT(trigger_DrawSpoke(int,int,u_int8_t*,size_t)));
     /*
-    spokeDrawer = RadarDraw::make_Draw(m_ri,0);
 
     arpa = new RadarArpa(this,ri);
 
@@ -36,7 +37,16 @@ RadarWidget::RadarWidget(QWidget *parent/*, RadarInfo *ri*/)
     cur_arpa_number = 0;
     arpa_measure_time = QDateTime::currentMSecsSinceEpoch();
     */
+
+    timerId = startTimer(1000);
 }
+void RadarWidget::trigger_DrawSpoke(int transparency, int angle, quint8 *data, size_t len)
+{
+//    qDebug()<<Q_FUNC_INFO;
+    spokeDrawer->ProcessRadarSpoke(transparency,angle,data,len);
+    update();
+}
+
 /*
 void RadarWidget::trigger_ReqDelTrack(int id)
 {
@@ -91,8 +101,54 @@ void RadarWidget::timeOut()
 }
 */
 
+void RadarWidget::timerEvent(QTimerEvent *event)
+{
+    Q_UNUSED(event);
+
+//    qDebug()<<Q_FUNC_INFO<<geometry();
+
+    update();
+}
+
+void RadarWidget::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+
+    makeCurrent();
+
+    QOpenGLFunctions_3_0 *f = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_0>();
+    f->glMatrixMode(GL_MODELVIEW);
+    f->glPushMatrix();
+
+    f->glClearColor(0,0,0,0.);
+    f->glEnable(GL_MULTISAMPLE);
+
+    f->glShadeModel(GL_SMOOTH);
+    f->glEnable(GL_DEPTH_TEST);
+
+//    setupViewport(width(), height());
+
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    f->glLoadIdentity();
+    f->glTranslatef(0.0, 0.0, -10.0);
+    f->glScaled(0.5, 0.5, 1.);
+
+    spokeDrawer->DrawRadarImage();
+
+    f->glShadeModel(GL_FLAT);
+    f->glDisable(GL_DEPTH_TEST);
+
+    f->glMatrixMode(GL_MODELVIEW);
+    f->glPopMatrix();
+
+    emit signal_updateRadarEcho();
+//    qDebug()<<Q_FUNC_INFO;
+}
+
 void RadarWidget::resizeGL(int width, int height)
 {
+//    qDebug()<<Q_FUNC_INFO;
+
     setupViewport(width, height);
 }
 
@@ -102,21 +158,27 @@ RadarWidget::~RadarWidget()
 
 void RadarWidget::initializeGL()
 {
-    glEnable(GL_MULTISAMPLE);
+    qDebug()<<Q_FUNC_INFO;
+
+//    glEnable(GL_MULTISAMPLE);
 }
 
 void RadarWidget::setupViewport(int width, int height)
 {
-    int side = qMin(width, height);
-    glViewport((width - side) / 2, (height - side) / 2, side, side);
+//    qDebug()<<Q_FUNC_INFO<<width<<height;
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    QOpenGLFunctions_3_0 *f = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_0>();
+    int side = qMin(width, height);
+
+    f->glViewport((width - side) / 2, (height - side) / 2, side, side);
+
+    f->glMatrixMode(GL_PROJECTION);
+    f->glLoadIdentity();
 #ifdef QT_OPENGL_ES
-    glOrthof(-0.5, +0.5, -0.5, 0.5, 4.0, 15.0);
+    f->glOrthof(-0.5, +0.5, -0.5, 0.5, 4.0, 15.0);
 #else
-    glOrtho(-0.5, +0.5, -0.5, 0.5, 4.0, 15.0);
+    f->glOrtho(-0.5, +0.5, -0.5, 0.5, 4.0, 15.0);
 #endif
-    glMatrixMode(GL_MODELVIEW);
+    f->glMatrixMode(GL_MODELVIEW);
 }
 
