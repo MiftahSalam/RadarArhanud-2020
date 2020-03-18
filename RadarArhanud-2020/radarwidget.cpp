@@ -120,23 +120,27 @@ void RadarWidget::paintEvent(QPaintEvent *event)
     f->glMatrixMode(GL_MODELVIEW);
     f->glPushMatrix();
 
-    f->glClearColor(0,0,0,0.);
+    f->glClearColor(0.,0.,0.,0.);
     f->glEnable(GL_MULTISAMPLE);
 
     f->glShadeModel(GL_SMOOTH);
     f->glEnable(GL_DEPTH_TEST);
 
-//    setupViewport(width(), height());
+//    f->glEnable(GL_BLEND); //tambahan tes blend
 
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     f->glLoadIdentity();
     f->glTranslatef(0.0, 0.0, -10.0);
-    f->glScaled(0.5, 0.5, 1.);
+    f->glScaled(.5, .5, 1.);
+
+//    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA); //tambahan tes blend
 
     spokeDrawer->DrawRadarImage();
 
     f->glShadeModel(GL_FLAT);
     f->glDisable(GL_DEPTH_TEST);
+
+//    glDisable(GL_BLEND); //tambahan tes blend
 
     f->glMatrixMode(GL_MODELVIEW);
     f->glPopMatrix();

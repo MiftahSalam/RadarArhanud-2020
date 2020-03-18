@@ -969,9 +969,9 @@ void RI::ComputeColourMap()
     for (int i = 0; i < BLOB_COLOURS; i++)
         m_colour_map_rgb[i] = QColor(0, 0, 0);
 
-    m_colour_map_rgb[BLOB_STRONG] = Qt::red;
+    m_colour_map_rgb[BLOB_STRONG] = Qt::green;
     m_colour_map_rgb[BLOB_INTERMEDIATE] = Qt::green;
-    m_colour_map_rgb[BLOB_WEAK] = Qt::blue;
+    m_colour_map_rgb[BLOB_WEAK] = Qt::green;
 
     if (trail_settings.enable)
     {
