@@ -8,7 +8,7 @@ RadarState state_radar = RADAR_OFF;
 ReportFilter filter;
 ReportAlign align;
 ReportScanSignal scanSignal;
-CameraSettings settings_camera;
+MapSettings map_settings;
 RadarSettings radar_settings;
 ARPASettings arpa_settings;
 GZSettings gz_settings;
@@ -433,6 +433,7 @@ void RadarReceive::run()
             }
 
         }
+        msleep(1);
 
     }
     qDebug()<<Q_FUNC_INFO<<"radar receive terminated";
@@ -796,7 +797,7 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
 
     UINT8 *raw_data = (UINT8*)data.data();
 
-//    raw_data[RETURNS_PER_LINE - 1] = 200;  //  range ring, for testing
+    raw_data[RETURNS_PER_LINE - 1] = 200;  //  range ring, for testing
 
     if ((m_range_meters != range_meter))
     {
@@ -824,6 +825,7 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     m_history[bearing].time = now;
     m_history[bearing].lat = currentOwnShipLat;
     m_history[bearing].lon = currentOwnShipLon;
+
     for (size_t radius = 0; radius < data.size(); radius++)
     {
         /*
@@ -1291,6 +1293,7 @@ void GZ::SetPolygon(const QPolygonF polyF)
 #define SCAN_MARGIN (150)            // number of lines that a next scan of the target may have moved
 #define SCAN_MARGIN2 (1000)          // if target is refreshed after this time you will be shure it is the next sweep
 
+/*
 void GZ::autoTrack()
 {
     if (m_current_range == 0 || !gz_settings.show || state_radar != RADAR_TRANSMIT)
@@ -1356,8 +1359,8 @@ void GZ::autoTrack()
                     tes_point.setX(GetP2CLookupTable()->intx[pol.angle][rrr]);
                     tes_point.setY(GetP2CLookupTable()->inty[pol.angle][rrr]);
 
-                    /*
-                    */
+
+
 
                     if(m_arpa_polygon.containsPoint(tes_point,Qt::WindingFill))
                     {
@@ -1386,7 +1389,7 @@ void GZ::autoTrack()
     }
 }
 
-
+*/
 
 /*********************arpa*************************/
 //#define TARGET_SEARCH_RADIUS1 (10)    // radius of target search area for pass 1 (on top of the size of the blob). configurable?
@@ -2310,6 +2313,9 @@ void ARPATarget::RefreshTarget(int dist)
         }
 
         m_status++;
+        qDebug()<<Q_FUNC_INFO<<"track status"<<m_status;
+        if(m_status > 10)
+            m_status = 10;
         // target gets an id when status  == STATUS_TO_OCPN
         if (m_status == STATUS_TO_OCPN)
         {

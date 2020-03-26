@@ -10,49 +10,38 @@ using namespace qmapcontrol;
 
 //ProxySetting proxy_settings;
 
-const QList<double> distanceList = QList<double>()<<
-                                                     5000000<<
-                                                     2000000<<
-                                                     1000000<<
-                                                     1000000<<
-                                                     1000000<<
-                                                     100000<<
-                                                     100000<<
-                                                     50000<<
-                                                     50000<<
-                                                     10000<<
-                                                     10000<<
-                                                     10000<<
-                                                     1000<<
-                                                     1000<<
-                                                     500<<
-                                                     200<<
-                                                     100<<
-                                                     50<<
-                                                     25;
+const QList<int> distanceList = QList<int>()<<5000000<<2000000<<1000000<<1000000<<1000000<<
+                                               100000<<100000<<50000<<50000<<10000<<10000<<
+                                               10000<<1000<<1000<<500<<200<<100<<50<<25;
 
 RadarGraphicView::RadarGraphicView(QWidget *parent) :
     QGraphicsView(parent)
 {  
-    echo = new RadarWidget(this);
+    echo = new RadarWidget(this,10);
     connect(echo,SIGNAL(signal_updateRadarEcho()),
             this,SLOT(update()));
+    connect(echo,SIGNAL(signal_zoom_change(int)),
+            this,SLOT(trigger_RangeChange(int)));
+    connect(this,SIGNAL(signal_reqCreateArpa(QPointF)),echo,SLOT(trigger_reqCreateArpa(QPointF)));
+
     echo->hide();
 
-    RadarScene *scene = new RadarScene(this);
+    RadarScene *scene = new RadarScene(this,echo->m_ri);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+
+    connect(echo,SIGNAL(signal_arpaChange(bool,int)),scene,SLOT(trigger_reqNewArpa(bool,int)));
 
     setCacheMode(CacheBackground);
     setRenderHint(QPainter::Antialiasing);
-    setViewportUpdateMode(FullViewportUpdate);
+    setViewportUpdateMode(MinimalViewportUpdate);
     setTransformationAnchor(AnchorViewCenter);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     setScene(scene);
 
-    tr1 = new ArpaTrackItem();
-    scene->addItem(tr1);
+//    tr1 = new ArpaTrackItem();
+//    scene->addItem(tr1);
 
     mc = new MapControl(QSize(width(),height()), MapControl::None, false, false, this);
     mc->showCrosshairs(true);
@@ -63,19 +52,110 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     /*
     */
-    mapadapter = new GoogleMapAdapter(GoogleMapAdapter::satellite);
+    mapadapter = new GoogleMapAdapter(map_settings.mode ? GoogleMapAdapter::roadmap : GoogleMapAdapter::satellite);
 
-    l = new MapLayer("Custom Layer", mapadapter);
+    l = new MapLayer("MapLayerView", mapadapter);
+
+    mapCenter = QPointF(107.6090623,-6.88818);
+    currentOwnShipLat = mapCenter.y();
+    currentOwnShipLon = mapCenter.x();
 
     mc->addLayer(l);
-    mc->setView(QPointF(107.6090623,-6.88818));
+    mc->setView(mapCenter);
     mc->setZoom(10);
     mc->enableMouseWheelEvents(false);
     mc->hide();
 
+    currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
+
+    setMouseTracking(true);
+
     connect(&timer,SIGNAL(timeout()),this,SLOT(onTimeOut()));
     timer.start(1000);
 }
+
+void RadarGraphicView::updateArpaItem()
+{
+    QList<QGraphicsItem*> item_list = items();
+
+    if(item_list.size() > 0)
+    {
+        ArpaTrackItem *item;
+        QPoint screen_middle(width()/2,height()/2);
+        QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+        QPoint displayToImage;
+        QPoint pixelPos;
+
+        for(int i=0; i<item_list.size(); i++)
+        {
+            item = dynamic_cast<ArpaTrackItem *>(item_list.at(i));
+
+            displayToImage = mc->layer("MapLayerView")->mapadapter()
+                    ->coordinateToDisplay(QPointF(item->m_arpa_target->m_position.lon,item->m_arpa_target->m_position.lat));
+            pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
+                              displayToImage.y()+screen_middle.y()-map_middle.y());
+
+//            qDebug()<<Q_FUNC_INFO<<item->m_arpa_target->m_target_id<<pixelPos;
+            item->setPos(pixelPos);
+        }
+        invalidateScene();
+    }
+}
+
+void RadarGraphicView::trigger_mapChange(quint8 id, quint8 val)
+{
+    if(id)
+    {
+        int zoom = mapadapter->adaptedZoom();
+        mc->setZoom(0);
+
+        delete mapadapter;
+
+        if(val)
+            mapadapter = new GoogleMapAdapter(GoogleMapAdapter::roadmap);
+        else
+            mapadapter = new GoogleMapAdapter(GoogleMapAdapter::satellite);
+
+        l->setMapAdapter(mapadapter);
+        mc->updateRequestNew();
+        mc->setZoom(zoom);
+
+        loadMapFinish = false;
+
+    }
+    invalidateScene(sceneRect(),QGraphicsScene::BackgroundLayer);
+}
+
+void RadarGraphicView::trigger_RangeChange(int zoom_lvl)
+{
+    qDebug()<<Q_FUNC_INFO<<zoom_lvl<<radar_settings.last_scale<<calculateRangeRing();
+
+    loadMapFinish = false;
+    mc->setZoom(zoom_lvl);
+
+    emit signal_rangeChange(calculateRangeRing());
+}
+
+qreal RadarGraphicView::calculateRangeRing()
+{
+    QPoint screen_middle(width()/2,height()/2);
+    QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+
+    QPoint displayToImage= QPoint(-screen_middle.x()+map_middle.x(),map_middle.y());
+    QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+
+    double dif_lat = deg2rad(displayToCoordinat.y());
+    double dif_lon = (deg2rad(displayToCoordinat.x()) - deg2rad(mapCenter.x()))
+            * cos(deg2rad((mapCenter.y()+displayToCoordinat.y())/2.));
+    double R = 6371.;
+
+    dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
+
+    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+
+    return km/7.0;
+}
+
 /**/
 void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 {
@@ -84,49 +164,125 @@ void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
     painter->drawPixmap(echo->geometry(),echo->grab(mc->geometry()));
 
     int side = (int)qMin(rect.width(),rect.height())/2;
+    int side_max = (int)qMax(rect.width(),rect.height());
 
-    painter->setPen(Qt::SolidLine);
-    painter->setPen(QColor(255,255,0,255));
+    QFont font;
+    QPen pen;
+
     painter->translate((int)rect.width()/2,(int)rect.height()/2);
     centerOn(rect.width()/2,rect.height()/2);
 
     //compass ring text
-    QString text;
-    for(int j=0;j<12;j++)
+    pen.setWidth(3);
+    pen.setColor(Qt::green);
+
+    painter->setPen(pen);
+
+    if(radar_settings.show_compass)
     {
-        if(j<9)
-            QTextStream(&text)<<(j*30)+90;
-        else
-            QTextStream(&text)<<(j*30)-270;
+        QString text;
+        for(int j=0;j<12;j++)
+        {
+            if(j<9)
+                QTextStream(&text)<<(j*30)+90;
+            else
+                QTextStream(&text)<<(j*30)-270;
 
-        int marginY = 5;
-        int marginX = 15;
-        QRect rect1((side-20)*cos((j*30)*M_PI/180)-marginX,
-                   ((side-20)*sin((j*30)*M_PI/180)-marginY),
-                   30,
-                   15);
-        QTextOption opt;
-        opt.setAlignment(Qt::AlignHCenter);
-        QFont font;
+            int marginY = 5;
+            int marginX = 15;
+            QRect rect1((side-20)*cos((j*30)*M_PI/180)-marginX,
+                       ((side-20)*sin((j*30)*M_PI/180)-marginY),
+                       30,
+                       15);
+            QTextOption opt;
+            opt.setAlignment(Qt::AlignHCenter);
+            QFont font;
 
-        font.setPixelSize(12);
-        painter->setFont(font);
-        painter->drawText(rect1,text,opt);
-        text.clear();
+            font.setPixelSize(15);
+            painter->setFont(font);
+            painter->drawText(rect1,text,opt);
+            text.clear();
+        }
+
+        //compass ring
+        for(int j=0;j<180;j++)
+        {
+            int marginBig = 10;
+            int marginSmall = 5;
+
+            if(j%15==0)
+                painter->drawLine(0,side,0,side-marginBig);
+            else
+                painter->drawLine(0,side,0,side-marginSmall);
+
+            painter->rotate(2);
+        }
     }
 
-    //compass ring
-    for(int j=0;j<180;j++)
+    //Range rings
+    if(radar_settings.show_rings)
     {
-        int marginBig = 10;
-        int marginSmall = 5;
+        pen = painter->pen();
+        pen.setWidth(1);
 
-        if(j%15==0)
-            painter->drawLine(0,side,0,side-marginBig);
-        else
-            painter->drawLine(0,side,0,side-marginSmall);
+        painter->setPen(pen);
 
-        painter->rotate(2);
+        int ring_margin = qCeil(side_max/7);
+        int bufRng = ring_margin;
+        while(bufRng < side_max)
+        {
+            painter->drawEllipse(-bufRng/2,-bufRng/2,bufRng,bufRng);
+            bufRng += ring_margin;
+        }
+    }
+
+    QTime now = QTime::currentTime();
+    if(currentCursor.cursorMoveTime.secsTo(now) < 5)
+    {
+//        qDebug()<<Q_FUNC_INFO<<cursorMoveTime.secsTo(now);
+
+        pen = painter->pen();
+        pen.setWidth(3);
+        pen.setColor(Qt::black);
+
+        font.setPixelSize(15);
+        font.setBold(true);
+
+        painter->setPen(pen);
+        painter->setFont(font);
+        painter->drawText((-rect.width()/2)+10,(rect.height()/2)-50,"Cursor:");
+        QString lat_lon = QString("Latitude : %1 \t Longitude: %2")
+                .arg(QString::number(currentCursor.latitude,'f',6))
+                .arg(QString::number(currentCursor.longitude,'f',6));
+        QString rng_brn = QString("Range : %1 Km \t Bearing: %2%3")
+                .arg(QString::number(currentCursor.range,'f',1))
+                .arg(QString::number(currentCursor.bearing,'f',1))
+                .arg(176);
+        painter->drawText((-rect.width()/2)+10,(rect.height()/2)-35,lat_lon);
+        painter->drawText((-rect.width()/2)+10,(rect.height()/2)-20,rng_brn);
+    }
+
+    if(map_settings.show)
+    {
+        if(!loadMapFinish)
+        {
+            pen.setColor(Qt::green);
+
+            font.setPixelSize(20);
+            font.setBold(true);
+
+            painter->setPen(pen);
+            painter->setFont(font);
+
+            painter->drawText(-50,20,"Loading Map");
+        }
+    }
+
+    if(radar_settings.show_heading_marker)
+    {
+        painter->rotate(30);
+        painter->drawLine(0,0,0,-side_max);
+        painter->rotate(-30);
     }
 }
 
@@ -136,21 +292,33 @@ void RadarGraphicView::drawBackground(QPainter *painter, const QRectF &rect)
 
     /*
     */
-    if(mc->loadingQueueSize() == 0)
+    if(map_settings.show)
     {
-        qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry().size();
-        painter->drawPixmap(mc->geometry(),mc->grab(mc->geometry()));
+        if(loadMapFinish)
+        {
+            qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry().size();
+
+            QPixmap map_pix = mc->grab(mc->geometry());
+            painter->drawPixmap(mc->geometry(),map_pix);
+        }
+    }
+    else
+    {
+        painter->fillRect(rect,QColor(56, 44, 68));
     }
 }
 
 void RadarGraphicView::onTimeOut()
 {
-    qDebug()<<Q_FUNC_INFO;
-    if(mc->loadingQueueSize() == 0)
+//    qDebug()<<Q_FUNC_INFO;
+    if((mc->loadingQueueSize() == 0) && !loadMapFinish)
     {
+        loadMapFinish = true;
         qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry().size();
         invalidateScene(sceneRect(),QGraphicsScene::BackgroundLayer);
     }
+
+    updateArpaItem();
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)
@@ -164,10 +332,65 @@ void RadarGraphicView::resizeEvent(QResizeEvent *event)
         mc->resize(event->size());
         echo->resize(event->size());
 
-        tr1->setPos(sceneRect().width()/2,sceneRect().height()/2);
+//        tr1->setPos(sceneRect().width()/4,sceneRect().height()/4);
     }
 }
 
+void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
+{
+//    qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
+
+    QPoint screen_middle(width()/2,height()/2);
+    QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+
+    QPoint displayToImage= QPoint(event->pos().x()-screen_middle.x()+map_middle.x(),
+                                  event->pos().y()-screen_middle.y()+map_middle.y());
+    QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+
+    emit signal_reqCreateArpa(displayToCoordinat);
+}
+
+void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
+{
+//    qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
+    currentCursor.cursorMoveTime = QTime::currentTime();
+
+    // click coordinate to image coordinate
+    QPoint screen_middle(width()/2,height()/2);
+    QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+
+    QPoint displayToImage= QPoint(event->pos().x()-screen_middle.x()+map_middle.x(),
+                                  event->pos().y()-screen_middle.y()+map_middle.y());
+    QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+
+    currentCursor.longitude = displayToCoordinat.x();
+    currentCursor.latitude = displayToCoordinat.y();
+
+    double dif_lat = deg2rad(currentCursor.latitude);
+    double dif_lon = (deg2rad(currentCursor.longitude) - deg2rad(mapCenter.x()))
+            * cos(deg2rad((mapCenter.y()+currentCursor.latitude)/2.));
+    double R = 6371.;
+
+    dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
+
+    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    qreal bearing = atan2(dif_lon,dif_lat)*180./M_PI;
+
+    /*
+    */
+    while(bearing < 0.0)
+    {
+        bearing += 360.0;
+    }
+
+    currentCursor.bearing = bearing;
+    currentCursor.range = km;
+
+        //    qDebug()<<Q_FUNC_INFO<<displayToImage<<screen_middle<<map_middle<<displayToCoordinat<<km<<bearing;
+}
+
+
 RadarGraphicView::~RadarGraphicView()
 {
+
 }

@@ -12,22 +12,23 @@ class RadarWidget : public QOpenGLWidget
     Q_OBJECT
 
 public:
-    RadarWidget(QWidget *parent = 0);
+    RadarWidget(QWidget *parent = 0, int map_zoom_level = 0);
     ~RadarWidget();
 
     void setupViewport(int width, int height);
 
+    RI *m_ri;
     /*
     void setRectRegoin(QRect rect);
     void setRange(int range);
-    void computetRingWidth();
 
-    double getRingWidth();
     */
 
 signals:
     void signal_target_param(int id,double spd, double crs, double lat, double lon);
     void signal_updateRadarEcho();
+    void signal_zoom_change(int zoom_lvl);
+    void signal_arpaChange(bool create, int id);
 
 protected:
     void initializeGL();
@@ -41,6 +42,8 @@ protected:
 
 private slots:
     void trigger_DrawSpoke(int transparency, int angle, u_int8_t* data, size_t len);
+    void trigger_RangeChange(int rng);
+    void trigger_reqCreateArpa(QPointF position);
     /*
     void timeOut();
     void trigger_ReqDelTrack(int id);
@@ -49,18 +52,19 @@ private slots:
 private:
 
     RD *spokeDrawer;
-    RI *m_ri;
+    RA *arpa;
 
+    QList<int> arpaList;
+
+    int m_range_meters;
+    int m_range_pixel;
+    int mapZoomLevel;
+    double curRadarScaled;
     /*
     void createMARPA(QPoint pos);
 
-    RadarDraw *spokeDrawer;
-    RadarInfo *m_ri;
-    RadarArpa *arpa;
     QTimer *timer;
-    QRect region;
 
-    double ringWidth;
     int curRange;
     int cur_arpa_id_count;
     int cur_arpa_number;

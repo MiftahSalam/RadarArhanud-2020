@@ -4,48 +4,58 @@
 #include <QStyleOptionGraphicsItem>
 #include <QDebug>
 
-ArpaTrackItem::ArpaTrackItem()
+ArpaTrackItem::ArpaTrackItem(ARPATarget *ATarget):
+    m_arpa_target(ATarget)
 {
+    qDebug()<<Q_FUNC_INFO<<m_arpa_target->m_target_id;
     setFlag(ItemIsSelectable);
-    setFlag(ItemSendsGeometryChanges);
-//    setFlag(ItemPositionChange);
     setZValue(1);
 }
 
 QRectF ArpaTrackItem::boundingRect() const
 {
-    qreal adjust = 2;
-    return QRectF( -10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust);
+//    return QRectF( -10, -10, 20, 20);
+    return QRectF( -10, -10, 32, 20);
 }
 
 QPainterPath ArpaTrackItem::shape() const
 {
     QPainterPath path;
-    path.addEllipse(-10, -10, 20, 20);
+    path.addRect(-10, -10, 20, 20);
+    path.addRect(12, -10, 10, 5);
     return path;
 }
 
 #include <QRadialGradient>
 void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(Qt::darkGray);
-    painter->drawEllipse(-7, -7, 20, 20);
+    QPen pen;
+    pen.setColor(Qt::yellow);
 
-    QRadialGradient gradient(-3, -3, 10);
-    if (option->state & QStyle::State_Sunken) {
-        gradient.setCenter(3, 3);
-        gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
-    } else {
-        gradient.setColorAt(0, Qt::yellow);
-        gradient.setColorAt(1, Qt::darkYellow);
+    if(m_arpa_target->getStatus() < 5 && m_arpa_target->getStatus() > 0)
+    {
+        pen.setStyle(Qt::DashLine);
+        painter->setPen(pen);
+        painter->drawRect(-10,-10,20,20);
     }
-    painter->setBrush(gradient);
+    else if(m_arpa_target->getStatus() > 4)
+    {
+        painter->setPen(pen);
 
-    painter->setPen(QPen(Qt::black, 0));
-    painter->drawEllipse(-10, -10, 20, 20);
+        painter->drawLine(QPoint(-10,-5),QPoint(-10,-10));
+        painter->drawLine(QPoint(-10,-10),QPoint(-5,-10));
+
+        painter->drawLine(QPoint(5,-10),QPoint(10,-10));
+        painter->drawLine(QPoint(10,-10),QPoint(10,-5));
+
+        painter->drawLine(QPoint(10,5),QPoint(10,10));
+        painter->drawLine(QPoint(10,10),QPoint(5,10));
+
+        painter->drawLine(QPoint(-5,10),QPoint(-10,10));
+        painter->drawLine(QPoint(-10,10),QPoint(-10,5));
+
+        painter->drawText(12,-10,QString::number(m_arpa_target->m_target_id));
+    }
 }
 
 QVariant ArpaTrackItem::itemChange(GraphicsItemChange change, const QVariant &value)

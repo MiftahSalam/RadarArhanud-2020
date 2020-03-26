@@ -195,7 +195,6 @@ struct RadarSettings
     bool show_rings;
     bool headingUp;
     bool show_compass;
-    bool show_map;
     bool show_heading_marker;
     int last_scale;
     QString ip_data;
@@ -204,6 +203,11 @@ struct RadarSettings
     uint port_report;
     QString ip_command;
     uint port_command;
+};
+struct MapSettings
+{
+    bool show;
+    quint8 mode;
 };
 struct ARPASettings
 {
@@ -220,18 +224,6 @@ struct RadarRange {
   int meters; //command to radar and display
   int actual_meters; //based on range feedback
   const char *name;
-};
-
-struct CameraSettings {
-    const QString *ip;
-    const QString *user_id;
-    const QString *password;
-    const uint *port;
-    const double *speed; //deg/s
-    const double *pan_correction; //deg
-    const double *height; //m
-    const double *calibration_range; //m
-    const double *calibration_tilt; //deg
 };
 
 static const RadarRange g_ranges_metric[] =
@@ -288,12 +280,12 @@ struct TrailSettings
 
 static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
 
-extern CameraSettings settings_camera;
 extern RadarState state_radar;
 extern ReportFilter filter;
 extern ReportAlign align;
 extern ReportScanSignal scanSignal;
 extern RadarSettings radar_settings;
+extern MapSettings map_settings;
 extern ARPASettings arpa_settings;
 extern GZSettings gz_settings;
 extern TrailSettings trail_settings;

@@ -26,12 +26,42 @@
    <enum>QFrame::Raised</enum>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Radar Track</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QTableWidget" name="tableWidgetTrack">
         <property name="sizePolicy">
@@ -193,6 +223,9 @@
       </item>
       <item row="1" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QPushButton" name="pushButtonDelSel">
           <property name="sizePolicy">
@@ -258,6 +291,21 @@
       <string>ADSB Track</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QTableWidget" name="tableWidgetTrack_2">
         <property name="sizePolicy">
@@ -442,6 +490,21 @@
       <string>IFF Track</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QTableWidget" name="tableWidgetTrack_3">
         <property name="sizePolicy">

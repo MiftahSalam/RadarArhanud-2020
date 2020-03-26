@@ -377,7 +377,7 @@ public:
     }
 //    void ProcessSpoke(int angle, UINT8 *data, UINT8 *hist, int range);
 //    void ProcessSpokePoly(int angle, UINT8 *data, int range);
-    void autoTrack();
+//    void autoTrack();
     void setCurRange(int range){m_current_range = range;}
 
     int GetBogeyCount()
@@ -471,6 +471,7 @@ public:
     ~ARPATarget();
     void RefreshTarget(int dist);
     void SetStatusLost();
+    target_status getStatus() { return m_status; }
 
     int m_target_id;
     Polar m_max_angle, m_min_angle, m_max_r, m_min_r;

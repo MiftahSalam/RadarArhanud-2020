@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "echo/radar_global.h"
+
 #include <QApplication>
 #include <QFile>
 #include <QDebug>
@@ -11,7 +13,6 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QString appStyle = loadStylesheetFile( ":/css/HMI_Syle.css" );
-    a.setStyle("plastique");
     a.setStyleSheet( appStyle );
 
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
@@ -33,9 +34,12 @@ int main(int argc, char *argv[])
         config.setValue("radar/port_data",6135);
         config.setValue("radar/last_scale",8000);
 
-        config.setValue("arpa/min_contour_len",1);
+        config.setValue("arpa/min_contour_len",3);
         config.setValue("arpa/create_arpa_by_click",true);
         config.setValue("arpa/show",true);
+        config.setValue("arpa/search_radius1",10);
+        config.setValue("arpa/search_radius2",20);
+        config.setValue("arpa/max_target_size",50);
 
         config.setValue("guardZone/show",true);
         config.setValue("guardZone/enable_notif",true);
@@ -68,6 +72,22 @@ int main(int argc, char *argv[])
 
         config.setValue("mti/enable",true);
         config.setValue("mti/threshold",0);
+    }
+    else
+    {
+        radar_settings.show_rings = config.value("radar/show_ring",true).toBool();
+        radar_settings.show_heading_marker = config.value("radar/show_heading_marker",true).toBool();
+        radar_settings.show_compass = config.value("radar/show_compass",true).toBool();
+
+        arpa_settings.create_arpa_by_click = config.value("arpa/create_arpa_by_click",true).toBool();
+        arpa_settings.show = config.value("arpa/show",true).toBool();
+        arpa_settings.min_contour_length = config.value("arpa/min_contour_len",3).toInt();
+        arpa_settings.search_radius1 = config.value("arpa/search_radius1",10).toInt();
+        arpa_settings.search_radius2 = config.value("arpa/search_radius2",20).toInt();
+        arpa_settings.max_target_size = config.value("arpa/max_target_size",50).toInt();
+
+        map_settings.show = config.value("map/show",true).toBool();
+        map_settings.mode = (quint8)config.value("map/mode",0).toUInt();
     }
 
     MainWindow w;
