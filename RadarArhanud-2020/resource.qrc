@@ -2,4 +2,7 @@
     <qresource prefix="/css">
         <file>HMI_Syle.css</file>
     </qresource>
+    <qresource prefix="/images">
+        <file>airplane_militer.png</file>
+    </qresource>
 </RCC>

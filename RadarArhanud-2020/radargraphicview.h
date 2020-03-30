@@ -30,6 +30,8 @@ public:
     explicit RadarGraphicView(QWidget *parent = 0);
     ~RadarGraphicView();
 
+    RI *getRadarInfo() { return echo->m_ri; }
+
 signals:
     void signal_rangeChange(qreal range_rings);
     void signal_reqCreateArpa(QPointF position);

@@ -1,38 +1,52 @@
-#include "arpatrackitem.h"
+#include "ifftrackitem.h"
 
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 #include <QDebug>
 #include <qmath.h>
 
-ArpaTrackItem::ArpaTrackItem(ARPATarget *ATarget):
-    m_arpa_target(ATarget)
+IFFTrackItem::IFFTrackItem()
 {
-    itemType = RadarItemsType::ARPA;
+    itemType = RadarSceneItems::IFF;
 
-    qDebug()<<Q_FUNC_INFO<<m_arpa_target->m_target_id;
-    setFlag(ItemIsSelectable);
-    setSelected(true);
+    qDebug()<<Q_FUNC_INFO;
     setZValue(1);
 }
 
-QRectF ArpaTrackItem::boundingRect() const
+QRectF IFFTrackItem::boundingRect() const
 {
-//    return QRectF( -10, -10, 20, 20);
-    return QRectF( -10, -10, 32, 20);
+    qreal pixel_line_velocity = PIXEL_PER_KNOT*10.0;
+
+    return QRectF( -20, -20-pixel_line_velocity, 52, 40+pixel_line_velocity);
 }
 
-QPainterPath ArpaTrackItem::shape() const
+QPainterPath IFFTrackItem::shape() const
 {
+    qreal pixel_line_velocity = PIXEL_PER_KNOT*10.0;
     QPainterPath path;
-    path.addRect(-10, -10, 20, 20);
-    path.addRect(12, -10, 10, 5);
+
+    path.addRect(-20, -20-pixel_line_velocity, 40, 40+pixel_line_velocity);
+    path.addRect(22, -20, 10, 5);
     return path;
 }
 
-#include <QRadialGradient>
-void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void IFFTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
+    QPen pen;
+    pen.setColor(Qt::yellow);
+
+    painter->setPen(pen);
+    painter->drawText(22,-20,"Quadron-31");
+    painter->rotate(170.0);
+    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane_militer.png"));
+
+    qreal pixel_line_velocity = PIXEL_PER_KNOT*20.0;
+
+    prepareGeometryChange();
+
+    painter->drawLine(0,-20,0,-pixel_line_velocity);
+
+    /*
     QPen pen;
     pen.setColor(Qt::yellow);
 
@@ -66,20 +80,6 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
                           );
         painter->drawText(12,-10,QString::number(m_arpa_target->m_target_id));
     }
+    */
 }
-
-QVariant ArpaTrackItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-    switch (change) {
-    case ItemSelectedChange:
-        qDebug()<<Q_FUNC_INFO<<change<<"id"<<m_arpa_target->m_target_id;
-        break;
-    default:
-        break;
-    };
-
-    return QGraphicsItem::itemChange(change, value);
-}
-
-
 

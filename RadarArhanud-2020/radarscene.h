@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include "arpatrackitem.h"
+#include "ifftrackitem.h"
 
 class RadarScene : public QGraphicsScene
 {
@@ -15,7 +16,7 @@ signals:
 protected:
 
 private slots:
-    void trigger_reqNewArpa(bool create, int id);
+    void trigger_reqNewArpa(bool create, int last_count);
 
 private:
     RI *m_ri;

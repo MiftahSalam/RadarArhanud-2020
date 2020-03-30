@@ -20,7 +20,9 @@ SOURCES += main.cpp\
     radargraphicview.cpp \
     radarscene.cpp \
     arpatrackitem.cpp \
-    echo/radar.cpp
+    echo/radar.cpp \
+    ifftrackitem.cpp \
+    radarsceneitems.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -30,7 +32,9 @@ HEADERS  += mainwindow.h \
     radarscene.h \
     arpatrackitem.h \
     echo/radar.h \
-    echo/radar_global.h
+    echo/radar_global.h \
+    ifftrackitem.h \
+    radarsceneitems.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \

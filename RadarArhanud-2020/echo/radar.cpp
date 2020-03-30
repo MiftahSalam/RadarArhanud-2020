@@ -829,6 +829,8 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     for (size_t radius = 0; radius < data.size(); radius++)
     {
         /*
+        enable_mti = true;
+        mti_value = 100;
         if(enable_mti)
         {
             new_strength_info[bearing][radius] = raw_data[radius];
@@ -846,8 +848,10 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
             hist_data[radius] = hist_data[radius] | 192;
         }
 
-//        if(enable_mti)
-//            old_strength_info[bearing][radius] = new_strength_info[bearing][radius];
+        /*
+        if(enable_mti)
+            old_strength_info[bearing][radius] = new_strength_info[bearing][radius];
+        */
     }
 
     /*check Guardzone*/
@@ -1693,13 +1697,13 @@ void RA::DeleteAllTargets()
 }
 void RA::AcquireNewMARPATarget(Position p)
 {
-    qDebug()<<Q_FUNC_INFO<<p.lat<<p.lon;
+//    qDebug()<<Q_FUNC_INFO<<p.lat<<p.lon;
 
     AcquireOrDeleteMarpaTarget(p, ACQUIRE0);
 }
 void RA::AcquireOrDeleteMarpaTarget(Position target_pos, int status)
 {
-    qDebug()<<Q_FUNC_INFO<<target_pos.lat<<target_pos.lon<<m_number_of_targets;
+//    qDebug()<<Q_FUNC_INFO<<target_pos.lat<<target_pos.lon<<m_number_of_targets;
     int i_target;
     if (m_number_of_targets < MAX_NUMBER_OF_TARGETS - 1 ||
             (m_number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == FOR_DELETION))
@@ -1707,7 +1711,7 @@ void RA::AcquireOrDeleteMarpaTarget(Position target_pos, int status)
         if (m_target[m_number_of_targets] == 0)
         {
             m_target[m_number_of_targets] = new ARPATarget(this,m_ri);
-            qDebug()<<Q_FUNC_INFO<<"create new ARPAtarget";
+//            qDebug()<<Q_FUNC_INFO<<"create new ARPAtarget";
         }
         i_target = m_number_of_targets;
         m_number_of_targets++;
@@ -2313,7 +2317,7 @@ void ARPATarget::RefreshTarget(int dist)
         }
 
         m_status++;
-        qDebug()<<Q_FUNC_INFO<<"track status"<<m_status;
+//        qDebug()<<Q_FUNC_INFO<<"track status"<<m_status;
         if(m_status > 10)
             m_status = 10;
         // target gets an id when status  == STATUS_TO_OCPN
@@ -2344,6 +2348,7 @@ void ARPATarget::RefreshTarget(int dist)
         // if duplicate, handle target as not found but don't do pass 2 (= search in the surroundings)
         bool duplicate = false;
         m_check_for_duplicate = true;
+        qDebug()<<Q_FUNC_INFO<<"m_check_for_duplicate"<<m_check_for_duplicate;
         if (m_pass_nr == PASS1 && GetTarget(&pol, dist1))
         {
             m_pass1_result = UNKNOWN;
@@ -2711,7 +2716,7 @@ void RDVert::ProcessRadarSpoke(int transparency, int angle, quint8 *data, size_t
     for (size_t radius = 0; radius < len; radius++)
     {
         //MTI
-            strength = data[radius];
+        strength = data[radius];
 
         BlobColour actual_colour = m_ri->m_colour_map[strength];
         //        qDebug()<<Q_FUNC_INFO<<"strength "<<strength<<"actual color "<<actual_colour;

@@ -37,20 +37,20 @@ RadarWidget::RadarWidget(QWidget *parent, int map_zoom_level)
     arpa_measure_time = QDateTime::currentMSecsSinceEpoch();
     */
 
-    arpaList.clear();
-
     timerId = startTimer(1000);
 }
 
 void RadarWidget::trigger_reqCreateArpa(QPointF position)
 {
-    qDebug()<<Q_FUNC_INFO<<position;
+//    qDebug()<<Q_FUNC_INFO<<position;
 
     Position arpa_pos;
     arpa_pos.lat = position.y();
     arpa_pos.lon = position.x();
 
     arpa->AcquireNewMARPATarget(arpa_pos);
+
+    emit signal_arpaChange(true,arpa->m_number_of_targets-1);
 }
 
 void RadarWidget::trigger_RangeChange(int rng)
@@ -162,59 +162,11 @@ void RadarWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
 
-    qDebug()<<Q_FUNC_INFO<<arpaList;
-
-    if(arpa->m_number_of_targets > arpaList.size())
-    {
-//        qDebug()<<"lebih besar";
-        QList<int> new_arpa_list;
-        for(int i=0; i<arpa->m_number_of_targets; i++)
-        {
-            qDebug()<<Q_FUNC_INFO<<"arpa->m_target"<<i<<arpa->m_target[i]->m_target_id;
-            if(!arpaList.contains(arpa->m_target[i]->m_target_id) /*&& (arpa->m_target[i]->getStatus()>5)*/)
-            {
-//                qDebug()<<Q_FUNC_INFO<<"arpaList not contain"<<arpa->m_target[i]->m_target_id;
-                new_arpa_list.append(arpa->m_target[i]->m_target_id);
-                emit signal_arpaChange(true,arpa->m_target[i]->m_target_id);
-            }
-        }
-
-        for(int i=0; i<new_arpa_list.size(); i++)
-        {
-            arpaList.append(new_arpa_list.at(i));
-        }
-    }
-    else if(arpa->m_number_of_targets < arpaList.size())
-    {
-        qDebug()<<"lebih kecil";
-        QList<int> del_arpa_list;
-        for(int i=0; i<arpaList.size(); i++)
-        {
-            if(!arpaList.contains(arpa->m_target[i]->m_target_id))
-            {
-                del_arpa_list.append(arpa->m_target[i]->m_target_id);
-                emit signal_arpaChange(false,arpa->m_target[i]->m_target_id);
-            }
-        }
-
-        for(int i=0; i<del_arpa_list.size(); i++)
-        {
-            arpaList.removeAll(del_arpa_list.at(i));
-        }
-    }
-
     if(arpa->m_number_of_targets > 0)
     {
         arpa->RefreshArpaTargets();
-
-        /*
-        qDebug()<<Q_FUNC_INFO<<arpa->m_number_of_targets;
-        for(int i=0; i<arpa->m_number_of_targets; i++)
-        {
-            qDebug()<<Q_FUNC_INFO<<arpa->m_target[i]->m_target_id<<arpa->m_target[i]->m_position.lat<<arpa->m_target[i]->m_position.lon;
-        }
-    */
     }
+
     update();
 }
 

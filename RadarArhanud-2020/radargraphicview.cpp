@@ -40,8 +40,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     setScene(scene);
 
-//    tr1 = new ArpaTrackItem();
-//    scene->addItem(tr1);
+    scene->addItem(new IFFTrackItem());
 
     mc = new MapControl(QSize(width(),height()), MapControl::None, false, false, this);
     mc->showCrosshairs(true);
@@ -80,7 +79,9 @@ void RadarGraphicView::updateArpaItem()
 
     if(item_list.size() > 0)
     {
-        ArpaTrackItem *item;
+        qDebug()<<Q_FUNC_INFO<<item_list.size();
+
+        RadarSceneItems *item;
         QPoint screen_middle(width()/2,height()/2);
         QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
         QPoint displayToImage;
@@ -88,15 +89,29 @@ void RadarGraphicView::updateArpaItem()
 
         for(int i=0; i<item_list.size(); i++)
         {
-            item = dynamic_cast<ArpaTrackItem *>(item_list.at(i));
+            item = dynamic_cast<RadarSceneItems *>(item_list.at(i));
 
-            displayToImage = mc->layer("MapLayerView")->mapadapter()
-                    ->coordinateToDisplay(QPointF(item->m_arpa_target->m_position.lon,item->m_arpa_target->m_position.lat));
-            pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
-                              displayToImage.y()+screen_middle.y()-map_middle.y());
+            if(item->getRadarItemType() == RadarSceneItems::ARPA)
+            {
+                ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(item);
 
-//            qDebug()<<Q_FUNC_INFO<<item->m_arpa_target->m_target_id<<pixelPos;
-            item->setPos(pixelPos);
+                if(arpa_item->m_arpa_target->getStatus() < 0)
+                    scene()->removeItem(arpa_item);
+
+                displayToImage = mc->layer("MapLayerView")->mapadapter()
+                        ->coordinateToDisplay(QPointF(arpa_item->m_arpa_target->m_position.lon,
+                                                      arpa_item->m_arpa_target->m_position.lat));
+                pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
+                                  displayToImage.y()+screen_middle.y()-map_middle.y());
+
+    //            qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->m_target_id<<arpa_item->m_arpa_target->getStatus();
+                arpa_item->setPos(pixelPos);
+            }
+            if(item->getRadarItemType() == RadarSceneItems::IFF)
+            {
+                IFFTrackItem *iff_item = dynamic_cast<IFFTrackItem *>(item);
+                iff_item->setPos(sceneRect().width()/4,sceneRect().height()/4);
+            }
         }
         invalidateScene();
     }
@@ -332,7 +347,6 @@ void RadarGraphicView::resizeEvent(QResizeEvent *event)
         mc->resize(event->size());
         echo->resize(event->size());
 
-//        tr1->setPos(sceneRect().width()/4,sceneRect().height()/4);
     }
 }
 

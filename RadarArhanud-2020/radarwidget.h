@@ -54,8 +54,6 @@ private:
     RD *spokeDrawer;
     RA *arpa;
 
-    QList<int> arpaList;
-
     int m_range_meters;
     int m_range_pixel;
     int mapZoomLevel;

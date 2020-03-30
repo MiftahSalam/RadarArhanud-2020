@@ -9,12 +9,13 @@ RadarScene::RadarScene(QObject *parent,RI *ri_ptr) :
 }
 
 
-void RadarScene::trigger_reqNewArpa(bool create, int id)
+void RadarScene::trigger_reqNewArpa(bool create, int last_count)
 {
-    qDebug()<<Q_FUNC_INFO<<create<<id<<m_ri->m_arpa->m_target[id];
+    qDebug()<<Q_FUNC_INFO<<create<<last_count<<m_ri->m_arpa->m_target[last_count];
+    qDebug()<<Q_FUNC_INFO<<items().size();
 
     if(create)
     {
-        addItem(new ArpaTrackItem(m_ri->m_arpa->m_target[id]));
+        addItem(new ArpaTrackItem(m_ri->m_arpa->m_target[last_count]));
     }
 }

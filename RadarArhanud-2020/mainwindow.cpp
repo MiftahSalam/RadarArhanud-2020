@@ -20,6 +20,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->addWidget(ui->frame_2,0,3,4,1);
     */
 
+    RI *ri = ui->graphicsView->getRadarInfo();
+    qDebug()<<ri->data_timeout;
+    ui->frameBottom->setRadarInfo(ui->graphicsView->getRadarInfo());
+
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));

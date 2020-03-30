@@ -3,9 +3,10 @@
 
 #include <QGraphicsItem>
 
+#include "radarsceneitems.h"
 #include "echo/radar.h"
 
-class ArpaTrackItem : public QGraphicsItem
+class ArpaTrackItem : public RadarSceneItems
 {
 public:
     explicit ArpaTrackItem(ARPATarget *ATarget);
