@@ -55,6 +55,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     l = new MapLayer("MapLayerView", mapadapter);
 
+//    mapCenter = QPointF(108.6090623,-5.88818);
     mapCenter = QPointF(107.6090623,-6.88818);
     currentOwnShipLat = mapCenter.y();
     currentOwnShipLon = mapCenter.x();
@@ -63,6 +64,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
     mc->setView(mapCenter);
     mc->setZoom(10);
     mc->enableMouseWheelEvents(false);
+//    mc->show();
     mc->hide();
 
     currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
@@ -174,9 +176,9 @@ qreal RadarGraphicView::calculateRangeRing()
 /**/
 void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 {
-//    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect()<<echo->geometry()<<mc->loadingQueueSize();
+//    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect()<<echo->geometry()<<mc->loadingQueueSize()<<geometry();
 
-    painter->drawPixmap(echo->geometry(),echo->grab(mc->geometry()));
+    painter->drawPixmap(echo->geometry(),echo->grab(echo->geometry()));
 
     int side = (int)qMin(rect.width(),rect.height())/2;
     int side_max = (int)qMax(rect.width(),rect.height());
@@ -295,6 +297,11 @@ void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 
     if(radar_settings.show_heading_marker)
     {
+        pen = painter->pen();
+        pen.setWidth(3);
+        pen.setColor(Qt::green);
+
+        painter->setPen(pen);
         painter->rotate(30);
         painter->drawLine(0,0,0,-side_max);
         painter->rotate(-30);
@@ -303,7 +310,7 @@ void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 
 void RadarGraphicView::drawBackground(QPainter *painter, const QRectF &rect)
 {
-//    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect();
+    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect()<<width()<<height();
 
     /*
     */
@@ -311,10 +318,16 @@ void RadarGraphicView::drawBackground(QPainter *painter, const QRectF &rect)
     {
         if(loadMapFinish)
         {
-            qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry().size();
+            qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry()<<rect;
 
-            QPixmap map_pix = mc->grab(mc->geometry());
-            painter->drawPixmap(mc->geometry(),map_pix);
+            QRect source_rect = QRect(0,0,mc->width(),mc->height());
+            QRect target_rect = QRect((int)-scene()->sceneRect().width(),(int)-scene()->sceneRect().height(),
+                                        (int)scene()->sceneRect().width()*2,(int)scene()->sceneRect().height()*2);
+            QPixmap map_pix = mc->grab(source_rect);
+
+            painter->translate((int)scene()->sceneRect().width()/2,(int)scene()->sceneRect().height()/2);
+            painter->rotate(90.0);
+            painter->drawPixmap(target_rect,map_pix,source_rect);
         }
     }
     else
@@ -325,7 +338,7 @@ void RadarGraphicView::drawBackground(QPainter *painter, const QRectF &rect)
 
 void RadarGraphicView::onTimeOut()
 {
-//    qDebug()<<Q_FUNC_INFO;
+    qDebug()<<Q_FUNC_INFO<<mc->loadingQueueSize();
     if((mc->loadingQueueSize() == 0) && !loadMapFinish)
     {
         loadMapFinish = true;
@@ -344,7 +357,7 @@ void RadarGraphicView::resizeEvent(QResizeEvent *event)
     {
         scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
 
-        mc->resize(event->size());
+        mc->resize(2*event->size());
         echo->resize(event->size());
 
     }
