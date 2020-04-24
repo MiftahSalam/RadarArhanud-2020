@@ -73,6 +73,7 @@ private:
     }currentCursor;
 
     bool loadMapFinish;
+    bool renderMapFinish;
     QPointF mapCenter;
 
     qreal calculateRangeRing();

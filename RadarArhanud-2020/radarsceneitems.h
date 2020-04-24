@@ -19,6 +19,8 @@ public:
     RadarItemsType getRadarItemType() { return itemType; }
 
 protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+
     RadarItemsType itemType;
 };
 

@@ -40,7 +40,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     setScene(scene);
 
-    scene->addItem(new IFFTrackItem());
+    scene->addItem(new IFFTrackItem()); //temporary
 
     mc = new MapControl(QSize(width(),height()), MapControl::None, false, false, this);
     mc->showCrosshairs(true);
@@ -56,9 +56,9 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
     l = new MapLayer("MapLayerView", mapadapter);
 
 //    mapCenter = QPointF(108.6090623,-5.88818);
-    mapCenter = QPointF(107.6090623,-6.88818);
-    currentOwnShipLat = mapCenter.y();
-    currentOwnShipLon = mapCenter.x();
+    mapCenter = QPointF(107.6090623,-6.88818); //temporary
+    currentOwnShipLat = mapCenter.y(); //temporary
+    currentOwnShipLon = mapCenter.x(); //temporary
 
     mc->addLayer(l);
     mc->setView(mapCenter);
@@ -109,10 +109,10 @@ void RadarGraphicView::updateArpaItem()
     //            qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->m_target_id<<arpa_item->m_arpa_target->getStatus();
                 arpa_item->setPos(pixelPos);
             }
-            if(item->getRadarItemType() == RadarSceneItems::IFF)
+            else if(item->getRadarItemType() == RadarSceneItems::IFF)
             {
                 IFFTrackItem *iff_item = dynamic_cast<IFFTrackItem *>(item);
-                iff_item->setPos(sceneRect().width()/4,sceneRect().height()/4);
+                iff_item->setPos(sceneRect().width()/4,sceneRect().height()/4); //temporary
             }
         }
         invalidateScene();
@@ -138,7 +138,7 @@ void RadarGraphicView::trigger_mapChange(quint8 id, quint8 val)
         mc->setZoom(zoom);
 
         loadMapFinish = false;
-
+        renderMapFinish = false;
     }
     invalidateScene(sceneRect(),QGraphicsScene::BackgroundLayer);
 }
@@ -148,6 +148,7 @@ void RadarGraphicView::trigger_RangeChange(int zoom_lvl)
     qDebug()<<Q_FUNC_INFO<<zoom_lvl<<radar_settings.last_scale<<calculateRangeRing();
 
     loadMapFinish = false;
+    renderMapFinish = false;
     mc->setZoom(zoom_lvl);
 
     emit signal_rangeChange(calculateRangeRing());
@@ -260,7 +261,9 @@ void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 
         pen = painter->pen();
         pen.setWidth(3);
-        pen.setColor(Qt::black);
+
+        if(map_settings.show)
+            pen.setColor(Qt::black);
 
         font.setPixelSize(15);
         font.setBold(true);
@@ -310,29 +313,34 @@ void RadarGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 
 void RadarGraphicView::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect()<<width()<<height();
+//    qDebug()<<Q_FUNC_INFO<<rect<<scene()->sceneRect()<<width()<<height();
 
     /*
     */
     if(map_settings.show)
     {
-        if(loadMapFinish)
+        if(loadMapFinish && !renderMapFinish)
         {
             qDebug()<<Q_FUNC_INFO<<"map loaded"<<mc->geometry()<<rect;
 
             QRect source_rect = QRect(0,0,mc->width(),mc->height());
+            QRect target_rect = QRect(0,0,(int)scene()->sceneRect().width(),(int)scene()->sceneRect().height());
+            /*
             QRect target_rect = QRect((int)-scene()->sceneRect().width(),(int)-scene()->sceneRect().height(),
-                                        (int)scene()->sceneRect().width()*2,(int)scene()->sceneRect().height()*2);
+                                        (int)scene()->sceneRect().width()*2,(int)scene()->sceneRect().height()*2); //for relative display mode
+            */
             QPixmap map_pix = mc->grab(source_rect);
 
-            painter->translate((int)scene()->sceneRect().width()/2,(int)scene()->sceneRect().height()/2);
-            painter->rotate(90.0);
+//            painter->translate((int)scene()->sceneRect().width()/2,(int)scene()->sceneRect().height()/2); //for relative display mode
+//            painter->rotate(90.0); //for relative display mode
             painter->drawPixmap(target_rect,map_pix,source_rect);
+
+            renderMapFinish = true;
         }
     }
     else
     {
-        painter->fillRect(rect,QColor(56, 44, 68));
+        painter->fillRect(rect,Qt::black);
     }
 }
 
@@ -367,14 +375,21 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
 {
 //    qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
 
-    QPoint screen_middle(width()/2,height()/2);
-    QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
 
-    QPoint displayToImage= QPoint(event->pos().x()-screen_middle.x()+map_middle.x(),
-                                  event->pos().y()-screen_middle.y()+map_middle.y());
-    QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+    QGraphicsItem *item = itemAt(event->pos());
+    if (!item)
+    {
+        qDebug("You didn't click on an item.");
 
-    emit signal_reqCreateArpa(displayToCoordinat);
+        QPoint screen_middle(width()/2,height()/2);
+        QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+
+        QPoint displayToImage= QPoint(event->pos().x()-screen_middle.x()+map_middle.x(),
+                                      event->pos().y()-screen_middle.y()+map_middle.y());
+        QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+
+        emit signal_reqCreateArpa(displayToCoordinat);
+    }
 }
 
 void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)

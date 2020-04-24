@@ -11,8 +11,6 @@ ArpaTrackItem::ArpaTrackItem(ARPATarget *ATarget):
     itemType = RadarItemsType::ARPA;
 
     qDebug()<<Q_FUNC_INFO<<m_arpa_target->m_target_id;
-    setFlag(ItemIsSelectable);
-    setSelected(true);
     setZValue(1);
 }
 
@@ -67,19 +65,3 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         painter->drawText(12,-10,QString::number(m_arpa_target->m_target_id));
     }
 }
-
-QVariant ArpaTrackItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
-    switch (change) {
-    case ItemSelectedChange:
-        qDebug()<<Q_FUNC_INFO<<change<<"id"<<m_arpa_target->m_target_id;
-        break;
-    default:
-        break;
-    };
-
-    return QGraphicsItem::itemChange(change, value);
-}
-
-
-

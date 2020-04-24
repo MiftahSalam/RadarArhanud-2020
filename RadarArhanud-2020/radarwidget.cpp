@@ -162,11 +162,6 @@ void RadarWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
 
-    if(arpa->m_number_of_targets > 0)
-    {
-        arpa->RefreshArpaTargets();
-    }
-
     update();
 }
 
@@ -205,6 +200,11 @@ void RadarWidget::paintEvent(QPaintEvent *event)
 
     f->glMatrixMode(GL_MODELVIEW);
     f->glPopMatrix();
+
+    if(arpa->m_number_of_targets > 0)
+    {
+        arpa->RefreshArpaTargets();
+    }
 
     emit signal_updateRadarEcho();
     //    qDebug()<<Q_FUNC_INFO;

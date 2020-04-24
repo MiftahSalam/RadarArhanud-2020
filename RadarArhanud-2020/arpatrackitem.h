@@ -21,9 +21,6 @@ public:
     QPainterPath shape() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
-protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-
 signals:
 
 public slots:
