@@ -18,6 +18,7 @@ public:
     void setupViewport(int width, int height);
 
     RI *m_ri;
+    RA *arpa;
     /*
     void setRectRegoin(QRect rect);
     void setRange(int range);
@@ -52,7 +53,6 @@ private slots:
 private:
 
     RD *spokeDrawer;
-    RA *arpa;
 
     int m_range_meters;
     int m_range_pixel;

@@ -9,7 +9,7 @@ class RadarScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    explicit RadarScene(QObject *parent = 0, RI *ri_ptr=0);
+    explicit RadarScene(QObject *parent = 0, RA *ra_ptr=0);
 
 signals:
 
@@ -19,9 +19,7 @@ private slots:
     void trigger_reqNewArpa(bool create, int last_count);
 
 private:
-    RI *m_ri;
-
-
+    RA *m_ra;
 };
 
 #endif // RADARSCENE_H

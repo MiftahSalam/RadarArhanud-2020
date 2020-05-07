@@ -13,7 +13,7 @@ RadarWidget::RadarWidget(QWidget *parent, int map_zoom_level)
 {
     m_ri = new RI(this);
     spokeDrawer = RD::make_Draw(m_ri,0);
-    arpa = m_ri->m_arpa;
+    arpa = new RA(this,m_ri);
 
     connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,int,u_int8_t*,size_t)),
             this,SLOT(trigger_DrawSpoke(int,int,u_int8_t*,size_t)));

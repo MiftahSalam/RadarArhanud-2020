@@ -279,14 +279,11 @@ private:
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1 //241
 typedef UINT8 TrailRevolutionsAge;
 
-class GZ;
-class RA;
 class RI : public QObject
 {
     Q_OBJECT
 public:
     explicit RI(QObject *parent = 0);
-    void setARPAPtr(RA *arpa){ m_arpa = arpa; }
 
     struct line_history
     {
@@ -307,8 +304,6 @@ public:
     int m_range_meters;
     int rng_gz;
 
-    GZ *m_gz;
-    RA *m_arpa;
     RadarReceive *receiveThread;
 
 signals:
@@ -353,77 +348,6 @@ private:
     void ZoomTrails(float zoom_factor);
     void ClearTrails();
     void ComputeTargetTrails();
-};
-
-
-
-/************************GZ************************/
-typedef enum GZType { GZ_ARC, GZ_CIRCLE } GZType;
-class GZ
-{
-public:
-    GZ(RI *ri);
-
-    quint64 arpa_update_time[LINES_PER_ROTATION];
-
-    ~GZ()
-    {
-        qDebug()<<Q_FUNC_INFO<<m_log_name<<"destroyed";
-    }
-    void ResetBogeys()
-    {
-        m_bogey_count = 0;
-        m_running_count = 0;
-    }
-//    void ProcessSpoke(int angle, UINT8 *data, UINT8 *hist, int range);
-//    void ProcessSpokePoly(int angle, UINT8 *data, int range);
-//    void autoTrack();
-    void setCurRange(int range){m_current_range = range;}
-
-    int GetBogeyCount()
-    {
-        return m_bogey_count;
-    }
-    void resetPolygon()
-    {
-        m_polygon.clear();
-        m_start_bearing = 0;
-        m_range_start = 0;
-        m_end_bearing = 0;
-        m_range_end = 0;
-    }
-
-//    void SetPolygon(const QPolygonF polyF);
-
-    QPolygonF getPolygon()
-    {
-        return m_polygon;
-    }
-/*
-signals:
-    void signal_autoTrack(int angle, int range);
-
-private slots:
-    void trigger_autoTrack(int angle, int range);
-    */
-
-private:
-    RI *m_ri;
-
-    QString m_log_name;
-    QPolygonF m_polygon;
-    QPolygon m_arpa_polygon;
-    QMutex mutex;
-    int m_bogey_count;    // complete cycle
-    int m_running_count;  // current swipe
-    int zero_angle_count;
-    float m_range_start;
-    float m_range_end;
-    int m_start_bearing;
-    int m_end_bearing;
-    int m_current_range;
-    void UpdateSettings();
-    void countBogey(const int angle, const double heading, const quint8 *data, const int range, const QPolygonF polygon);
 };
 
 

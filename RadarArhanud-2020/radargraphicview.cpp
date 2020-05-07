@@ -26,7 +26,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     echo->hide();
 
-    RadarScene *scene = new RadarScene(this,echo->m_ri);
+    RadarScene *scene = new RadarScene(this,echo->arpa);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
     connect(echo,SIGNAL(signal_arpaChange(bool,int)),scene,SLOT(trigger_reqNewArpa(bool,int)));

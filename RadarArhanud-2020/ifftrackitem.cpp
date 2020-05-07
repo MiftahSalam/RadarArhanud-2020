@@ -42,8 +42,6 @@ void IFFTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
     qreal pixel_line_velocity = PIXEL_PER_KNOT*20.0;
 
-    prepareGeometryChange();
-
     painter->drawLine(0,-20,0,-pixel_line_velocity);
 
     /*
