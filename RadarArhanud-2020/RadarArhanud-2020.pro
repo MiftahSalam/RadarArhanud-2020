@@ -16,7 +16,6 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     frameleft.cpp \
     framebottom.cpp \
-    radarwidget.cpp \
     radargraphicview.cpp \
     radarscene.cpp \
     arpatrackitem.cpp \
@@ -28,7 +27,6 @@ HEADERS  += mainwindow.h \
     frameleft.h \
     framebottom.h \
     radargraphicview.h \
-    radarwidget.h \
     radarscene.h \
     arpatrackitem.h \
     echo/radar.h \

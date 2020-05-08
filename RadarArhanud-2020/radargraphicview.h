@@ -2,8 +2,8 @@
 #define RADARGRAPHICVIEW_H
 
 #include <QGraphicsView>
-#include <QWidget>
 #include <QResizeEvent>
+#include <QImage>
 #include <QTimer>
 
 #include <mapcontrol.h>
@@ -13,8 +13,6 @@
 #include <osmmapadapter.h>
 #include <emptymapadapter.h>
 #include <fixedimageoverlay.h>
-
-#include "radarwidget.h"
 
 using namespace qmapcontrol;
 
@@ -30,54 +28,34 @@ public:
     explicit RadarGraphicView(QWidget *parent = 0);
     ~RadarGraphicView();
 
-    RI *getRadarInfo() { return echo->m_ri; }
+    qreal calculateRangeRing() const;
+    void setMapZoomLevel(int index);
+    void tesCreateItem(); //temporary
 
 signals:
-    void signal_rangeChange(qreal range_rings);
+    void signal_mapChange(QImage img);
+    void signal_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
     void signal_reqCreateArpa(QPointF position);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
-    void drawBackground(QPainter *painter, const QRectF &rect) override;
-    void drawForeground(QPainter *painter, const QRectF &rect) override;
-
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    /*
-    */
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
     void onTimeOut();
-
-    void trigger_RangeChange(int zoom_lvl);
     void trigger_mapChange(quint8 id, quint8 val);
-    /*
-    void trigger_ReqDelTrack(int id);
-    */
 
 private:
     MapControl *mc;
     MapLayer *l;
     MapAdapter* mapadapter;
-
-    RadarWidget *echo;
-
-    QTimer timer;
-    struct Cursor
-    {
-        QTime cursorMoveTime;
-        qreal latitude;
-        qreal longitude;
-        qreal range;
-        qreal bearing;
-    }currentCursor;
-
-    bool loadMapFinish;
-    bool renderMapFinish;
     QPointF mapCenter;
+    QImage mapImage;
+    QTimer *timer;
+    int curLoadingMapSize;
 
-    qreal calculateRangeRing();
-    void updateArpaItem();
+    void updateSceneItems();
 };
 
 #endif // RADARGRAPHICVIEW_H

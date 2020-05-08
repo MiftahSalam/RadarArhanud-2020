@@ -33,15 +33,11 @@
 #endif
 #endif
 
-#ifndef PI
-#define PI (3.1415926535897931160E0)
-#endif
-
 #ifndef deg2rad
-#define deg2rad(x) ((x)*2 * PI / 360.0)
+#define deg2rad(x) ((x)*2 * M_PI / 360.0)
 #endif
 #ifndef rad2deg
-#define rad2deg(x) ((x)*360.0 / (2 * PI))
+#define rad2deg(x) ((x)*360.0 / (2 * M_PI))
 #endif
 
 #define WATCHDOG_TIMEOUT (10000)  // After 10s assume GPS and heading data is invalid
@@ -207,6 +203,7 @@ struct RadarSettings
 struct MapSettings
 {
     bool show;
+    bool loading;
     quint8 mode;
 };
 struct ARPASettings
@@ -277,6 +274,10 @@ struct TrailSettings
     bool enable;
     int trail;
 };
+
+static const QList<int> distanceList = QList<int>()<<5000000<<2000000<<1000000<<1000000<<1000000<<
+                                               100000<<100000<<50000<<50000<<10000<<10000<<
+                                               10000<<1000<<1000<<500<<200<<100<<50<<25;
 
 static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
 

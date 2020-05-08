@@ -3,8 +3,8 @@
 
 #include <QGraphicsItem>
 
-#include "radarsceneitems.h"
 #include "echo/radar.h"
+#include "radarsceneitems.h"
 
 class ArpaTrackItem : public RadarSceneItems
 {

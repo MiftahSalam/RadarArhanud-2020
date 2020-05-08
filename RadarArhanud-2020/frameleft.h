@@ -15,6 +15,8 @@ public:
     explicit FrameLeft(QWidget *parent = 0);
     ~FrameLeft();
 
+    void setRangeRings(qreal range_ring);
+
 signals:
     void signal_exit();
     void signal_mapChange(quint8 id, quint8 val);
@@ -22,7 +24,6 @@ signals:
 private slots:
     void on_checkBoxShowRing_clicked(bool checked);
 
-    void trigger_rangeChange(qreal range_ring);
 
     void on_checkBoxShowMap_clicked(bool checked);
 

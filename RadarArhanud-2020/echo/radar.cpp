@@ -41,15 +41,15 @@ P2CLookupTable* GetP2CLookupTable()
         // initialise polar_to_cart_y[arc + 1][radius] arrays
         for (int arc = 0; arc < LINES_PER_ROTATION + 1; arc++)
         {
-            GLfloat sine = cosf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
-            GLfloat cosine = sinf((GLfloat)arc * PI * 2 / LINES_PER_ROTATION);
+            GLfloat sine = cosf((GLfloat)arc * M_PI * 2 / LINES_PER_ROTATION);
+            GLfloat cosine = sinf((GLfloat)arc * M_PI * 2 / LINES_PER_ROTATION);
             for (int radius = 0; radius < RETURNS_PER_LINE + 1; radius++)
             {
                 lookupTable->x[arc][radius] = (GLfloat)radius * cosine/RETURNS_PER_LINE;
                 lookupTable->y[arc][radius] = (GLfloat)radius * sine/RETURNS_PER_LINE;
                 lookupTable->intx[arc][radius] = (int)(lookupTable->x[arc][radius]*RETURNS_PER_LINE);
                 lookupTable->inty[arc][radius] = (int)(lookupTable->y[arc][radius]*RETURNS_PER_LINE);
-//                qDebug()<<Q_FUNC_INFO<<"intx "<<lookupTable->intx[arc][radius]<<"inty "<<lookupTable->inty[arc][radius];
+                //                qDebug()<<Q_FUNC_INFO<<"intx "<<lookupTable->intx[arc][radius]<<"inty "<<lookupTable->inty[arc][radius];
             }
         }
     }
@@ -69,134 +69,134 @@ KalmanFilter::KalmanFilter(QObject *parent) :
     qDebug()<<Q_FUNC_INFO;
 }
 void KalmanFilter::ResetFilter() {
-  // reset the filter to use  it for a new case
-  A = I;
+    // reset the filter to use  it for a new case
+    A = I;
 
-  // transpose of A
-  AT = A;
+    // transpose of A
+    AT = A;
 
-  // Jacobian matrix of partial derivatives dfi / dwj
-  W = ZeroMatrix42;
-  W(2, 0) = 1.;
-  W(3, 1) = 1.;
+    // Jacobian matrix of partial derivatives dfi / dwj
+    W = ZeroMatrix42;
+    W(2, 0) = 1.;
+    W(3, 1) = 1.;
 
-  // transpose of W
-  WT = ZeroMatrix24;
-  WT(0, 2) = 1.;
-  WT(1, 3) = 1.;
+    // transpose of W
+    WT = ZeroMatrix24;
+    WT(0, 2) = 1.;
+    WT(1, 3) = 1.;
 
-  // Observation matrix, jacobian of observation function h
-  // dhi / dvj
-  // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
-  // r = sqrt(x * x + y * y) + v2
-  // v is measurement noise
-  H = ZeroMatrix24;
+    // Observation matrix, jacobian of observation function h
+    // dhi / dvj
+    // angle = atan2 (lat,lon) * 2048 / (2 * pi) + v1
+    // r = sqrt(x * x + y * y) + v2
+    // v is measurement noise
+    H = ZeroMatrix24;
 
-  // Transpose of observation matrix
-  HT = ZeroMatrix42;
+    // Transpose of observation matrix
+    HT = ZeroMatrix42;
 
-  // Jacobian V, dhi / dvj
-  // As V is the identity matrix, it is left out of the calculation of the Kalman gain
+    // Jacobian V, dhi / dvj
+    // As V is the identity matrix, it is left out of the calculation of the Kalman gain
 
-  // P estimate error covariance
-  // initial values follow
-  // P(1, 1) = .0000027 * range * range;   ???
-  P = ZeroMatrix4;
-  P(0, 0) = 20.;
-  P(1, 1) = P(1, 1);
-  P(2, 2) = 4.;
-  P(3, 3) = 4.;
+    // P estimate error covariance
+    // initial values follow
+    // P(1, 1) = .0000027 * range * range;   ???
+    P = ZeroMatrix4;
+    P(0, 0) = 20.;
+    P(1, 1) = P(1, 1);
+    P(2, 2) = 4.;
+    P(3, 3) = 4.;
 
-  // Q Process noise covariance matrix
-  Q(0, 0) = NOISE;  // variance in lat speed, (m / sec)2
-  Q(1, 1) = NOISE;  // variance in lon speed, (m / sec)2
+    // Q Process noise covariance matrix
+    Q(0, 0) = NOISE;  // variance in lat speed, (m / sec)2
+    Q(1, 1) = NOISE;  // variance in lon speed, (m / sec)2
 
-  // R measurement noise covariance matrix
-  R(0, 0) = 100.0;  // variance in the angle 3.0
-  R(1, 1) = 25.;    // variance in radius  .5
+    // R measurement noise covariance matrix
+    R(0, 0) = 100.0;  // variance in the angle 3.0
+    R(1, 1) = 25.;    // variance in radius  .5
 }
 
 void KalmanFilter::Predict(LocalPosition* xx, double delta_time) {
-  Matrix<double, 4, 1> X;
-  X(0, 0) = xx->lat;
-  X(1, 0) = xx->lon;
-  X(2, 0) = xx->dlat_dt;
-  X(3, 0) = xx->dlon_dt;
-  A(0, 2) = delta_time;  // time in seconds
-  A(1, 3) = delta_time;
-  /*
+    Matrix<double, 4, 1> X;
+    X(0, 0) = xx->lat;
+    X(1, 0) = xx->lon;
+    X(2, 0) = xx->dlat_dt;
+    X(3, 0) = xx->dlon_dt;
+    A(0, 2) = delta_time;  // time in seconds
+    A(1, 3) = delta_time;
+    /*
   qDebug()<<Q_FUNC_INFO<<"xx lat"<<X(0, 0)<<"xx lon"<<X(1, 0)
          <<"ddlat "<<X(2, 0)<<"dlon"<<X(3, 0)
         <<"A(0, 0)"<<A(0, 0)<<"A(0, 1)"<<A(0, 1)<<"A(0, 2)"<<A(0, 2)
           <<"A(0, 3)"<<A(0, 3);
   */
 
-  AT(2, 0) = delta_time;
-  AT(3, 1) = delta_time;
+    AT(2, 0) = delta_time;
+    AT(3, 1) = delta_time;
 
-  X = A * X;
-  xx->lat = X(0, 0);
-  xx->lon = X(1, 0);
-  xx->dlat_dt = X(2, 0);
-  xx->dlon_dt = X(3, 0);
-  xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);
-  return;
+    X = A * X;
+    xx->lat = X(0, 0);
+    xx->lon = X(1, 0);
+    xx->dlat_dt = X(2, 0);
+    xx->dlon_dt = X(3, 0);
+    xx->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);
+    return;
 }
 
 void KalmanFilter::Update_P() {
-  // calculate apriori P
-  // separated from the predict to prevent the update being done both in pass 1 and pass2
+    // calculate apriori P
+    // separated from the predict to prevent the update being done both in pass 1 and pass2
 
-  P = A * P * AT + W * Q * WT;
-  return;
+    P = A * P * AT + W * Q * WT;
+    return;
 }
 void KalmanFilter::SetMeasurement(Polar* pol, LocalPosition* x, Polar* expected, int range) {
-// pol measured angular position
-// x expected local position
-// expected, same but in polar coordinates
+    // pol measured angular position
+    // x expected local position
+    // expected, same but in polar coordinates
 #define SQUARED(x) ((x) * (x))
-  double q_sum = SQUARED(x->lon) + SQUARED(x->lat);
+    double q_sum = SQUARED(x->lon) + SQUARED(x->lat);
 
-  double c = 2048. / (2. * PI);
-  H(0, 0) = -c * x->lon / q_sum;
-  H(0, 1) = c * x->lat / q_sum;
+    double c = 2048. / (2. * M_PI);
+    H(0, 0) = -c * x->lon / q_sum;
+    H(0, 1) = c * x->lat / q_sum;
 
-  q_sum = sqrt(q_sum);
-  H(1, 0) = x->lat / q_sum * 512. / (double)range;
-  H(1, 1) = x->lon / q_sum * 512. / (double)range;
+    q_sum = sqrt(q_sum);
+    H(1, 0) = x->lat / q_sum * 512. / (double)range;
+    H(1, 1) = x->lon / q_sum * 512. / (double)range;
 
-  HT = H.Transpose();
+    HT = H.Transpose();
 
-  Matrix<double, 2, 1> Z;
-  Z(0, 0) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
-  if (Z(0, 0) > LINES_PER_ROTATION / 2) {
-    Z(0, 0) -= LINES_PER_ROTATION;
-  }
-  if (Z(0, 0) < -LINES_PER_ROTATION / 2) {
-    Z(0, 0) += LINES_PER_ROTATION;
-  }
-  Z(1, 0) = (double)(pol->r - expected->r);
+    Matrix<double, 2, 1> Z;
+    Z(0, 0) = (double)(pol->angle - expected->angle);  // Z is  difference between measured and expected
+    if (Z(0, 0) > LINES_PER_ROTATION / 2) {
+        Z(0, 0) -= LINES_PER_ROTATION;
+    }
+    if (Z(0, 0) < -LINES_PER_ROTATION / 2) {
+        Z(0, 0) += LINES_PER_ROTATION;
+    }
+    Z(1, 0) = (double)(pol->r - expected->r);
 
-  Matrix<double, 4, 1> X;
-  X(0, 0) = x->lat;
-  X(1, 0) = x->lon;
-  X(2, 0) = x->dlat_dt;
-  X(3, 0) = x->dlon_dt;
+    Matrix<double, 4, 1> X;
+    X(0, 0) = x->lat;
+    X(1, 0) = x->lon;
+    X(2, 0) = x->dlat_dt;
+    X(3, 0) = x->dlon_dt;
 
-  // calculate Kalman gain
-  K = P * HT * ((H * P * HT + R).Inverse());
+    // calculate Kalman gain
+    K = P * HT * ((H * P * HT + R).Inverse());
 
-  // calculate apostriori expected position
-  X = X + K * Z;
-  x->lat = X(0, 0);
-  x->lon = X(1, 0);
-  x->dlat_dt = X(2, 0);
-  x->dlon_dt = X(3, 0);
+    // calculate apostriori expected position
+    X = X + K * Z;
+    x->lat = X(0, 0);
+    x->lon = X(1, 0);
+    x->dlat_dt = X(2, 0);
+    x->dlon_dt = X(3, 0);
 
-  // update covariance P
-  P = (I - K * H) * P;
-  x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
-  return;
+    // update covariance P
+    P = (I - K * H) * P;
+    x->sd_speed_m_s = sqrt((P(2, 2) + P(3, 3)) / 2.);  // rough approximation of standard dev of speed
+    return;
 }
 
 
@@ -386,7 +386,7 @@ void RadarReceive::run()
                 socketDataReceive.readDatagram(datagram.data(), datagram.size());
 
                 processFrame(datagram,datagram.size());
-//                qDebug()<<Q_FUNC_INFO<<"Receive datagram with size "<<datagram.size();
+                //                qDebug()<<Q_FUNC_INFO<<"Receive datagram with size "<<datagram.size();
             }
         }
         else
@@ -407,7 +407,7 @@ void RadarReceive::run()
 
         if(socketReportReceive.state()==QAbstractSocket::BoundState)
         {
-//            qDebug()<<Q_FUNC_INFO<<"bind report multicast access ";
+            //            qDebug()<<Q_FUNC_INFO<<"bind report multicast access ";
             while (socketReportReceive.hasPendingDatagrams())
             {
                 QByteArray datagram;
@@ -540,7 +540,7 @@ void RadarReceive::processReport(QByteArray data, int len)
 
 void RadarReceive::processFrame(QByteArray data, int len)
 {
-//    qDebug()<<Q_FUNC_INFO;
+    //    qDebug()<<Q_FUNC_INFO;
     radar_frame_pkt *packet = (radar_frame_pkt *)data.data();
 
     if (len < (int)sizeof(packet->frame_hdr)) {
@@ -629,8 +629,8 @@ void RadarReceive::processFrame(QByteArray data, int len)
             range_raw = large_range;
         }
         range_meters = range_raw;
-//        range_meters *= 0.5688;
-//        qDebug()<<Q_FUNC_INFO<<range_raw;
+        //        range_meters *= 0.5688;
+        //        qDebug()<<Q_FUNC_INFO<<range_raw;
 
         bool radar_heading_valid = HEADING_VALID(heading_raw);
         bool radar_heading_true = (heading_raw & HEADING_TRUE_FLAG) != 0;
@@ -698,7 +698,7 @@ RI::RI(QObject *parent) :
 
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(timerTimeout()));
-//    dateCheckHDD = QDate(2018,12,15); //tes
+    //    dateCheckHDD = QDate(2018,12,15); //tes
     dateCheckHDD = QDate::currentDate();
 
     receiveThread = new RadarReceive(this);
@@ -714,7 +714,7 @@ void RI::timerTimeout()
 {
     quint64 now = QDateTime::currentMSecsSinceEpoch();
 
-//    qDebug()<<Q_FUNC_INFO<<cur_elapsed_time<<TIME_EXPIRED;
+    //    qDebug()<<Q_FUNC_INFO<<cur_elapsed_time<<TIME_EXPIRED;
     /*
     cur_elapsed_time = cur_elapsed_time.addSecs(1);
     if((cur_elapsed_time > TIME_EXPIRED) && checkExpired)
@@ -724,15 +724,15 @@ void RI::timerTimeout()
     }
     */
 
-//    bool check_hdd = QDate::currentDate() != dateCheckHDD;
-//    if(check_hdd)
-//    {
-//        if(!checkHddId())
-//            emit trigger_suddenDead();
+    //    bool check_hdd = QDate::currentDate() != dateCheckHDD;
+    //    if(check_hdd)
+    //    {
+    //        if(!checkHddId())
+    //            emit trigger_suddenDead();
 
-//        dateCheckHDD = QDate::currentDate();
-//    }
-//    qDebug()<<Q_FUNC_INFO<<check_hdd;
+    //        dateCheckHDD = QDate::currentDate();
+    //    }
+    //    qDebug()<<Q_FUNC_INFO<<check_hdd;
 
     if(state_radar == RADAR_TRANSMIT && TIMED_OUT(now,data_timeout))
     {
@@ -750,7 +750,7 @@ void RI::timerTimeout()
         ResetSpokes();
     }
 
-//    state_radar = RADAR_STANDBY;
+    //    state_radar = RADAR_STANDBY;
 
     if(old_draw_trails != trail_settings.enable)
     {
@@ -771,13 +771,13 @@ void RI::timerTimeout()
 }
 
 void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
-                                               QByteArray data,
-                                               int dataSize,
-                                               int range_meter,
-                                               double heading,
-                                               bool radar_heading_true)
+                                        QByteArray data,
+                                        int dataSize,
+                                        int range_meter,
+                                        double heading,
+                                        bool radar_heading_true)
 {
-//    qDebug()<<Q_FUNC_INFO;
+    //    qDebug()<<Q_FUNC_INFO;
 
     quint64 now = QDateTime::currentMSecsSinceEpoch();
     radar_timeout = now + WATCHDOG_TIMEOUT;
@@ -816,7 +816,7 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     UINT8 weakest_normal_blob = 50; //next load from configuration file
     UINT8 *hist_data = m_history[bearing].line;
 
-//    qDebug()<<Q_FUNC_INFO<<bearing;
+    //    qDebug()<<Q_FUNC_INFO<<bearing;
 
     m_history[bearing].time = now;
     m_history[bearing].lat = currentOwnShipLat;
@@ -851,9 +851,9 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     }
 
     /*check Guardzone*/
-//    if(gz_settings.show && gz_settings.enable_alarm)
-//        m_gz->ProcessSpokePoly(angle, raw_data, rng_gz);
-//    m_gz->ProcessSpoke(angle, raw_data, m_history[bearing].line, rng_gz);
+    //    if(gz_settings.show && gz_settings.enable_alarm)
+    //        m_gz->ProcessSpokePoly(angle, raw_data, rng_gz);
+    //    m_gz->ProcessSpoke(angle, raw_data, m_history[bearing].line, rng_gz);
 
 
     /*Trail handler*/
@@ -1200,7 +1200,7 @@ Polar Pos2Polar(Position p, Position own_ship, int range)
     dif_lat -= own_ship.lat;
     double dif_lon = (p.lon - own_ship.lon) * cos(deg2rad(own_ship.lat));
     pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)RETURNS_PER_LINE / (double)range + 1);
-    pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * PI) + 1);  // + 1 to minimize rounding errors
+    pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * M_PI) + 1);  // + 1 to minimize rounding errors
     if (pol.angle < 0) pol.angle += LINES_PER_ROTATION;
     return pol;
 }
@@ -1208,8 +1208,8 @@ Polar Pos2Polar(Position p, Position own_ship, int range)
 RA::RA(QObject *parent,RI *ri) :
     QObject(parent),m_ri(ri)
 {
-//    if(!checkHddId())
-//        exit(1);
+    //    if(!checkHddId())
+    //        exit(1);
 
     m_number_of_targets = 0;
     for (int i = 0; i < MAX_NUMBER_OF_TARGETS; i++)
@@ -1220,7 +1220,7 @@ RA::RA(QObject *parent,RI *ri) :
 void RA::RefreshArpaTargets()
 {
     m_range = range_meters;
-//    qDebug()<<Q_FUNC_INFO<<"range_meters"<<range_meters;
+    //    qDebug()<<Q_FUNC_INFO<<"range_meters"<<range_meters;
 
     for (int i = 0; i < m_number_of_targets; i++)
     {
@@ -1278,7 +1278,7 @@ void RA::RefreshArpaTargets()
         }
         m_target[target_to_delete]->SetStatusLost();
     }
-//    qDebug()<<Q_FUNC_INFO<<"target to delete "<<target_to_delete<<"target number"<<m_number_of_targets;
+    //    qDebug()<<Q_FUNC_INFO<<"target to delete "<<target_to_delete<<"target number"<<m_number_of_targets;
 
     // main target refresh loop
 
@@ -1329,7 +1329,7 @@ bool RA::Pix(int ang, int rad)
     if (rad <= 1 || rad >= RETURNS_PER_LINE - 1) //  avoid range ring
         return false;
 
-//    qDebug()<<Q_FUNC_INFO<<ang<<rad;
+    //    qDebug()<<Q_FUNC_INFO<<ang<<rad;
     return ((m_ri->m_history[MOD_ROTATION2048(ang)].line[rad] & 128) != 0);
 }
 
@@ -1454,13 +1454,13 @@ void RA::DeleteAllTargets()
 }
 void RA::AcquireNewMARPATarget(Position p)
 {
-//    qDebug()<<Q_FUNC_INFO<<p.lat<<p.lon;
+    //    qDebug()<<Q_FUNC_INFO<<p.lat<<p.lon;
 
     AcquireOrDeleteMarpaTarget(p, ACQUIRE0);
 }
 void RA::AcquireOrDeleteMarpaTarget(Position target_pos, int status)
 {
-//    qDebug()<<Q_FUNC_INFO<<target_pos.lat<<target_pos.lon<<m_number_of_targets;
+    //    qDebug()<<Q_FUNC_INFO<<target_pos.lat<<target_pos.lon<<m_number_of_targets;
     int i_target;
     if (m_number_of_targets < MAX_NUMBER_OF_TARGETS - 1 ||
             (m_number_of_targets == MAX_NUMBER_OF_TARGETS - 1 && status == FOR_DELETION))
@@ -1468,7 +1468,7 @@ void RA::AcquireOrDeleteMarpaTarget(Position target_pos, int status)
         if (m_target[m_number_of_targets] == 0)
         {
             m_target[m_number_of_targets] = new ARPATarget(this,m_ri);
-//            qDebug()<<Q_FUNC_INFO<<"create new ARPAtarget";
+            //            qDebug()<<Q_FUNC_INFO<<"create new ARPAtarget";
         }
         i_target = m_number_of_targets;
         m_number_of_targets++;
@@ -1569,8 +1569,8 @@ void RA::DeleteTarget(Position target_pos) { AcquireOrDeleteMarpaTarget(target_p
 ARPATarget::ARPATarget(QObject *parent, RI *ri) :
     QObject(parent),m_ri(ri)
 {
-//    if(!checkHddId())
-//        exit(1);
+    //    if(!checkHddId())
+    //        exit(1);
 
     qDebug()<<Q_FUNC_INFO;
     m_kalman = 0;
@@ -1589,7 +1589,7 @@ ARPATarget::ARPATarget(QObject *parent, RI *ri) :
     m_speeds.nr = 0;
     m_pass1_result = UNKNOWN;
     m_pass_nr = PASS1;
-//    old_heading = radar_settings.headingUp ? 0 : currentHeading;
+    //    old_heading = radar_settings.headingUp ? 0 : currentHeading;
 }
 ARPATarget::~ARPATarget()
 {
@@ -1869,6 +1869,25 @@ void ARPATarget::ResetPixels()
     }
 }
 
+QPointF ARPATarget::blobPixelPosition()
+{
+    double y_max = currentOwnShipLat +
+            (double)m_max_r_future.r / (double)RETURNS_PER_LINE * m_range * cos(deg2rad(SCALE_RAW_TO_DEGREES2048(m_max_angle_future.angle))) / 60. / 1852.;
+    double x_max = currentOwnShipLon +
+            (double)m_max_r_future.r / (double)RETURNS_PER_LINE * m_range * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(m_max_angle_future.angle))) /
+            cos(deg2rad(currentOwnShipLat)) / 60. / 1852.;
+
+    double y_min = currentOwnShipLat +
+            (double)m_min_r_future.r / (double)RETURNS_PER_LINE * m_range * cos(deg2rad(SCALE_RAW_TO_DEGREES2048(m_min_angle_future.angle))) / 60. / 1852.;
+    double x_min = currentOwnShipLon +
+            (double)m_min_r_future.r / (double)RETURNS_PER_LINE * m_range * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(m_min_angle_future.angle))) /
+            cos(deg2rad(currentOwnShipLat)) / 60. / 1852.;
+    double x_avg = (x_min+x_max)/2;
+    double y_avg = (y_max+y_min)/2;
+
+    return QPointF(x_avg,y_avg);
+}
+
 void ARPATarget::RefreshTarget(int dist)
 {
     Position prev_X;
@@ -1887,8 +1906,8 @@ void ARPATarget::RefreshTarget(int dist)
     own_pos.lon = currentOwnShipLon;
 
     pol = Pos2Polar(m_position, own_pos, m_range);
-//    qDebug()<<"old pol "<<pol.angle<<pol.r;
-//    qDebug()<<"old pos "<<currentOwnShipLat<<currentOwnShipLon<<m_position.lat<<m_position.lon<<m_range;
+    //    qDebug()<<"old pol "<<pol.angle<<pol.r;
+    //    qDebug()<<"old pos "<<currentOwnShipLat<<currentOwnShipLon<<m_position.lat<<m_position.lon<<m_range;
 
     /*motion mode correction
     double dif_bearing = (radar_settings.headingUp ? 0 : currentHeading) - old_heading;
@@ -1908,12 +1927,12 @@ void ARPATarget::RefreshTarget(int dist)
     if (m_pass_nr == PASS2)
     {
         margin += 100;
-        qDebug()<<Q_FUNC_INFO<<"try pass2";
+//        qDebug()<<Q_FUNC_INFO<<"try pass2";
     }
     quint64 time2 = m_ri->m_history[MOD_ROTATION2048(pol.angle + margin)].time;
     if ((time1 < (m_refresh + SCAN_MARGIN2) || time2 < time1) && m_status != 0)
     {
-        quint64 now = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();  // millis     
+        quint64 now = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();  // millis
         int diff = now - m_refresh;
         if (diff > 28000)
         {
@@ -2021,7 +2040,7 @@ void ARPATarget::RefreshTarget(int dist)
     //    qDebug()<<Q_FUNC_INFO<<"111..x_local.lat"<<x_local.lat<<"x_local.lon"<<x_local.lon;
     m_kalman->Predict(&x_local, delta_t);  // x_local is new estimated local position of the target
     // now set the polar to expected angular position from the expected local position
-    pol.angle = (int)(atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2. * PI));
+    pol.angle = (int)(atan2(x_local.lon, x_local.lat) * LINES_PER_ROTATION / (2. * M_PI));
     if (pol.angle < 0) pol.angle += LINES_PER_ROTATION;
     pol.r =(int)(sqrt(x_local.lat * x_local.lat + x_local.lon * x_local.lon) * (double)RETURNS_PER_LINE / (double)m_range);
     // zooming and target movement may  cause r to be out of bounds
@@ -2074,7 +2093,7 @@ void ARPATarget::RefreshTarget(int dist)
         }
 
         m_status++;
-//        qDebug()<<Q_FUNC_INFO<<"track status"<<m_status;
+        //        qDebug()<<Q_FUNC_INFO<<"track status"<<m_status;
         if(m_status > 10)
             m_status = 10;
         // target gets an id when status  == STATUS_TO_OCPN
@@ -2343,25 +2362,25 @@ QString RD::methods = "Vertex Array";
 RD* RD::make_Draw(RI *ri, int draw_method)
 {
     qDebug()<<Q_FUNC_INFO;
-  switch (draw_method)
-  {
+    switch (draw_method)
+    {
     case 0:
-      methods = "Vertex Array";
-      return new RDVert(ri);
+        methods = "Vertex Array";
+        return new RDVert(ri);
     case 1:
-      methods = "Shader";
-      return new RDVert(ri);
+        methods = "Shader";
+        return new RDVert(ri);
     default:
-      qDebug()<<Q_FUNC_INFO<<"unsupported draw method "<<draw_method;
-  }
-  return 0;
+        qDebug()<<Q_FUNC_INFO<<"unsupported draw method "<<draw_method;
+    }
+    return 0;
 }
 
 RD::~RD() {}
 
 QString RD::GetDrawingMethods() {
 
-  return methods;
+    return methods;
 }
 
 #define ADD_VERTEX_POINT(angle, radius, r, g, b, a)          \
@@ -2376,10 +2395,10 @@ QString RD::GetDrawingMethods() {
     }
 
 void RDVert::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, int r2, GLubyte red, GLubyte green,
-                              GLubyte blue, GLubyte alpha)
+                     GLubyte blue, GLubyte alpha)
 {
-//    qDebug()<<Q_FUNC_INFO<<"angle_begin "<<angle_begin<<"angle_end "<<angle_end<<"r1 "<<r1<<"r2 "<<r2
-//           <<"red "<<red<<"green "<<green<<"blue "<<blue<<"alpha "<<alpha;
+    //    qDebug()<<Q_FUNC_INFO<<"angle_begin "<<angle_begin<<"angle_end "<<angle_end<<"r1 "<<r1<<"r2 "<<r2
+    //           <<"red "<<red<<"green "<<green<<"blue "<<blue<<"alpha "<<alpha;
     if (r2 == 0)
     {
         return;
@@ -2408,7 +2427,7 @@ void RDVert::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, i
     }
 
     // First triangle
-//    qDebug()<<Q_FUNC_INFO<<arc1<<arc2<<r1<<r2;
+    //    qDebug()<<Q_FUNC_INFO<<arc1<<arc2<<r1<<r2;
     ADD_VERTEX_POINT(arc1, r1, red, green, blue, alpha);
     ADD_VERTEX_POINT(arc1, r2, red, green, blue, alpha);
     ADD_VERTEX_POINT(arc2, r1, red, green, blue, alpha);
@@ -2420,9 +2439,9 @@ void RDVert::SetBlob(VertexLine* line, int angle_begin, int angle_end, int r1, i
     ADD_VERTEX_POINT(arc2, r2, red, green, blue, alpha);
 
     line->count = count;
-//    for(int i=0;i<line->count;i++)
-//        qDebug()<<"count" <<i<<"x "<<line->points[i].x<<"y "<<line->points[i].y
-//               <<"red"<<line->points[i].red<<"green"<<line->points[i].green<<"blue"<<line->points[i].blue<<"alpha"<<line->points[i].alpha;
+    //    for(int i=0;i<line->count;i++)
+    //        qDebug()<<"count" <<i<<"x "<<line->points[i].x<<"y "<<line->points[i].y
+    //               <<"red"<<line->points[i].red<<"green"<<line->points[i].green<<"blue"<<line->points[i].blue<<"alpha"<<line->points[i].alpha;
 
 }
 
@@ -2434,7 +2453,7 @@ void RDVert::ProcessRadarSpoke(int transparency, int angle, quint8 *data, size_t
     GLubyte strength = 0;
     quint64 now = QDateTime::currentMSecsSinceEpoch();
 
-//    qDebug()<<Q_FUNC_INFO<<"transparency"<<transparency;
+    //    qDebug()<<Q_FUNC_INFO<<"transparency"<<transparency;
 
     int r_begin = 0;
     int r_end = 0;
@@ -2463,12 +2482,12 @@ void RDVert::ProcessRadarSpoke(int transparency, int angle, quint8 *data, size_t
             line->count = 0;
             return;
         }
-//        qDebug()<<"init loc";
+        //        qDebug()<<"init loc";
 
     }
     line->count = 0;
     line->timeout = now + 6000;
-//    line->timeout = now + m_ri->m_pi->m_settings.max_age;
+    //    line->timeout = now + m_ri->m_pi->m_settings.max_age;
 
     for (size_t radius = 0; radius < len; radius++)
     {
@@ -2519,7 +2538,7 @@ void RDVert::DrawRadarImage()
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
-//    qDebug()<<Q_FUNC_INFO;
+    //    qDebug()<<Q_FUNC_INFO;
     quint64 now = QDateTime::currentMSecsSinceEpoch();
 
     for (size_t i = 0; i < LINES_PER_ROTATION; i++)
@@ -2533,7 +2552,7 @@ void RDVert::DrawRadarImage()
         glVertexPointer(2, GL_FLOAT, sizeof(VertexPoint), &line->points[0].x);
         glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(VertexPoint), &line->points[0].red);
         glDrawArrays(GL_TRIANGLES, 0, line->count);
-//        glDrawArrays(GL_POINTS, 0, line->count);
+        //        glDrawArrays(GL_POINTS, 0, line->count);
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
@@ -2562,12 +2581,12 @@ void radarTransmit::setRange(int meters)
     {
         unsigned int decimeters = (unsigned int)meters * 10;
         const uchar pck[6] = {0x03,
-                             0xc1,
-                             (const char)((decimeters >> 0) & 0XFFL),
-                             (const char)((decimeters >> 8) & 0XFFL),
-                             (const char)((decimeters >> 16) & 0XFFL),
-                             (const char)((decimeters >> 24) & 0XFFL)};
-//        qDebug()<<Q_FUNC_INFO<<"transmit: range "<<meters<<"raw "<<decimeters;
+                              0xc1,
+                              (const char)((decimeters >> 0) & 0XFFL),
+                              (const char)((decimeters >> 8) & 0XFFL),
+                              (const char)((decimeters >> 16) & 0XFFL),
+                              (const char)((decimeters >> 24) & 0XFFL)};
+        //        qDebug()<<Q_FUNC_INFO<<"transmit: range "<<meters<<"raw "<<decimeters;
 
         socket.writeDatagram((const char*)&pck,6,QHostAddress(_data),_data_port);
 
@@ -2598,7 +2617,7 @@ void radarTransmit::RadarTx()
 }
 void radarTransmit::RadarStayAlive()
 {
-//    qDebug()<<Q_FUNC_INFO;
+    //    qDebug()<<Q_FUNC_INFO;
 
     const uchar transmit1[2]={0xA0,0xC1};
     const uchar transmit2[2]={0x03,0xC2};
@@ -2781,4 +2800,65 @@ void radarTransmit::setControlValue(ControlType controlType, int value) {  // se
         break;
     }
     }
+}
+
+GLTexture::GLTexture() : m_texture(0), m_failed(false)
+{
+    glGenTextures(1, &m_texture);
+}
+
+GLTexture::~GLTexture()
+{
+    glDeleteTextures(1, &m_texture);
+}
+
+GLTextureCube::GLTextureCube(int width, int height)
+{
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
+                 GL_BGRA, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void GLTextureCube::load(const QImage &img)
+{
+    // TODO: Add error handling.
+
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    QImage image(img);
+
+    if (image.isNull()) m_failed = true;
+
+    image = image.convertToFormat(QImage::Format_ARGB32);
+
+    qDebug() << "Image size:" << image.width() << "x" << image.height();
+
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, image.width(), image.height(), 0,
+                 GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void GLTextureCube::bind()
+{
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glEnable(GL_TEXTURE_2D);
+}
+
+void GLTextureCube::unbind()
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
 }

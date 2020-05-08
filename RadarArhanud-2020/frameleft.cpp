@@ -19,7 +19,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->checkBoxShowCompass->setChecked(radar_settings.show_compass);
 }
 
-void FrameLeft::trigger_rangeChange(qreal range)
+void FrameLeft::setRangeRings(qreal range)
 {
     ui->labelRingRange->setText(QString::number(range,'f',2)+" Km");
 }

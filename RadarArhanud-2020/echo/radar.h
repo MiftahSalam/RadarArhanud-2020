@@ -396,6 +396,7 @@ public:
     void RefreshTarget(int dist);
     void SetStatusLost();
     target_status getStatus() { return m_status; }
+    QPointF blobPixelPosition();
 
     int m_target_id;
     Polar m_max_angle, m_min_angle, m_max_r, m_min_r;
@@ -570,6 +571,28 @@ public slots:
 private:
     QString _data;
     uint _data_port;
+};
+
+class GLTexture
+{
+public:
+    GLTexture();
+    virtual ~GLTexture();
+    virtual void bind() = 0;
+    virtual void unbind() = 0;
+    virtual bool failed() const {return m_failed;}
+protected:
+    GLuint m_texture;
+    bool m_failed;
+};
+
+class GLTextureCube : public GLTexture
+{
+public:
+    explicit GLTextureCube(int width, int height);
+    void load(const QImage &img);
+    void bind();
+    void unbind();
 };
 
 #endif //
