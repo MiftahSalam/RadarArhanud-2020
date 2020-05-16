@@ -956,11 +956,11 @@ void setProtect()
 {
     QString str_for_encode = cur_id_HDD;
     QString check_expired = checkExpired ? "1" : "0";
-    str_for_encode.append("_").
+    str_for_encode.append("*+").
             append(cur_elapsed_time.toString()).
-            append("_").
+            append("*+").
             append(TIME_EXPIRED.toString()).
-            append("_").
+            append("*+").
             append(check_expired);
 
     qDebug() << "cur_id_HDD: " << cur_id_HDD;
@@ -1904,8 +1904,8 @@ void RI::ComputeColourMap()
 
     if (trail_settings.enable)
     {
-        int a1 = 255.0;
-        int a2 = 0.0;
+        int a1 = 255;
+        int a2 = 0;
         float delta_a = (float)((a2 - a1) / BLOB_HISTORY_COLOURS);
 
         for (BlobColour history = BLOB_HISTORY_0;
