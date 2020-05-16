@@ -43,9 +43,9 @@ RadarScene::RadarScene(QObject *parent, RA *ra_ptr, RI *ri_ptr) :
 
 }
 
-void RadarScene::DrawSpoke(int transparency, int angle, u_int8_t *data, size_t len)
+void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
-    m_rd->ProcessRadarSpoke(transparency,angle,data,len);
+    m_rd->ProcessRadarSpoke(angle,data,len);
     update();
 }
 
@@ -103,12 +103,14 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     if(state_radar == RADAR_TRANSMIT)
     {
-//        qDebug()<<Q_FUNC_INFO<<"drawing echo";
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         glViewport((width - side) / 2,(height - side) / 2,side,side);
         glLoadIdentity();
         glScaled(curScale, curScale, 1.);
 
         m_rd->DrawRadarImage();
+        glDisable(GL_BLEND);
     }
 
     QFont font;
@@ -180,6 +182,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         }
     }
 
+    //Cursor position
     QTime now = QTime::currentTime();
     if(currentCursor.cursorMoveTime.secsTo(now) < 5)
     {
@@ -208,6 +211,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         painter->drawText((-width/2)+10,(height/2)-20,rng_brn);
     }
 
+    //loading map status
     if(map_settings.show)
     {
         if(map_settings.loading)
@@ -224,6 +228,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         }
     }
 
+    //heading marker
     if(radar_settings.show_heading_marker)
     {
         pen = painter->pen();
@@ -234,6 +239,42 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         painter->rotate(30); //temporary
         painter->drawLine(0,0,0,-side);
         painter->rotate(-30); //temporary
+    }
+
+    /*
+      Radar status
+*/
+    if(state_radar != RADAR_TRANSMIT)
+    {
+        QString text;
+        QTextOption opt;
+        opt.setAlignment(Qt::AlignHCenter);
+        QFont font;
+
+        font.setPixelSize(32);
+        painter->setFont(font);
+
+        switch (state_radar)
+        {
+        case RADAR_OFF:
+            text = "No Radar";
+            break;
+        case RADAR_WAKING_UP:
+            text = "Waking Up";
+            break;
+        case RADAR_STANDBY:
+            text = "Standby";
+            break;
+        default:
+            break;
+        }
+
+
+        QFontMetrics metric = QFontMetrics(font);
+        QRect rect = metric.boundingRect(0,0,side, int(side*0.125),
+                                          Qt::AlignCenter | Qt::TextWordWrap, text);
+
+        painter->drawText(-rect.width()/2,5,rect.width(), rect.height(),Qt::AlignCenter | Qt::TextWordWrap, text);
     }
 
     restoreGLState();

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TrailDialog</class>
+ <widget class="QDialog" name="TrailDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>224</width>
+    <height>112</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>224</width>
+    <height>112</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Trail Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Target tails : </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxTargetTail">
+         <item>
+          <property name="text">
+           <string>15 sec</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>30 sec</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1 min</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3 min</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5 min</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>10 min</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Continuous</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <item>
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>Trails :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxTrailOff">
+         <property name="text">
+          <string>On</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonClearTrail">
+     <property name="text">
+      <string>Clear trails</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

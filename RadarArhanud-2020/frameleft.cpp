@@ -17,6 +17,17 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->comboBoxMapMode->setCurrentIndex((int)map_settings.mode);
     ui->checkBoxShowHM->setChecked(radar_settings.show_heading_marker);
     ui->checkBoxShowCompass->setChecked(radar_settings.show_compass);
+
+    dRadar = new DialogRadar(this);
+    dIFF = new DialogIFF(this);
+    dADSB = new DialogADSB(this);
+    dTrail = new TrailDialog(this);
+
+    dRadar->setModal(true);
+    dIFF->setModal(true);
+    dADSB->setModal(true);
+    dTrail->setModal(true);
+
 }
 
 void FrameLeft::setRangeRings(qreal range)
@@ -64,4 +75,24 @@ void FrameLeft::on_checkBoxShowHM_clicked(bool checked)
 void FrameLeft::on_checkBoxShowCompass_clicked(bool checked)
 {
     radar_settings.show_compass = checked;
+}
+
+void FrameLeft::on_pushButtonSetRadar_clicked()
+{
+    dRadar->show();
+}
+
+void FrameLeft::on_pushButtonSetTrail_clicked()
+{
+    dTrail->show();
+}
+
+void FrameLeft::on_pushButtonSetIFF_clicked()
+{
+    dIFF->show();
+}
+
+void FrameLeft::on_pushButtonSetADSB_clicked()
+{
+    dADSB->show();
 }

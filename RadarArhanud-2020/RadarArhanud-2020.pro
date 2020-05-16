@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = RadarArhanud-2020
 TEMPLATE = app
 
+DEFINES += UBUNTU16
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -21,7 +22,12 @@ SOURCES += main.cpp\
     arpatrackitem.cpp \
     echo/radar.cpp \
     ifftrackitem.cpp \
-    radarsceneitems.cpp
+    radarsceneitems.cpp \
+    adsbtrackitem.cpp \
+    dialogradar.cpp \
+    traildialog.cpp \
+    dialogiff.cpp \
+    dialogadsb.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -32,11 +38,20 @@ HEADERS  += mainwindow.h \
     echo/radar.h \
     echo/radar_global.h \
     ifftrackitem.h \
-    radarsceneitems.h
+    radarsceneitems.h \
+    adsbtrackitem.h \
+    dialogradar.h \
+    traildialog.h \
+    dialogiff.h \
+    dialogadsb.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
-    framebottom.ui
+    framebottom.ui \
+    dialogradar.ui \
+    traildialog.ui \
+    dialogiff.ui \
+    dialogadsb.ui
 
 DISTFILES += \
     HMI_Syle.css

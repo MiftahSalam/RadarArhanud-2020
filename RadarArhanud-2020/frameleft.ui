@@ -639,7 +639,7 @@
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushButtonSetGZ">
+       <widget class="QPushButton" name="pushButtonSetIFF">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -652,7 +652,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="pushButtonSetTrail_2">
+       <widget class="QPushButton" name="pushButtonSetRadar">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>

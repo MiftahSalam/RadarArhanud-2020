@@ -38,7 +38,7 @@ void IFFTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     painter->setPen(pen);
     painter->drawText(22,-20,"Quadron-31");
     painter->rotate(170.0);
-    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane_militer.png"));
+    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane_militer1.png"));
 
     qreal pixel_line_velocity = PIXEL_PER_KNOT*20.0;
 

@@ -2,6 +2,7 @@
 #include "echo/radar_global.h"
 #include "arpatrackitem.h"
 #include "ifftrackitem.h"
+#include "adsbtrackitem.h"
 
 #include <QDebug>
 
@@ -117,6 +118,11 @@ void RadarGraphicView::updateSceneItems()
             {
                 IFFTrackItem *iff_item = dynamic_cast<IFFTrackItem *>(item);
                 iff_item->setPos(sceneRect().width()/4,sceneRect().height()/4); //temporary
+            }
+            else if(item->getRadarItemType() == RadarSceneItems::ADSB)
+            {
+                AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(item);
+                adsb_item->setPos(sceneRect().width()*3/4,sceneRect().height()*3/4); //temporary
             }
         }
         invalidateScene();
@@ -248,6 +254,7 @@ void RadarGraphicView::tesCreateItem()
     if (scene())
     {
         scene()->addItem(new IFFTrackItem()); //temporary
+        scene()->addItem(new AdsbTrackItem()); //temporary
     }
 
 }

@@ -206,6 +206,18 @@ struct MapSettings
     bool loading;
     quint8 mode;
 };
+struct IFFSettings
+{
+    bool show_track;
+    QString ip;
+    uint port;
+};
+struct ADSBSettings
+{
+    bool show_track;
+    QString ip;
+    uint port;
+};
 struct ARPASettings
 {
     int min_contour_length;
@@ -259,16 +271,6 @@ static const RadarRange g_ranges_metric[] =
     {72000, -2255, "72 km"},
     {96000, -23349, "96 km"}
 };
-struct GZSettings
-{
-    bool show;
-    bool enable_alarm;
-    bool confirmed;
-    uint timeout;
-    uint notif_thr;
-    quint64 time;
-    QVariantList polygon;
-};
 struct TrailSettings
 {
     bool enable;
@@ -288,7 +290,8 @@ extern ReportScanSignal scanSignal;
 extern RadarSettings radar_settings;
 extern MapSettings map_settings;
 extern ARPASettings arpa_settings;
-extern GZSettings gz_settings;
+extern IFFSettings iff_settings;
+extern ADSBSettings adsb_settings;
 extern TrailSettings trail_settings;
 extern QDateTime cur_elapsed_time;
 extern QString cur_id_HDD;

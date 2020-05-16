@@ -41,16 +41,6 @@ int main(int argc, char *argv[])
         config.setValue("arpa/search_radius2",20);
         config.setValue("arpa/max_target_size",50);
 
-        config.setValue("guardZone/show",true);
-        config.setValue("guardZone/enable_notif",true);
-        config.setValue("guardZone/circle_type",false);
-        config.setValue("guardZone/inner_range",2000);
-        config.setValue("guardZone/outer_range",6700);
-        config.setValue("guardZone/start_bearing",160);
-        config.setValue("guardZone/end_bearing",260);
-        config.setValue("guardZone/timeout",10000);
-        config.setValue("guardZone/notif_thr",10000);
-
         config.setValue("nav_sensor/latitude",-6.9619);
         config.setValue("nav_sensor/longitude",107.7146);
         config.setValue("nav_sensor/heading",146);
@@ -62,7 +52,11 @@ int main(int argc, char *argv[])
 
         config.setValue("adsb/ip","127.0.0.1");
         config.setValue("adsb/port",18830);
-        config.setValue("adsb/show",true);
+        config.setValue("adsb/show_track",true);
+
+        config.setValue("iff/ip","127.0.0.1");
+        config.setValue("iff/port",8830);
+        config.setValue("iff/show_track",true);
 
         config.setValue("trail/enable",true);
         config.setValue("trail/mode",0);
@@ -78,6 +72,12 @@ int main(int argc, char *argv[])
         radar_settings.show_rings = config.value("radar/show_ring",true).toBool();
         radar_settings.show_heading_marker = config.value("radar/show_heading_marker",true).toBool();
         radar_settings.show_compass = config.value("radar/show_compass",true).toBool();
+        radar_settings.ip_data = config.value("radar/ip_data","127.0.0.1").toString();
+        radar_settings.ip_report = config.value("radar/ip_report","127.0.0.1").toString();
+        radar_settings.ip_command = config.value("radar/ip_command","236.6.7.104").toString();
+        radar_settings.port_command = config.value("radar/port_command",6136).toUInt();
+        radar_settings.port_report = config.value("radar/port_report",6137).toUInt();
+        radar_settings.port_data = config.value("radar/port_data",6135).toUInt();
 
         arpa_settings.create_arpa_by_click = config.value("arpa/create_arpa_by_click",true).toBool();
         arpa_settings.show = config.value("arpa/show",true).toBool();
@@ -85,6 +85,17 @@ int main(int argc, char *argv[])
         arpa_settings.search_radius1 = config.value("arpa/search_radius1",10).toInt();
         arpa_settings.search_radius2 = config.value("arpa/search_radius2",20).toInt();
         arpa_settings.max_target_size = config.value("arpa/max_target_size",50).toInt();
+
+        trail_settings.enable = config.value("trail/enable",true).toBool();
+        trail_settings.trail = config.value("trail/mode",0).toInt();
+
+        iff_settings.ip = config.value("iff/ip","127.0.0.1").toString();
+        iff_settings.port = config.value("iff/port",8330).toUInt();
+        iff_settings.show_track = config.value("iff/show_track",true).toBool();
+
+        adsb_settings.ip = config.value("adsb/ip","127.0.0.1").toString();
+        adsb_settings.port = config.value("adsb/port",18330).toUInt();
+        adsb_settings.show_track = config.value("adsb/show_track",true).toBool();
 
         map_settings.show = config.value("map/show",true).toBool();
         map_settings.mode = (quint8)config.value("map/mode",0).toUInt();

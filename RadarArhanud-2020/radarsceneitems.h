@@ -13,7 +13,8 @@ public:
     enum RadarItemsType
     {
         ARPA,
-        IFF
+        IFF,
+        ADSB
     };
 
     RadarItemsType getRadarItemType() { return itemType; }

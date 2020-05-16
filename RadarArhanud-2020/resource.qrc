@@ -3,6 +3,9 @@
         <file>HMI_Syle.css</file>
     </qresource>
     <qresource prefix="/images">
-        <file>airplane_militer.png</file>
+        <file>airplane_militer.jpeg</file>
+        <file>airplane.jpeg</file>
+        <file>airplane_militer1.png</file>
+        <file>airplane1.png</file>
     </qresource>
 </RCC>

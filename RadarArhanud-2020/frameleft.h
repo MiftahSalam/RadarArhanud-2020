@@ -3,6 +3,11 @@
 
 #include <QFrame>
 
+#include "dialogradar.h"
+#include "traildialog.h"
+#include "dialogiff.h"
+#include "dialogadsb.h"
+
 namespace Ui {
 class FrameLeft;
 }
@@ -24,7 +29,6 @@ signals:
 private slots:
     void on_checkBoxShowRing_clicked(bool checked);
 
-
     void on_checkBoxShowMap_clicked(bool checked);
 
     void on_comboBoxMapMode_activated(int index);
@@ -33,11 +37,24 @@ private slots:
 
     void on_checkBoxShowCompass_clicked(bool checked);
 
+    void on_pushButtonSetRadar_clicked();
+
+    void on_pushButtonSetTrail_clicked();
+
+    void on_pushButtonSetIFF_clicked();
+
+    void on_pushButtonSetADSB_clicked();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
     Ui::FrameLeft *ui;
+
+    DialogRadar *dRadar;
+    TrailDialog *dTrail;
+    DialogIFF *dIFF;
+    DialogADSB *dADSB;
 };
 
 #endif // FRAMELEFT_H

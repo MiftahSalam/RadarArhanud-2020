@@ -1,17 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <unistd.h>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     m_ri = new RI(this);
     m_ra = new RA(this,m_ri);
+    timer = new QTimer(this);
 
+    cur_arpa_id_count = 0;
     /*
     old_motion_mode = radar_settings.headingUp;
     curRange = 0;
-    cur_arpa_id_count = 0;
     cur_arpa_number = 0;
     arpa_measure_time = QDateTime::currentMSecsSinceEpoch();
     */
@@ -44,12 +47,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->graphicsView->tesCreateItem(); // temporary
 
-//    ui->frameBottom->setRadarInfo(ui->graphicsView->getRadarInfo());
-
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));
-    connect(ui->graphicsView,SIGNAL(signal_rangeChange(qreal)),ui->frameLeft,SLOT(trigger_rangeChange(qreal)));
+
+    connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
+            this,SLOT(trigger_ReqDelTrack(int)));
 
     connect(ui->graphicsView,SIGNAL(signal_reqCreateArpa(QPointF)),
             this,SLOT(trigger_reqCreateArpa(QPointF)));
@@ -59,69 +62,90 @@ MainWindow::MainWindow(QWidget *parent) :
             scene,SLOT(trigger_cursorPosition(qreal,qreal,qreal,qreal)));
     connect(m_ri,SIGNAL(signal_range_change(int)),
             this,SLOT(trigger_rangeChange(int)));
-    connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,int,u_int8_t*,size_t)),
-            this,SLOT(trigger_DrawSpoke(int,int,u_int8_t*,size_t)));
+    connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
+            this,SLOT(trigger_DrawSpoke(int,u_int8_t*,size_t)));
+    connect(m_ri,SIGNAL(signal_forceExit()),
+            this,SLOT(trigger_forceExit()));
+
+    connect(this,SIGNAL(signal_arpa_target_param(int,double,double,double,double,double,double)),
+            ui->frameBottom,SLOT(trigger_arpa_target_param(int,double,double,double,double,double,double)));
+
+    connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
+    timer->start(1000);
 }
 
-void MainWindow::trigger_DrawSpoke(int transparency, int angle, u_int8_t *data, size_t len)
+void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
-    scene->DrawSpoke(transparency,angle,data,len);
+    scene->DrawSpoke(angle,data,len);
     m_ra->RefreshArpaTargets();
 }
 
 /*
-void RadarWidget::trigger_ReqDelTrack(int id)
+*/
+void MainWindow::trigger_ReqDelTrack(int id)
 {
     if(id>-10)
     {
-        for(int i=0;i<arpa->m_number_of_targets;i++)
-            if(arpa->m_target[i]->m_target_id == id)
-                arpa->m_target[i]->SetStatusLost();
+        for(int i=0;i<m_ra->m_number_of_targets;i++)
+            if(m_ra->m_target[i]->m_target_id == id)
+                m_ra->m_target[i]->SetStatusLost();
     }
     else
-        arpa->DeleteAllTargets();
+        m_ra->DeleteAllTargets();
 }
-*/
-/*
-void RadarWidget::timeOut()
+/**/
+void MainWindow::timeOut()
 {
-    if(arpa->m_number_of_targets > 0)
+//    qDebug()<<Q_FUNC_INFO<<m_ra->m_number_of_targets<<cur_arpa_id_count;
+    if(m_ra->m_number_of_targets > 0)
     {
         int num_limit = 5;
-        while ((cur_arpa_id_count < arpa->m_number_of_targets) && num_limit > 0)
+        while ((cur_arpa_id_count < m_ra->m_number_of_targets) && num_limit > 0)
         {
-            if(arpa->m_target[cur_arpa_id_count]->m_target_id > 0)
+            if(m_ra->m_target[cur_arpa_id_count]->m_target_id > 0)
             {
-                Position own_pos;
-                own_pos.lat = currentOwnShipLat;
-                own_pos.lon = currentOwnShipLon;
-                Polar pol = Pos2Polar(arpa->m_target[cur_arpa_id_count]->m_position,own_pos,curRange);
-                double brn = SCALE_RAW_TO_DEGREES2048(pol.angle);
-                double range = (double)curRange*pol.r/RETURNS_PER_LINE/1000;
+                double dif_lat = deg2rad(m_ra->m_target[cur_arpa_id_count]->m_position.lat);
+                double dif_lon = (deg2rad(m_ra->m_target[cur_arpa_id_count]->m_position.lon)
+                                  - deg2rad(currentOwnShipLon))
+                        *cos(deg2rad((currentOwnShipLat+m_ra->m_target[cur_arpa_id_count]->m_position.lat)/2.));
+                double R = 6371.;
 
-                emit signal_target_param(arpa->m_target[cur_arpa_id_count]->m_target_id,
-                                         arpa->m_target[cur_arpa_id_count]->m_speed_kn,
-                                         arpa->m_target[cur_arpa_id_count]->m_course,
-                                         range,
-                                         brn
-                                         );
+                dif_lat =  dif_lat - (deg2rad(currentOwnShipLat));
+
+                double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+                qreal bearing = atan2(dif_lon,dif_lat)*180./M_PI;
+
+                while(bearing < 0.0)
+                {
+                    bearing += 360.0;
+                }
+
+//                qDebug()<<Q_FUNC_INFO<<m_ra->m_target[cur_arpa_id_count]->m_target_id<<km<<bearing;
+
+                emit signal_arpa_target_param(m_ra->m_target[cur_arpa_id_count]->m_target_id,
+                                              km,
+                                              bearing,
+                                              m_ra->m_target[cur_arpa_id_count]->m_position.lat,
+                                              m_ra->m_target[cur_arpa_id_count]->m_position.lon,
+                                              m_ra->m_target[cur_arpa_id_count]->m_speed_kn,
+                                              m_ra->m_target[cur_arpa_id_count]->m_course
+                                              );
             }
             cur_arpa_id_count++;
             num_limit--;
         }
-        if(cur_arpa_id_count >= arpa->m_number_of_targets)
+        if(cur_arpa_id_count >= m_ra->m_number_of_targets)
             cur_arpa_id_count = 0;
     }
-
-    if(old_motion_mode^radar_settings.headingUp)
-    {
-        arpa->DeleteAllTargets();
-        old_motion_mode = radar_settings.headingUp;
-    }
-
-    update();
 }
-*/
+
+void MainWindow::trigger_forceExit()
+{
+    qDebug()<<Q_FUNC_INFO;
+//    rt->RadarStby();
+    sleep(1);
+    close();
+}
 
 void MainWindow::trigger_rangeChange(int rng)
 {
@@ -191,13 +215,23 @@ void MainWindow::closeEvent(QCloseEvent *event)
     config.setValue("radar/show_ring",radar_settings.show_rings);
     config.setValue("radar/show_heading_marker",radar_settings.show_heading_marker);
     config.setValue("radar/show_compass",radar_settings.show_compass);
+    config.setValue("radar/ip_data",radar_settings.ip_data);
+    config.setValue("radar/ip_report",radar_settings.ip_report);
+    config.setValue("radar/ip_command",radar_settings.ip_command);
+    config.setValue("radar/port_command",radar_settings.port_command);
+    config.setValue("radar/port_report",radar_settings.port_report);
+    config.setValue("radar/port_data",radar_settings.port_data);
 
-    config.setValue("arpa/create_arpa_by_click",arpa_settings.create_arpa_by_click);
-    config.setValue("arpa/show",arpa_settings.show);
-    config.setValue("arpa/min_contour_len",arpa_settings.min_contour_length);
-    config.setValue("arpa/search_radius1",arpa_settings.search_radius1);
-    config.setValue("arpa/search_radius2",arpa_settings.search_radius2);
-    config.setValue("arpa/max_target_size",arpa_settings.max_target_size);
+    config.setValue("trail/enable",trail_settings.enable);
+    config.setValue("trail/mode",trail_settings.trail);
+
+    config.setValue("iff/ip",iff_settings.ip);
+    config.setValue("iff/port",iff_settings.port);
+    config.setValue("iff/show_track",iff_settings.show_track);
+
+    config.setValue("adsb/ip",adsb_settings.ip);
+    config.setValue("adsb/port",adsb_settings.port);
+    config.setValue("adsb/show_track",adsb_settings.show_track);
 
     config.setValue("map/show",map_settings.show);
     config.setValue("map/mode",map_settings.mode);

@@ -13,8 +13,52 @@
 #include <QHostAddress>
 #include <QMutex>
 #include <QString>
+#include <QtWidgets/QApplication>
+#include <QStringList>
+#include <QDateTime>
+#include <QCryptographicHash>
+#include <QFile>
+#include <QDir>
 
 #include "radar_global.h"
+
+/******************************encrypt**********************************/
+#ifndef CBC
+  #define CBC 1
+#endif
+
+#ifndef ECB
+  #define ECB 1
+#endif
+
+#if defined(ECB) && ECB
+
+void AES128_ECB_encrypt(uint8_t* input, const uint8_t* key, uint8_t *output);
+void AES128_ECB_decrypt(uint8_t* input, const uint8_t* key, uint8_t *output);
+
+#endif // #if defined(ECB) && ECB
+
+
+#if defined(CBC) && CBC
+
+void AES128_CBC_encrypt_buffer(uint8_t* output, uint8_t* input, uint32_t length, const uint8_t* key, const uint8_t* iv);
+void AES128_CBC_decrypt_buffer(uint8_t* output, uint8_t* input, uint32_t length, const uint8_t* key, const uint8_t* iv);
+
+#endif // #if defined(CBC) && CBC
+
+
+
+QString encodeText(const QString &rawText) ;
+QString decodeText(QString hexEncodedText) ;
+extern QDateTime TIME_EXPIRED;
+extern bool checkExpired;
+
+bool getProtect();
+QDateTime getExpiredTime();
+void setProtect();
+/******************************encrypt**********************************/
+
+
 
 /*MAtrix definition*/
 template <typename Ty, int N, int M = N>
@@ -284,6 +328,7 @@ class RI : public QObject
     Q_OBJECT
 public:
     explicit RI(QObject *parent = 0);
+    ~RI();
 
     struct line_history
     {
@@ -309,8 +354,8 @@ public:
 signals:
     void signal_range_change(int range);
     void signal_stay_alive();
-    void signal_plotRadarSpoke(int transparency, int angle, u_int8_t* data, size_t len);
-    void trigger_suddenDead();
+    void signal_plotRadarSpoke(int angle, u_int8_t* data, size_t len);
+    void signal_forceExit();
 
 private slots:
     void receiveThread_Report(quint8 report_type,quint8 report_field,quint32 value);
@@ -469,7 +514,7 @@ class RD
   static RD* make_Draw(RI *ri, int draw_method);
 
   virtual void DrawRadarImage() = 0;
-  virtual void ProcessRadarSpoke(int transparency, int angle, quint8* data, size_t len) = 0;
+  virtual void ProcessRadarSpoke(int angle, quint8* data, size_t len) = 0;
 
   virtual ~RD() = 0;
 
@@ -482,6 +527,12 @@ class RDVert : public RD
 public:
     RDVert(RI* ri)
     {
+        if(!getProtect())
+        {
+            qDebug()<<"not valid";
+            exit(0);
+        }
+
         m_ri = ri;
 
         for (size_t i = 0; i < ARRAY_SIZE(m_vertices); i++)
@@ -498,7 +549,7 @@ public:
     }
 
     void DrawRadarImage();
-    void ProcessRadarSpoke(int transparency, int angle, quint8 *data, size_t len);
+    void ProcessRadarSpoke(int angle, quint8 *data, size_t len);
 
     ~RDVert()
     {

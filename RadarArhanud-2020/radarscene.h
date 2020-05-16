@@ -15,7 +15,7 @@ public:
     explicit RadarScene(QObject *parent = 0, RA *ra_ptr=0, RI *ri_ptr=0);
     ~RadarScene();
 
-    void DrawSpoke(int,int,u_int8_t*,size_t);
+    void DrawSpoke(int, u_int8_t*, size_t);
     void reqNewArpa(bool create, ARPATarget *arpa_ptr);
     void setRadarScale(float scale);
     void drawBackground(QPainter *painter, const QRectF &) override;
