@@ -2847,12 +2847,12 @@ void ARPATarget::RefreshTarget(int dist)
     {
         quint64 now = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();  // millis
         int diff = now - m_refresh;
-        if (diff > 28000)
+        if (diff > 8000)
         {
             qDebug()<<"target not refreshed, missing spokes, set lost, status="<<m_status<<", target_id="<<m_target_id<<" timediff="<<diff;
             SetStatusLost();
         }
-        else if ((diff < 28000) && (diff > 4000))
+        else if ((diff < 8000) && (diff > 4000))
         {
             /*arpa future pos prediction
             */

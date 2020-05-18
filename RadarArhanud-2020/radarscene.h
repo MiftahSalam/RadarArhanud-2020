@@ -5,18 +5,18 @@
 #include <QTimer>
 
 #include "echo/radar.h"
-//#include "arpatrackitem.h"
-//#include "ifftrackitem.h"
+#include "adsb/adsbstream.h"
 
 class RadarScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    explicit RadarScene(QObject *parent = 0, RA *ra_ptr=0, RI *ri_ptr=0);
+    explicit RadarScene(QObject *parent = 0, RI *ri_ptr=0);
     ~RadarScene();
 
     void DrawSpoke(int, u_int8_t*, size_t);
     void reqNewArpa(bool create, ARPATarget *arpa_ptr);
+    void reqNewADSB(bool create, ADSBTargetData *adsb_ptr);
     void setRadarScale(float scale);
     void drawBackground(QPainter *painter, const QRectF &) override;
 //    void drawForeground(QPainter *painter, const QRectF &) override;
@@ -32,7 +32,6 @@ private slots:
     void trigger_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
 
 private:
-    RA *m_ra;
     RI *m_ri;
     RD *m_rd;
 

@@ -1,5 +1,6 @@
 #include "radarscene.h"
 #include "arpatrackitem.h"
+#include "adsbtrackitem.h"
 
 #include <QDebug>
 
@@ -25,11 +26,9 @@ const char vShader [] =
         "}\n"
         ;
 
-RadarScene::RadarScene(QObject *parent, RA *ra_ptr, RI *ri_ptr) :
-    QGraphicsScene(parent),m_ra(ra_ptr),m_ri(ri_ptr),curScale(1.0f)
+RadarScene::RadarScene(QObject *parent, RI *ri_ptr) :
+    QGraphicsScene(parent),m_ri(ri_ptr),curScale(1.0f)
 {
-    qDebug()<<Q_FUNC_INFO<<m_ra;
-
     m_rd = RD::make_Draw(m_ri,0);
 
     initGL();
@@ -37,7 +36,7 @@ RadarScene::RadarScene(QObject *parent, RA *ra_ptr, RI *ri_ptr) :
     currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
 
     m_timer = new QTimer(this);
-    m_timer->setInterval(1000);
+    m_timer->setInterval(100);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
     m_timer->start();
 
@@ -379,6 +378,19 @@ void RadarScene::reqNewArpa(bool create, ARPATarget *arpa_ptr)
     if(create)
     {
         addItem(new ArpaTrackItem(arpa_ptr));
+    }
+    /*
+    */
+}
+
+void RadarScene::reqNewADSB(bool create, ADSBTargetData *adsb_ptr)
+{
+    qDebug()<<Q_FUNC_INFO<<create<<adsb_ptr;
+    qDebug()<<Q_FUNC_INFO<<items().size();
+
+    if(create)
+    {
+        addItem(new AdsbTrackItem(adsb_ptr));
     }
     /*
     */

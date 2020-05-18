@@ -27,7 +27,11 @@ SOURCES += main.cpp\
     dialogradar.cpp \
     traildialog.cpp \
     dialogiff.cpp \
-    dialogadsb.cpp
+    dialogadsb.cpp \
+    stream/streamdevice.cpp \
+    stream/stream.cpp \
+    adsb/adsbstream.cpp \
+    adsb/adsb.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -43,7 +47,11 @@ HEADERS  += mainwindow.h \
     dialogradar.h \
     traildialog.h \
     dialogiff.h \
-    dialogadsb.h
+    dialogadsb.h \
+    stream/streamdevice.h \
+    stream/stream.h \
+    adsb/adsbstream.h \
+    adsb/adsb.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \

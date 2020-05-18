@@ -11,9 +11,14 @@ DialogADSB::DialogADSB(QWidget *parent) :
     ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
     ui->lineEditPortData->setValidator(new QIntValidator(3000,65536,ui->lineEditPortData));
 
-    qDebug()<<Q_FUNC_INFO<<adsb_settings.ip;
-    ui->lineEditIPData->setText(adsb_settings.ip);
-    ui->lineEditPortData->setText(QString::number(adsb_settings.port));
+    QStringList conf_list = adsb_settings.config.split(";");
+    qDebug()<<Q_FUNC_INFO<<conf_list;
+
+    if(conf_list.size() == 2)
+    {
+        ui->lineEditIPData->setText(conf_list.at(0));
+        ui->lineEditPortData->setText(conf_list.at(0));
+    }
 
 }
 
@@ -24,8 +29,10 @@ DialogADSB::~DialogADSB()
 
 void DialogADSB::on_pushButtonApply_clicked()
 {
-    adsb_settings.ip = ui->lineEditIPData->text().remove(" ");
-    adsb_settings.port = ui->lineEditPortData->text().toUInt();
+    QStringList conf_list;
+
+    conf_list<<ui->lineEditIPData->text().remove(" ")<<ui->lineEditPortData->text();
+    adsb_settings.config = conf_list.join(";");
 
     emit signal_settingChange();
 }

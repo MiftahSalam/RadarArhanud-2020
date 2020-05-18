@@ -199,7 +199,7 @@
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QTableWidget" name="tableWidgetTrack_2">
+       <widget class="QTableView" name="tableViewTrackAdsb">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -247,114 +247,12 @@
         <property name="sortingEnabled">
          <bool>false</bool>
         </property>
-        <property name="rowCount">
-         <number>2</number>
-        </property>
-        <property name="columnCount">
-         <number>6</number>
-        </property>
-        <attribute name="horizontalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="horizontalHeaderCascadingSectionResizes">
-         <bool>true</bool>
-        </attribute>
-        <attribute name="horizontalHeaderDefaultSectionSize">
-         <number>60</number>
-        </attribute>
-        <attribute name="horizontalHeaderHighlightSections">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="horizontalHeaderMinimumSectionSize">
-         <number>33</number>
-        </attribute>
-        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-         <bool>false</bool>
-        </attribute>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
         </attribute>
-        <attribute name="verticalHeaderDefaultSectionSize">
-         <number>30</number>
-        </attribute>
         <attribute name="verticalHeaderHighlightSections">
-         <bool>true</bool>
+         <bool>false</bool>
         </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>26</number>
-        </attribute>
-        <row>
-         <property name="text">
-          <string>New Row</string>
-         </property>
-        </row>
-        <row/>
-        <column>
-         <property name="text">
-          <string>ID</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Range</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Bearing</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Speed</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Course</string>
-         </property>
-        </column>
-        <column/>
-        <item row="0" column="0">
-         <property name="text">
-          <string>1</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignCenter</set>
-         </property>
-        </item>
-        <item row="0" column="1">
-         <property name="text">
-          <string>3.4</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignCenter</set>
-         </property>
-        </item>
-        <item row="0" column="2">
-         <property name="text">
-          <string>321.3</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignCenter</set>
-         </property>
-        </item>
-        <item row="0" column="3">
-         <property name="text">
-          <string>5.1</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignCenter</set>
-         </property>
-        </item>
-        <item row="0" column="4">
-         <property name="text">
-          <string>324.1</string>
-         </property>
-         <property name="textAlignment">
-          <set>AlignCenter</set>
-         </property>
-        </item>
        </widget>
       </item>
      </layout>

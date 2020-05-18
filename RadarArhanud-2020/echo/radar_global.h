@@ -215,8 +215,8 @@ struct IFFSettings
 struct ADSBSettings
 {
     bool show_track;
-    QString ip;
-    uint port;
+    QString config;
+    int type;
 };
 struct ARPASettings
 {

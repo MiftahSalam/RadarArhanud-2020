@@ -79,7 +79,7 @@ void RadarGraphicView::updateSceneItems()
 
     if(item_list.size() > 0)
     {
-        qDebug()<<Q_FUNC_INFO<<item_list.size();
+//        qDebug()<<Q_FUNC_INFO<<item_list.size();
 
         RadarSceneItems *item;
         QPoint screen_middle(width()/2,height()/2);
@@ -97,6 +97,7 @@ void RadarGraphicView::updateSceneItems()
 
                 if(arpa_item->m_arpa_target->getStatus() < 0)
                     scene()->removeItem(arpa_item);
+                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->getStatus();
 
                 /*
                 displayToImage = mc->layer("MapLayerView")->mapadapter()

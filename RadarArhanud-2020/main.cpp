@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
         config.setValue("mqtt/ip","127.0.0.1");
         config.setValue("mqtt/port",18830);
 
-        config.setValue("adsb/ip","127.0.0.1");
-        config.setValue("adsb/port",18830);
+        config.setValue("adsb/config","127.0.0.1;12000");
+        config.setValue("adsb/type",(int)UDP);
         config.setValue("adsb/show_track",true);
 
         config.setValue("iff/ip","127.0.0.1");
@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
         iff_settings.port = config.value("iff/port",8330).toUInt();
         iff_settings.show_track = config.value("iff/show_track",true).toBool();
 
-        adsb_settings.ip = config.value("adsb/ip","127.0.0.1").toString();
-        adsb_settings.port = config.value("adsb/port",18330).toUInt();
+        adsb_settings.config = config.value("adsb/config","127.0.0.1;12000").toString();
+        adsb_settings.type = (StreamType)config.value("adsb/type",QVariant(-1)).toInt();
         adsb_settings.show_track = config.value("adsb/show_track",true).toBool();
 
         map_settings.show = config.value("map/show",true).toBool();
