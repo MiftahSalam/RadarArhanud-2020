@@ -3,7 +3,7 @@
 
 #include <QGraphicsItem>
 
-#define PIXEL_PER_KNOT 5.0
+#define PIXEL_PER_KNOT 2.0
 
 class RadarSceneItems : public QGraphicsItem
 {

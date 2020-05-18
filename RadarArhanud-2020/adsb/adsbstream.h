@@ -15,6 +15,7 @@ public:
     ADSBDecoder getADSB();
 signals:
     void signal_newTarget(int icao);
+    void signal_removeTarget(int icao);
 
 private slots:
 
@@ -44,7 +45,6 @@ public:
     ~ADSBStream();
 
 signals:
-//    void signal_sendTarget(QByteArray data);
     void signal_sendStreamData(QByteArray data);
     void signal_updateTargetData(QByteArray data);
 

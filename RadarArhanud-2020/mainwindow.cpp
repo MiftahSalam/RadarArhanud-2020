@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_ra = new RA(this,m_ri);
     timer = new QTimer(this);
     adsb = NULL;
+    adsb_list.clear();
 
     first = true;
 
@@ -196,6 +197,7 @@ void MainWindow::initADSB()
     }
     else
     {
+        disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
 //        disconnect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
     }
 
@@ -248,7 +250,6 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in>>cog;
     stream_in.readRawData(chr_country,10);
 
-
     str_call_sign = QString::fromLocal8Bit((const char*)&chr_callsign,10);
     str_country = QString::fromLocal8Bit((const char*)&chr_country,10);
     call_sign_index_sep = str_call_sign.indexOf("@");
@@ -270,6 +271,25 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         bearing += 360.0;
     }
 
+    if(adsb)
+    {
+//        qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
+        if(!adsb_list.contains(icao))
+        {
+//            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;
+            adsb_list.insert(icao);
+            scene->reqNewADSB(adsb->getADSB().getTarget(icao));
+        }
+        /*
+        QSetIterator<quint32> i(adsb_list);
+        while (i.hasNext())
+        {
+            quint32 cur_icao = i.next();
+            qDebug()<<Q_FUNC_INFO<<"curTarget"<<cur_icao<<adsb->getADSB().getTarget(cur_icao);
+        }
+        */
+    }
+//    qDebug()<<endl;
     emit signal_adsb_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
 
     /*
@@ -287,6 +307,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     qDebug()<<Q_FUNC_INFO<<"curTarget->contry str"<<str_country;
     */
 }
+
 
 void MainWindow::trigger_reqCreateArpa(QPointF position)
 {

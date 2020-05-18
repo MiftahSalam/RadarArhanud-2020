@@ -223,7 +223,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
             painter->setPen(pen);
             painter->setFont(font);
 
-            painter->drawText(-50,20,"Loading Map");
+            painter->drawText(-50,-20,"Loading Map");
         }
     }
 
@@ -383,16 +383,8 @@ void RadarScene::reqNewArpa(bool create, ARPATarget *arpa_ptr)
     */
 }
 
-void RadarScene::reqNewADSB(bool create, ADSBTargetData *adsb_ptr)
+void RadarScene::reqNewADSB(ADSBTargetData* target)
 {
-    qDebug()<<Q_FUNC_INFO<<create<<adsb_ptr;
-    qDebug()<<Q_FUNC_INFO<<items().size();
-
-    if(create)
-    {
-        addItem(new AdsbTrackItem(adsb_ptr));
-    }
-    /*
-    */
+//    qDebug()<<Q_FUNC_INFO<<target;
+    addItem(new AdsbTrackItem(target));
 }
-

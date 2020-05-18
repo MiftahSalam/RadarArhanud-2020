@@ -34,7 +34,7 @@
 #include <QJsonArray>
 #include <QHash>
 
-const quint64 ADSB_TARGET_EXPIRED = 60;
+const quint64 ADSB_TARGET_EXPIRED = 65;
 
 class ADSBTargetData
 {

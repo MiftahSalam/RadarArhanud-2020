@@ -58,7 +58,13 @@ QList<int> ADSBDecoder::decode(QJsonArray targets)
 
         if(ok && (icao > 0))
         {
-            ADSBTargetData *cur_target = new ADSBTargetData();
+            ADSBTargetData *cur_target;
+
+            if(targetListMap.contains(icao))
+                cur_target = targetListMap.take(icao);
+            else
+                cur_target = new ADSBTargetData();
+
             QString call_sign = target.value("fli").toString("");
             float lat = target.value("lat").toDouble(1000);
             float lon = target.value("lon").toDouble(1000);
@@ -111,6 +117,8 @@ QList<int> ADSBDecoder::decode(QJsonArray targets)
                 cur_target->vertical_rate_valid = true;
             else
                 cur_target->vertical_rate_valid = false;
+
+            cur_target->time_stamp = QDateTime::currentDateTime().toTime_t();
             /*
             qDebug()<<Q_FUNC_INFO<<"icao"<<icao;
             qDebug()<<Q_FUNC_INFO<<"cur_target->call_sign"<<cur_target->call_sign<<call_sign.size();

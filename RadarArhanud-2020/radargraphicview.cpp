@@ -79,7 +79,7 @@ void RadarGraphicView::updateSceneItems()
 
     if(item_list.size() > 0)
     {
-//        qDebug()<<Q_FUNC_INFO<<item_list.size();
+        qDebug()<<Q_FUNC_INFO<<item_list.size();
 
         RadarSceneItems *item;
         QPoint screen_middle(width()/2,height()/2);
@@ -99,15 +99,6 @@ void RadarGraphicView::updateSceneItems()
                     scene()->removeItem(arpa_item);
                 qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->getStatus();
 
-                /*
-                displayToImage = mc->layer("MapLayerView")->mapadapter()
-                        ->coordinateToDisplay(QPointF(arpa_item->m_arpa_target->m_position.lon,
-                                                      arpa_item->m_arpa_target->m_position.lat));
-                pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
-                                  displayToImage.y()+screen_middle.y()-map_middle.y());
-                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->m_target_id<<arpa_item->m_arpa_target->getStatus();
-                */
-
                 displayToImage = mc->layer("MapLayerView")->mapadapter()
                         ->coordinateToDisplay(arpa_item->m_arpa_target->blobPixelPosition());
                 pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
@@ -122,8 +113,22 @@ void RadarGraphicView::updateSceneItems()
             }
             else if(item->getRadarItemType() == RadarSceneItems::ADSB)
             {
+                QDateTime time = QDateTime::currentDateTime();
                 AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(item);
-                adsb_item->setPos(sceneRect().width()*3/4,sceneRect().height()*3/4); //temporary
+
+                if( (time.toTime_t() - adsb_item->m_adsb_target->time_stamp) > (ADSB_TARGET_EXPIRED-5) )
+                {
+                    qDebug()<<Q_FUNC_INFO<<"remove adsb track"<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
+                    scene()->removeItem(adsb_item);
+                }
+
+//                qDebug()<<Q_FUNC_INFO<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
+
+                displayToImage = mc->layer("MapLayerView")->mapadapter()
+                        ->coordinateToDisplay(QPointF(adsb_item->m_adsb_target->lon,adsb_item->m_adsb_target->lat));
+                pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
+                                  displayToImage.y()+screen_middle.y()-map_middle.y());
+                adsb_item->setPos(pixelPos);
             }
         }
         invalidateScene();
@@ -255,7 +260,7 @@ void RadarGraphicView::tesCreateItem()
     if (scene())
     {
         scene()->addItem(new IFFTrackItem()); //temporary
-        scene()->addItem(new AdsbTrackItem()); //temporary
+//        scene()->addItem(new AdsbTrackItem()); //temporary
     }
 
 }
