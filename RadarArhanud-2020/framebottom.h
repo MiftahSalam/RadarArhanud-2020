@@ -23,6 +23,7 @@ public:
 
 signals:
     void signal_request_del_track(int);
+    void signal_request_del_adsb_track(quint32);
 
 private slots:
     void timeoutUpdate();

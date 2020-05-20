@@ -65,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
             this,SLOT(trigger_ReqDelTrack(int)));
+    connect(ui->frameBottom,SIGNAL(signal_request_del_adsb_track(quint32)),
+            this,SLOT(trigger_ReqDelAdsb(quint32)));
 
     connect(ui->graphicsView,SIGNAL(signal_reqCreateArpa(QPointF)),
             this,SLOT(trigger_reqCreateArpa(QPointF)));
@@ -110,6 +112,8 @@ void MainWindow::trigger_ReqDelTrack(int id)
 /**/
 void MainWindow::timeOut()
 {
+//    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
+
     m_ra->RefreshArpaTargets();
 
     if(m_ra->m_number_of_targets > 0)
@@ -228,6 +232,12 @@ void MainWindow::trigger_rangeChange(int rng)
     calculateRadarScale();
 }
 
+void MainWindow::trigger_ReqDelAdsb(quint32 icao)
+{
+    qDebug()<<Q_FUNC_INFO<<"icao"<<icao;
+    adsb_list.remove(icao);
+}
+
 void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
 {
     QDataStream stream_in(&data_in,QIODevice::ReadOnly);
@@ -273,7 +283,6 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
 
     if(adsb)
     {
-//        qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
         if(!adsb_list.contains(icao))
         {
 //            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;

@@ -79,7 +79,7 @@ void RadarGraphicView::updateSceneItems()
 
     if(item_list.size() > 0)
     {
-        qDebug()<<Q_FUNC_INFO<<item_list.size();
+//        qDebug()<<Q_FUNC_INFO<<item_list.size();
 
         RadarSceneItems *item;
         QPoint screen_middle(width()/2,height()/2);

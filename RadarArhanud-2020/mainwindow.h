@@ -42,6 +42,7 @@ private slots:
     void trigger_rangeChange(int rng);
     void trigger_reqCreateArpa(QPointF position);
     void trigger_reqUpdateADSB(QByteArray data);
+    void trigger_ReqDelAdsb(quint32 icao);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
     void trigger_forceExit();
     void timeOut();

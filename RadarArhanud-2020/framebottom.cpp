@@ -310,20 +310,22 @@ void FrameBottom::timeoutUpdate()
     while(i_adsb.hasNext())
     {
         i_adsb.next();
-        if(now-i_adsb.value()>20)
+        if(now-i_adsb.value()>60)
             target_adsb_to_delete.append(i_adsb.key());
     }
 
     for(int i=0;i<target_adsb_to_delete.size();i++)
     {
-        target_adsb_time_tag_list.remove(target_adsb_to_delete.at(i));
+        quint32 cur_icao= target_adsb_to_delete.at(i);
+        target_adsb_time_tag_list.remove(cur_icao);
 
-        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(target_adsb_to_delete.at(i),16),0);
+        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(cur_icao,16),0);
         if(!listTarget.isEmpty())
         {
             int row = listTarget.at(0)->row();
             adsbModel->removeRow(row);
         }
+        emit signal_request_del_adsb_track(cur_icao);
     }
 
 }
