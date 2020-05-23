@@ -50,6 +50,9 @@ FrameBottom::FrameBottom(QWidget *parent) :
     ui->tableViewTrackArpa->setModel(arpaModel);
     ui->tableViewTrackAdsb->setModel(adsbModel);
 
+    m_mqtt = getMQTT();
+    dataCount_mqtt_arpa = 0;
+
     timer.start(1000);
 
 }
@@ -327,6 +330,49 @@ void FrameBottom::timeoutUpdate()
         }
         emit signal_request_del_adsb_track(cur_icao);
     }
+
+
+    if(m_mqtt->isConnected())
+    {
+        if(arpaModel->rowCount()>0 && arpaModel->rowCount()>dataCount_mqtt_arpa)
+        {
+            QString id,rng,brn,spd,crs,mq_data;
+            QModelIndex index = arpaModel->index(dataCount_mqtt_arpa,0);
+            QByteArray mq_databyte;
+
+            id = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,1);
+            rng = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,2);
+            brn = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,3);
+            spd = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,4);
+            crs = arpaModel->data(index).toString();
+
+            mq_data = id+"#"+rng+"#"+brn+"#"+spd+"#"+crs;
+            mq_databyte = mq_data.toUtf8();
+            m_mqtt->publish(m_mqtt->getMID(), "radar", mq_databyte.size(), mq_databyte.data(), 2, false);
+
+            dataCount_mqtt_arpa++;
+//            qDebug()<<"dataCount_mqtt1"<<dataCount_mqtt_arpa;
+        }
+    }
+
+    if(dataCount_mqtt_arpa == arpaModel->rowCount())
+    {
+//        qDebug()<<"dataCount_mqtt_arpa"<<dataCount_mqtt_arpa;
+        dataCount_mqtt_arpa = 0;
+    }
+    else if(dataCount_mqtt_arpa > arpaModel->rowCount())
+    {
+//        qDebug()<<"dataCount_mqtt3"<<dataCount_mqtt_arpa;
+        dataCount_mqtt_arpa = arpaModel->rowCount() - 1;
+        if(dataCount_mqtt_arpa<1)
+            dataCount_mqtt_arpa = 0;
+    }
+//    qDebug()<<Q_FUNC_INFO<<target_time_tag_list.size()<<target_to_delete.size();
+
 
 }
 

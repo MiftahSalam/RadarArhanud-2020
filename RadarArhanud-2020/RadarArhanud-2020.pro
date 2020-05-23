@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     stream/streamdevice.cpp \
     stream/stream.cpp \
     adsb/adsbstream.cpp \
-    adsb/adsb.cpp
+    adsb/adsb.cpp \
+    qtmosq.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -51,7 +52,8 @@ HEADERS  += mainwindow.h \
     stream/streamdevice.h \
     stream/stream.h \
     adsb/adsbstream.h \
-    adsb/adsb.h
+    adsb/adsb.h \
+    qtmosq.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
@@ -71,3 +73,9 @@ unix:!macx: LIBS += -L/usr/share/RMAP/lib/ -lqmapcontrol
 
 INCLUDEPATH += /usr/share/RMAP/include
 DEPENDPATH += /usr/share/RMAP/include
+
+
+unix:!macx: LIBS += -L/usr/local/lib/ -lmosquittopp
+
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include

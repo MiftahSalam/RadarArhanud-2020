@@ -6,6 +6,7 @@
 #include <QStandardItemModel>
 
 #include "adsb/adsb.h"
+#include "qtmosq.h"
 
 class RI;
 
@@ -52,6 +53,9 @@ private:
     QHash<quint32,quint64> target_adsb_time_tag_list;
 
     QTimer timer;
+
+    qtmosq *m_mqtt;
+    int dataCount_mqtt_arpa;
 
     void insertArpaList(int id, double lat, double lon, double spd, double crs, double rng, double brn);
     void insertADSBList(quint32 icao,

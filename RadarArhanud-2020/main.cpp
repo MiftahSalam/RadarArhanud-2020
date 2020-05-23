@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
         config.setValue("iff/port",8830);
         config.setValue("iff/show_track",true);
 
+        config.setValue("mqtt/ip","127.0.0.1");
+        config.setValue("mqtt/port",1883);
+        config.setValue("mqtt/id","arhanud3");
+
         config.setValue("trail/enable",true);
         config.setValue("trail/mode",0);
 
