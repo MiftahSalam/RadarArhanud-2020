@@ -7,6 +7,7 @@
 #include "traildialog.h"
 #include "dialogiff.h"
 #include "dialogadsb.h"
+#include "dialoglogging.h"
 
 namespace Ui {
 class FrameLeft;
@@ -45,6 +46,8 @@ private slots:
 
     void on_pushButtonSetADSB_clicked();
 
+    void on_pushButtonARPA_2_clicked();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
@@ -55,6 +58,7 @@ private:
     TrailDialog *dTrail;
     DialogIFF *dIFF;
     DialogADSB *dADSB;
+    DialogLogging *dLog;
 };
 
 #endif // FRAMELEFT_H

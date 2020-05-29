@@ -1,22 +1,31 @@
 #include "mainwindow.h"
 #include "echo/radar_global.h"
 
+#include <log4qt/logger.h>
+#include <log4qt/propertyconfigurator.h>
+#include <log4qt/loggerrepository.h>
+#include <log4qt/rollingfileappender.h>
+
 #include <QApplication>
 #include <QFile>
 #include <QDebug>
 #include <QSettings>
 
 QString loadStylesheetFile( const QString &path );
+static void setupRootLogger(const QString &filename);
+static void shutDownRootLogger();
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QString appStyle = loadStylesheetFile( ":/css/HMI_Syle.css" );
-    a.setStyleSheet( appStyle );
-
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
     QFile file(config.fileName());
+
+    setupRootLogger(config.fileName());
+
+    QString appStyle = loadStylesheetFile( ":/css/HMI_Syle.css" );
+    a.setStyleSheet( appStyle );
 
     if(!file.exists())
     {
@@ -105,10 +114,53 @@ int main(int argc, char *argv[])
         map_settings.mode = (quint8)config.value("map/mode",0).toUInt();
     }
 
+    int ret;
+
     MainWindow w;
     w.showFullScreen();
 
-    return a.exec();
+    ret = a.exec();
+
+    shutDownRootLogger();
+
+    return ret;
+}
+
+void setupRootLogger(const QString &filename)
+{
+    QFileInfo config_info(filename);
+    QString file_dir = config_info.absolutePath();
+    QString configFile = file_dir + QDir::separator() + QStringLiteral("log4qt.properties");
+
+    if (QFile::exists(configFile))
+    {
+        Log4Qt::PropertyConfigurator::configure(configFile);
+
+        auto logger = Log4Qt::Logger::rootLogger();
+        auto appender = logger->appender("A2");
+        Log4Qt::RollingFileAppender *rolApp = static_cast<Log4Qt::RollingFileAppender*>(appender.data());
+
+        rolApp->setFile(QDir::homePath()+QDir::separator()+".radar_A3.log");
+        rolApp->activateOptions();
+    }
+    else
+    {
+        qCritical()<<"Cannot find property configurator";
+        exit(1);
+    }
+
+}
+
+void shutDownRootLogger()
+{
+    auto logger = Log4Qt::Logger::rootLogger();
+
+    logger->info("################################################################");
+    logger->info("#                          STOP                                #");
+    logger->info("################################################################");
+
+    logger->removeAllAppenders();
+    logger->loggerRepository()->shutdown();
 }
 
 QString loadStylesheetFile( const QString &path )

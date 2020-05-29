@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     stream/stream.cpp \
     adsb/adsbstream.cpp \
     adsb/adsb.cpp \
-    qtmosq.cpp
+    qtmosq.cpp \
+    dialoglogging.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -53,7 +54,8 @@ HEADERS  += mainwindow.h \
     stream/stream.h \
     adsb/adsbstream.h \
     adsb/adsb.h \
-    qtmosq.h
+    qtmosq.h \
+    dialoglogging.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
@@ -61,7 +63,8 @@ FORMS    += mainwindow.ui \
     dialogradar.ui \
     traildialog.ui \
     dialogiff.ui \
-    dialogadsb.ui
+    dialogadsb.ui \
+    dialoglogging.ui
 
 DISTFILES += \
     HMI_Syle.css
@@ -69,13 +72,18 @@ DISTFILES += \
 RESOURCES += \
     resource.qrc
 
+unix:!macx: LIBS += -L/usr/lib/ -llog4qt
+
+INCLUDEPATH += /include
+DEPENDPATH += /include
+
 unix:!macx: LIBS += -L/usr/share/RMAP/lib/ -lqmapcontrol
 
 INCLUDEPATH += /usr/share/RMAP/include
 DEPENDPATH += /usr/share/RMAP/include
 
-
 unix:!macx: LIBS += -L/usr/local/lib/ -lmosquittopp
 
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
+

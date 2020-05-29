@@ -3,6 +3,8 @@
 #include <math.h>
 #include <unistd.h>
 
+#include <log4qt/logger.h>
+
 RadarState state_radar = RADAR_OFF;
 ReportFilter filter;
 ReportAlign align;
@@ -745,7 +747,7 @@ bool getProtect()
 
     buf[strcspn(buf, "\n")] = 0;
 
-    qDebug()<<Q_FUNC_INFO<<buf;
+    Log4Qt::Logger::rootLogger()->trace()<<buf;
 
     QString hddID(buf);
 //    qDebug() << "HDD ID: " << encodeText( hddID );
@@ -757,7 +759,7 @@ bool getProtect()
         file.setFileName(QString(QApplication::applicationDirPath()+"/cryptRADAR.ini"));
         if(!file.open(QIODevice::ReadOnly))
         {
-            qDebug() << " verif not found!";
+            qCritical() << " verif not found!";
             return false;
         }
     }
@@ -767,10 +769,10 @@ bool getProtect()
     QString idGuard = fileStream.readLine();
 
     QStringList idGuardList = decodeText(idGuard).split("*+");
-    qDebug()<<"idGuardList"<<idGuardList;
+    Log4Qt::Logger::rootLogger()->trace()<<"idGuardList"<<idGuard;
     if(idGuardList.size() != 4)
     {
-        qDebug() << " invalid string!";
+        qCritical() << " invalid string!";
         return false;
     }
 
@@ -779,11 +781,11 @@ bool getProtect()
     TIME_EXPIRED = QDateTime::fromString(idGuardList.at(2));
     checkExpired = idGuardList.at(3) == "1" ? true : false;
 
-    qDebug() << "idGuard: " << idGuard;
-    qDebug() << "cur_id_HDD: " << cur_id_HDD;
-    qDebug() << "cur_elapsed_time: " << cur_elapsed_time.toString();
-    qDebug() << "time expired: " << TIME_EXPIRED.toString();
-    qDebug() << "check: " << checkExpired;
+    Log4Qt::Logger::rootLogger()->trace() << "idGuard: " << idGuard;
+    Log4Qt::Logger::rootLogger()->trace() << "cur_id_HDD: " << cur_id_HDD;
+    Log4Qt::Logger::rootLogger()->trace() << "cur_elapsed_time: " << cur_elapsed_time.toString();
+    Log4Qt::Logger::rootLogger()->trace() << "time expired: " << TIME_EXPIRED.toString();
+    Log4Qt::Logger::rootLogger()->trace() << "check: " << checkExpired;
 
     bool valid = false;
     if( cur_id_HDD == idGuard )
@@ -798,9 +800,9 @@ bool getProtect()
     }
 
     if(valid)
-        qDebug() << " Accepted";
+        Log4Qt::Logger::rootLogger()->info() << " Accepted";
     else
-        qDebug() << " not valid!";
+        qCritical() << " not valid!";
 
     return valid;
 
@@ -963,16 +965,16 @@ void setProtect()
             append("*+").
             append(check_expired);
 
-    qDebug() << "cur_id_HDD: " << cur_id_HDD;
-    qDebug() << "cur_elapsed_time: " << cur_elapsed_time.toString();
-    qDebug() << "time expired: " << TIME_EXPIRED.toString();
-    qDebug() << "check: " << checkExpired;
+    Log4Qt::Logger::rootLogger()->trace() << "cur_id_HDD: " << cur_id_HDD;
+    Log4Qt::Logger::rootLogger()->trace() << "cur_elapsed_time: " << cur_elapsed_time.toString();
+    Log4Qt::Logger::rootLogger()->trace() << "time expired: " << TIME_EXPIRED.toString();
+    Log4Qt::Logger::rootLogger()->trace() << "check: " << checkExpired;
 
 
     QFile file( QDir::homePath()+"/.config/cryptRADAR.ini" );
 
     if(!file.open( QIODevice::WriteOnly | QFile::Text) )
-        qDebug() << " create file";
+        Log4Qt::Logger::rootLogger()->trace() << " create file";
 
     QTextStream fileStream;
     fileStream.setDevice( &file );

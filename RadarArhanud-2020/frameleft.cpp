@@ -22,11 +22,13 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dIFF = new DialogIFF(this);
     dADSB = new DialogADSB(this);
     dTrail = new TrailDialog(this);
+    dLog = new DialogLogging(this);
 
     dRadar->setModal(true);
     dIFF->setModal(true);
     dADSB->setModal(true);
     dTrail->setModal(true);
+    dLog->setModal(true);
 
 }
 
@@ -95,4 +97,9 @@ void FrameLeft::on_pushButtonSetIFF_clicked()
 void FrameLeft::on_pushButtonSetADSB_clicked()
 {
     dADSB->show();
+}
+
+void FrameLeft::on_pushButtonARPA_2_clicked()
+{
+    dLog->show();
 }
