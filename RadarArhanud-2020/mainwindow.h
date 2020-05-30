@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include <log4qt/signalappender.h>
+
 #include "radarscene.h"
 #include "echo/radar.h"
 #include "adsb/adsbstream.h"
@@ -25,6 +27,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 signals:
+    void signal_trueLog(QString msg);
     void signal_arpa_target_param(int id, double rng, double brn, double lat, double lon, double spd, double crs);
     void signal_adsb_target_param(quint32 icao,
                                   double rng,
@@ -45,6 +48,7 @@ private slots:
     void trigger_ReqDelAdsb(quint32 icao);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
     void trigger_forceExit();
+    void trigger_logEvent(QString msg);
     void timeOut();
 
     void initADSB();
@@ -59,6 +63,8 @@ private:
     QSet<quint32> adsb_list;
 
     RadarScene *scene;
+
+    Log4Qt::SignalAppender *logEvent;
 
     int m_range_meters;
     int m_range_pixel;

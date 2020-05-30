@@ -7,6 +7,17 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    auto logging = Log4Qt::Logger::rootLogger()->appender("A2");
+    Log4Qt::Layout *layout = static_cast<Log4Qt::Layout*>(logging.data()->layout().data());
+
+    logEvent = new Log4Qt::SignalAppender();
+    logEvent->setName(QLatin1String("Sig Appender"));
+    logEvent->setLayout(layout);
+    logEvent->activateOptions();
+
+    connect(logEvent,SIGNAL(appended(QString)),this,SLOT(trigger_logEvent(QString)));
+    Log4Qt::Logger::rootLogger()->addAppender(logEvent);
+
     m_ri = new RI(this);
     m_ra = new RA(this,m_ri);
     timer = new QTimer(this);
@@ -24,12 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
     cur_arpa_id_count = 0;
-    /*
-    old_motion_mode = radar_settings.headingUp;
-    curRange = 0;
-    cur_arpa_number = 0;
-    arpa_measure_time = QDateTime::currentMSecsSinceEpoch();
-    */
 
     QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
     glw->makeCurrent();
@@ -59,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->graphicsView->tesCreateItem(); // temporary
 
+    connect(this,SIGNAL(signal_trueLog(QString)),ui->frameLeft,SLOT(trigger_newLog(QString)));
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));
@@ -367,7 +373,7 @@ void MainWindow::calculateRadarScale()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    qDebug()<<Q_FUNC_INFO;
+    Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO;
 
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
 
@@ -401,10 +407,22 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
-//    qDebug()<<Q_FUNC_INFO<<ui->graphicsView->size();
+    Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<ui->graphicsView->size().width()<<ui->graphicsView->size().height();
     m_range_pixel = qMax(ui->graphicsView->width(),ui->graphicsView->height());
     calculateRadarScale();
     ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+}
+
+void MainWindow::trigger_logEvent(QString msg)
+{
+    int nxt_idx_space = msg.indexOf(" ",20);
+    QString type_section = msg.mid(20,nxt_idx_space-20);
+
+    if(type_section == "DEBUG" || type_section == "TRACE")
+        return;
+
+    emit signal_trueLog(msg);
+
 }
 
 MainWindow::~MainWindow()

@@ -179,7 +179,7 @@ QString loadStylesheetFile( const QString &path )
     }
     else
     {
-        qDebug() << path << ": file not found!";
+        qWarning() << path << ": css file not found!";
         return "";
     }
 }

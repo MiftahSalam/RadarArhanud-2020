@@ -554,6 +554,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="styleSheet">
+           <string notr="true">color : yellow;</string>
+          </property>
           <property name="text">
            <string>Map Mode:</string>
           </property>

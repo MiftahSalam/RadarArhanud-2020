@@ -52,6 +52,11 @@ FrameLeft::~FrameLeft()
     delete ui;
 }
 
+void FrameLeft::trigger_newLog(QString msg)
+{
+    dLog->insertLog(msg);
+}
+
 void FrameLeft::on_checkBoxShowRing_clicked(bool checked)
 {
     radar_settings.show_rings = checked;

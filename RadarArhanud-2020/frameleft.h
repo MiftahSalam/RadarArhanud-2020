@@ -48,6 +48,9 @@ private slots:
 
     void on_pushButtonARPA_2_clicked();
 
+    void trigger_newLog(QString msg);
+
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 

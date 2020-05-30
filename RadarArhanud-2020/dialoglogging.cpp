@@ -13,6 +13,9 @@ DialogLogging::DialogLogging(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    curLogMode = true;
+    curFilterColumn = ui->comboBoxFilter->currentIndex()-1;
+
     QStandardItem *item1 = new QStandardItem("Time");
     QStandardItem *item2 = new QStandardItem("Type");
     QStandardItem *item3 = new QStandardItem("Message");
@@ -25,41 +28,92 @@ DialogLogging::DialogLogging(QWidget *parent) :
 
     ui->tableViewLog->setModel(logViewModel);
     ui->tableViewLog->horizontalHeader()->setStretchLastSection(true);
+    ui->tableViewLog->horizontalHeader()->resizeSection(0,160);
+    ui->tableViewLog->horizontalHeader()->resizeSection(1,80);
 
-    QFile log_file(QDir::homePath()+QDir::separator()+".radar_A3.log");
+    curFilename = QDir::homePath()+QDir::separator()+".radar_A3.log";
+    ui->labelCurLog->setText(".radar_A3.log");
+    openAndReadFile(curFilename);
+}
 
-    if(log_file.open(QIODevice::ReadOnly))
+void DialogLogging::insertLog(const QString &msg)
+{
+    if(curLogMode)
     {
-        qDebug()<<Q_FUNC_INFO<<"file open";
-
-        log_file.seek(0);
-
-        QString line_read,time_section,type_section,msg_section;
+        QString time_section,type_section,msg_section;
         int idx_space,nxt_idx_space;
-        while(!log_file.atEnd())
-        {
-            line_read = QString(log_file.readLine());
-            time_section = line_read.left(19);
-            idx_space = line_read.indexOf(" ",19);
-            nxt_idx_space = line_read.indexOf(" ",idx_space+1);
-            type_section = line_read.mid(idx_space,nxt_idx_space-idx_space);
-            idx_space = line_read.indexOf(" ",nxt_idx_space);
-            msg_section = line_read.mid(idx_space,line_read.size()-idx_space-1);
 
-            logViewModel->insertRow(logViewModel->rowCount(),QModelIndex());
-            logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,0,QModelIndex()),
-                           time_section);
-            logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,1,QModelIndex()),
-                           type_section);
-            logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,2,QModelIndex()),
-                           msg_section);
+        time_section = msg.left(19);
+        idx_space = msg.indexOf(" ",19);
+        nxt_idx_space = msg.indexOf(" ",idx_space+1);
+        type_section = msg.mid(idx_space,nxt_idx_space-idx_space);
+        idx_space = msg.indexOf(" ",nxt_idx_space);
+        msg_section = msg.mid(idx_space,msg.size()-idx_space-1);
 
-//            Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<log_file.readLine();
-        }
+        logViewModel->insertRow(logViewModel->rowCount(),QModelIndex());
+        logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,0,QModelIndex()),
+                              time_section);
+        logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,1,QModelIndex()),
+                              type_section);
+        logViewModel->setData(logViewModel->index(logViewModel->rowCount()-1,2,QModelIndex()),
+                              msg_section);
+
+        logViewModel->item(logViewModel->rowCount()-1,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+
     }
 }
 
 DialogLogging::~DialogLogging()
 {
     delete ui;
+}
+
+void DialogLogging::on_pushButtonLatestLog_clicked()
+{
+    curLogMode = true;
+    curFilename = QDir::homePath()+QDir::separator()+".radar_A3.log";
+    ui->labelCurLog->setText(".radar_A3.log");
+    openAndReadFile(curFilename);
+}
+
+void DialogLogging::openAndReadFile(const QString &filename)
+{
+    qApp->setOverrideCursor(Qt::WaitCursor);
+    QFile log_file(filename);
+
+    qDebug()<<Q_FUNC_INFO<<filename;
+    if(log_file.open(QIODevice::ReadOnly))
+    {
+        logViewModel->removeRows(0,logViewModel->rowCount()-1);
+        log_file.seek(0);
+
+        QString line_read;
+        while(!log_file.atEnd())
+        {
+            line_read = QString(log_file.readLine());
+            insertLog(line_read);
+        }
+    }
+    qApp->setOverrideCursor(Qt::ArrowCursor);
+}
+
+void DialogLogging::on_lineEditFilter_textChanged(const QString &arg1)
+{
+    for(int i=0; i<logViewModel->rowCount(); i++)
+    {
+        QStandardItem *item = logViewModel->item(i,curFilterColumn);
+        if(item != nullptr)
+        {
+            if(!item->text().contains(arg1))
+                ui->tableViewLog->hideRow(i);
+            else
+                ui->tableViewLog->showRow(i);
+        }
+    }
+}
+
+void DialogLogging::on_comboBoxFilter_currentIndexChanged(int index)
+{
+    curFilterColumn = index-1;
 }
