@@ -4,6 +4,9 @@
 #include <QDialog>
 #include <QStandardItemModel>
 
+#include "dialoglogdetail.h"
+#include "dialogopenloghistory.h"
+
 namespace Ui {
 class DialogLogging;
 }
@@ -25,8 +28,16 @@ private slots:
 
     void on_comboBoxFilter_currentIndexChanged(int index);
 
+    void on_tableViewLog_doubleClicked(const QModelIndex &index);
+
+    void on_pushButtonOpenLog_clicked();
+
+    void trigger_OpenFileLogHist(QString file);
+
 private:
     Ui::DialogLogging *ui;
+    DialogLogDetail *logDetail;
+    DialogOpenLogHistory *logHist;
 
     QStandardItemModel *logViewModel;
     QString curFilename;

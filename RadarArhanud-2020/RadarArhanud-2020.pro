@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     adsb/adsbstream.cpp \
     adsb/adsb.cpp \
     qtmosq.cpp \
-    dialoglogging.cpp
+    dialoglogging.cpp \
+    dialoglogdetail.cpp \
+    dialogopenloghistory.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -55,7 +57,9 @@ HEADERS  += mainwindow.h \
     adsb/adsbstream.h \
     adsb/adsb.h \
     qtmosq.h \
-    dialoglogging.h
+    dialoglogging.h \
+    dialoglogdetail.h \
+    dialogopenloghistory.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
@@ -64,7 +68,9 @@ FORMS    += mainwindow.ui \
     traildialog.ui \
     dialogiff.ui \
     dialogadsb.ui \
-    dialoglogging.ui
+    dialoglogging.ui \
+    dialoglogdetail.ui \
+    dialogopenloghistory.ui
 
 DISTFILES += \
     HMI_Syle.css

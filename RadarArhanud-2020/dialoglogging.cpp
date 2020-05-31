@@ -7,11 +7,17 @@
 #include <QDir>
 #include <QDebug>
 
+const QString logPath = QDir::homePath()+QDir::separator()+".radarlog"+QDir::separator();
+
 DialogLogging::DialogLogging(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogLogging)
 {
     ui->setupUi(this);
+    logDetail = new DialogLogDetail(this);
+    logHist = new DialogOpenLogHistory(this);
+
+    connect(logHist,SIGNAL(signal_openFile(QString)),this,SLOT(trigger_OpenFileLogHist(QString)));
 
     curLogMode = true;
     curFilterColumn = ui->comboBoxFilter->currentIndex()-1;
@@ -31,8 +37,8 @@ DialogLogging::DialogLogging(QWidget *parent) :
     ui->tableViewLog->horizontalHeader()->resizeSection(0,160);
     ui->tableViewLog->horizontalHeader()->resizeSection(1,80);
 
-    curFilename = QDir::homePath()+QDir::separator()+".radar_A3.log";
-    ui->labelCurLog->setText(".radar_A3.log");
+    curFilename = logPath+"radar_A3.log";
+    ui->labelCurLog->setText("radar_A3.log");
     openAndReadFile(curFilename);
 }
 
@@ -59,8 +65,6 @@ void DialogLogging::insertLog(const QString &msg)
                               msg_section);
 
         logViewModel->item(logViewModel->rowCount()-1,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-
-
     }
 }
 
@@ -72,8 +76,8 @@ DialogLogging::~DialogLogging()
 void DialogLogging::on_pushButtonLatestLog_clicked()
 {
     curLogMode = true;
-    curFilename = QDir::homePath()+QDir::separator()+".radar_A3.log";
-    ui->labelCurLog->setText(".radar_A3.log");
+    curFilename = logPath+"radar_A3.log";
+    ui->labelCurLog->setText("radar_A3.log");
     openAndReadFile(curFilename);
 }
 
@@ -82,9 +86,9 @@ void DialogLogging::openAndReadFile(const QString &filename)
     qApp->setOverrideCursor(Qt::WaitCursor);
     QFile log_file(filename);
 
-    qDebug()<<Q_FUNC_INFO<<filename;
     if(log_file.open(QIODevice::ReadOnly))
     {
+        qDebug()<<Q_FUNC_INFO<<filename;
         logViewModel->removeRows(0,logViewModel->rowCount()-1);
         log_file.seek(0);
 
@@ -116,4 +120,45 @@ void DialogLogging::on_lineEditFilter_textChanged(const QString &arg1)
 void DialogLogging::on_comboBoxFilter_currentIndexChanged(int index)
 {
     curFilterColumn = index-1;
+
+    if(curFilterColumn < 0)
+    {
+        for(int i=0; i<logViewModel->rowCount(); i++)
+        {
+            ui->tableViewLog->showRow(i);
+        }
+    }
+    else
+        on_lineEditFilter_textChanged(ui->lineEditFilter->text());
+}
+
+void DialogLogging::on_tableViewLog_doubleClicked(const QModelIndex &index)
+{
+    QString date = logViewModel->item(index.row(),0)->text();
+    QString type = logViewModel->item(index.row(),1)->text();
+    QString msg = logViewModel->item(index.row(),2)->text();
+    QString source = ui->labelCurLog->text();
+
+    logDetail->setDate(date);
+    logDetail->setType(type);
+    logDetail->setSource(source);
+    logDetail->setMessage(msg);
+    logDetail->show();
+}
+
+void DialogLogging::on_pushButtonOpenLog_clicked()
+{
+    QDir log_dir(logPath);
+
+    logHist->setFileList(log_dir.entryList(QDir::Files));
+    logHist->show();
+}
+
+void DialogLogging::trigger_OpenFileLogHist(QString file)
+{
+    curFilename = logPath+file;
+    ui->labelCurLog->setText(file);
+    curLogMode = true;
+    openAndReadFile(curFilename);
+    curLogMode = (file == "radar_A3.log") ? true : false;
 }

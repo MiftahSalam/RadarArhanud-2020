@@ -140,7 +140,7 @@ void setupRootLogger(const QString &filename)
         auto appender = logger->appender("A2");
         Log4Qt::RollingFileAppender *rolApp = static_cast<Log4Qt::RollingFileAppender*>(appender.data());
 
-        rolApp->setFile(QDir::homePath()+QDir::separator()+".radar_A3.log");
+        rolApp->setFile(QDir::homePath()+QDir::separator()+".radarlog"+QDir::separator()+"radar_A3.log");
         rolApp->activateOptions();
     }
     else
@@ -155,9 +155,9 @@ void shutDownRootLogger()
 {
     auto logger = Log4Qt::Logger::rootLogger();
 
-    logger->info("################################################################");
-    logger->info("#                          STOP                                #");
-    logger->info("################################################################");
+    logger->debug("################################################################");
+    logger->debug("#                          STOP                                #");
+    logger->debug("################################################################");
 
     logger->removeAllAppenders();
     logger->loggerRepository()->shutdown();
