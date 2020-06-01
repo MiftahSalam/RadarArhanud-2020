@@ -25,9 +25,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
     l = new MapLayer("MapLayerView", mapadapter);
 
 //    mapCenter = QPointF(108.6090623,-5.88818);
-    mapCenter = QPointF(107.6090623,-6.88818); //temporary
-    currentOwnShipLat = mapCenter.y(); //temporary
-    currentOwnShipLon = mapCenter.x(); //temporary
+    mapCenter = QPointF(currentOwnShipLon,currentOwnShipLat);
 
     map_settings.loading = true;
 

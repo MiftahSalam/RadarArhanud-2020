@@ -5,9 +5,10 @@
 
 void qtmosq::on_connect(int result)
 {
+    qDebug()<<Q_FUNC_INFO<<result;
+    _connected = true;
     if (!result)
     {
-        _connected = true;
         //subscribe(NULL, "$SYS/#", 2);
         emit connected();
     }
@@ -16,10 +17,11 @@ void qtmosq::on_connect(int result)
 }
 void qtmosq::on_disconnect(int result)
 {
+    qDebug()<<Q_FUNC_INFO<<result;
+    _connected = false;
     if (!result)
     {
         //subscribe(NULL, "$SYS/#", 2);
-        _connected = false;
         emit disconnected();
     }
     else
@@ -65,10 +67,10 @@ qtmosq *getMQTT()
 
         lib_init();
         mqtt = new qtmosq(id.toUtf8().constData(), false);
-        mqtt->connect_async(ip.toUtf8().constData(), port);
+        int con_result = mqtt->connect_async(ip.toUtf8().constData(), port);
         mqtt->loop_start();
 
-        qDebug()<<Q_FUNC_INFO<<id<<ip<<port;
+        qDebug()<<Q_FUNC_INFO<<id<<ip<<port<<con_result;
     }
     return mqtt;
 }

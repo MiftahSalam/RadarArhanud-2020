@@ -39,10 +39,13 @@ private slots:
                                   double alt,
                                   QString call_sign,
                                   QString country);
+    void trigger_OSD_received(QString msg);
 
     void on_pushButtonDelSel_clicked();
 
     void on_pushButtonDelAll_clicked();
+
+    void on_pushButtonApply_clicked();
 
 private:
     Ui::FrameBottom *ui;
@@ -55,7 +58,11 @@ private:
     QTimer timer;
 
     qtmosq *m_mqtt;
+
     int dataCount_mqtt_arpa;
+    quint8 no_hdg_count,no_gps_count;
+//    bool cur_hdg_auto,cur_gps_auto;
+    bool hdg_col_normal,gps_col_normal;
 
     void insertArpaList(int id, double lat, double lon, double spd, double crs, double rng, double brn);
     void insertADSBList(quint32 icao,

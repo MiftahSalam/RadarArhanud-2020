@@ -73,7 +73,8 @@ FORMS    += mainwindow.ui \
     dialogopenloghistory.ui
 
 DISTFILES += \
-    HMI_Syle.css
+    HMI_Syle.css \
+    log4qt.properties
 
 RESOURCES += \
     resource.qrc

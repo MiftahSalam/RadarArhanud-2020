@@ -50,11 +50,112 @@ FrameBottom::FrameBottom(QWidget *parent) :
     ui->tableViewTrackArpa->setModel(arpaModel);
     ui->tableViewTrackAdsb->setModel(adsbModel);
 
+    ui->lineEditLat->setValidator(new QDoubleValidator(-90,90,6,ui->lineEditLat));
+    ui->lineEditLon->setValidator(new QDoubleValidator(-180,180,6,ui->lineEditLon));
+    ui->lineEditHDG->setValidator(new QDoubleValidator(0,360,1,ui->lineEditHDG));
+
+    ui->lineEditLat->setText(QString::number(currentOwnShipLat,'f',6));
+    ui->lineEditLon->setText(QString::number(currentOwnShipLon,'f',7));
+    ui->lineEditHDG->setText(QString::number(currentHeading,'f',1));
+    ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
+
+    ui->checkBoxGPS->setChecked(gps_auto);
+    ui->checkBoxHDG->setChecked(hdg_auto);
+
     m_mqtt = getMQTT();
+    connect(m_mqtt,SIGNAL(messageReceived(QString)),this,SLOT(trigger_OSD_received(QString)));
+    connect(m_mqtt,SIGNAL(connected()),this,SLOT(on_pushButtonApply_clicked()));
+    connect(m_mqtt,SIGNAL(connectEnable()),this,SLOT(on_pushButtonApply_clicked()));
+    connect(m_mqtt,SIGNAL(disconnected()),this,SLOT(on_pushButtonApply_clicked()));
+    connect(m_mqtt,SIGNAL(disconnectEnable()),this,SLOT(on_pushButtonApply_clicked()));
+
     dataCount_mqtt_arpa = 0;
+    no_hdg_count = 20;
+    hdg_col_normal = true;
+    no_gps_count = 20;
+    gps_col_normal = true;
+
+    if(m_mqtt->isConnected())
+        qInfo()<<"Connected to nav data server";
+    else
+        qWarning()<<"Not connected to nav data server";
+
+    if(hdg_auto)
+    {
+        ui->lineEditHDG->setEnabled(false);
+        ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);");
+
+        if(m_mqtt->isConnected())
+        {
+            int ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            if(ret_val != 0)
+                qWarning()<<"Heading source not available";
+        }
+    }
+    else
+    {
+        ui->lineEditHDG->setEnabled(true);
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
+
+        if(m_mqtt->isConnected())
+        {
+            int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
+            if(ret_val != 0)
+                qDebug()<<"error unsubscribe from heading source";
+        }
+    }
+
+    if(gps_auto)
+    {
+        ui->lineEditLat->setEnabled(false);
+        ui->lineEditLon->setEnabled(false);
+
+        if(m_mqtt->isConnected())
+        {
+            int ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
+            if(ret_val != 0)
+                qWarning()<<"GPS source not available";
+        }
+    }
+    else
+    {
+        ui->lineEditLat->setEnabled(true);
+        ui->lineEditLon->setEnabled(true);
+
+        if(m_mqtt->isConnected())
+        {
+            int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
+            if(ret_val != 0)
+                qDebug()<<"error unsubscribe from GPS source";
+        }
+
+    }
 
     timer.start(1000);
 
+}
+
+void FrameBottom::trigger_OSD_received(QString msg)
+{
+    if(msg.contains("gyro"))
+    {
+        no_hdg_count = 0;
+        msg.remove("gyro>");
+        qDebug()<<Q_FUNC_INFO<<"hdg"<<msg;
+        ui->lineEditHDG->setText(msg);
+        currentHeading = msg.toDouble();
+    }
+    else if(msg.contains("gps>") )
+    {
+        no_gps_count = 0;
+        qDebug()<<Q_FUNC_INFO<<"lat"<<msg;
+        msg.remove("gps>");
+        QStringList gpsData = msg.split("#");
+        ui->lineEditLat->setText(gpsData.at(0));
+        ui->lineEditLon->setText(gpsData.at(1));
+        currentOwnShipLat = gpsData.at(0).toDouble();
+        currentOwnShipLon = gpsData.at(1).toDouble();
+    }
 }
 
 void FrameBottom::trigger_adsb_target_update(
@@ -280,8 +381,6 @@ void FrameBottom::insertArpaList(int id, double rng, double brn, double lat, dou
 
 void FrameBottom::timeoutUpdate()
 {
-//    qDebug()<<Q_FUNC_INFO;
-
     QHashIterator<int,quint64> i(target_arpa_time_tag_list);
     QList<int> target_to_delete;
     quint64 now = QDateTime::currentSecsSinceEpoch();
@@ -374,6 +473,92 @@ void FrameBottom::timeoutUpdate()
 //    qDebug()<<Q_FUNC_INFO<<target_time_tag_list.size()<<target_to_delete.size();
 
 
+    ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
+
+    if(hdg_auto)
+    {
+        bool hdg_col_normal_buf;
+        no_hdg_count++;
+        if(no_hdg_count>200)
+            no_hdg_count = 11;
+
+        if(no_hdg_count>10)
+            hdg_col_normal_buf = false;
+        else
+            hdg_col_normal_buf = true;
+
+        if(hdg_col_normal_buf^hdg_col_normal)
+        {
+            hdg_col_normal = hdg_col_normal_buf;
+            if(hdg_col_normal)
+            {
+                ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);");
+                qInfo()<<"Heading source available";
+            }
+            else
+            {
+                ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+                qWarning()<<"Heading source not available";
+            }
+        }
+
+    }
+
+    if(gps_auto)
+    {
+        bool gps_col_normal_buf;
+        no_gps_count++;
+        if(no_gps_count>200)
+            no_gps_count = 11;
+
+        if(no_gps_count>10)
+            gps_col_normal_buf = false;
+        else
+            gps_col_normal_buf = true;
+
+        if(gps_col_normal_buf^gps_col_normal)
+        {
+            gps_col_normal = gps_col_normal_buf;
+            if(gps_col_normal)
+            {
+                ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);");
+                ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);");
+                qInfo()<<"GPS source available";
+            }
+            else
+            {
+                ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+                ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+                qWarning()<<"GPS source not available";
+            }
+        }
+
+    }
+
+    if(!m_mqtt->isConnected())
+    {
+        qDebug()<<"server nav data not connected";
+
+        int con_result = m_mqtt->connect_async(mqtt_settings.ip.toUtf8().constData(), mqtt_settings.port);
+        m_mqtt->loop_start();
+
+        qDebug()<<Q_FUNC_INFO<<"reconnecting to "<<m_mqtt->getMID()<<mqtt_settings.ip<<mqtt_settings.port<<con_result;
+
+        int ret_val;
+        if(hdg_auto)
+        {
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            if(ret_val != 0)
+                qInfo()<<"cannot connected to heading source";
+        }
+
+        if(gps_auto)
+        {
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
+            if(ret_val != 0)
+                qInfo()<<"cannot connected to GPS source";
+        }
+    }
 }
 
 FrameBottom::~FrameBottom()
@@ -407,4 +592,103 @@ void FrameBottom::on_pushButtonDelAll_clicked()
         emit signal_request_del_track(-100);
     }
 
+}
+
+void FrameBottom::on_pushButtonApply_clicked()
+{
+    double currentHeading_buf = ui->lineEditHDG->text().toDouble();
+    double currentOwnShipLat_buf = ui->lineEditLat->text().toDouble();
+    double currentOwnShipLon_buf = ui->lineEditLon->text().toDouble();
+
+    if((currentHeading_buf < 0) || (currentHeading_buf > 360))
+    {
+        ui->lineEditHDG->setText(QString::number(currentHeading,'f',1));
+        QMessageBox::warning(this,"Nav Data Input error","Invalid heading input.\n Input range 0 to 360");
+    }
+    else
+        currentHeading = currentHeading_buf;
+
+    if((currentOwnShipLat_buf < -90) || (currentOwnShipLat_buf > 90))
+    {
+        ui->lineEditLat->setText(QString::number(currentOwnShipLat,'f',6));
+        QMessageBox::warning(this,"Nav Data Input error","Invalid Latitude input.\n Input range -90 to 90");
+    }
+    else
+        currentOwnShipLat = currentOwnShipLat_buf;
+
+    if((currentOwnShipLon_buf < -180) || (currentOwnShipLon_buf > 180))
+    {
+        ui->lineEditLon->setText(QString::number(currentOwnShipLon,'f',6));
+        QMessageBox::warning(this,"Nav Data Input error","Invalid Longitude input.\n Input range -180 to 180");
+    }
+    else
+        currentOwnShipLon = currentOwnShipLon_buf;
+
+    hdg_auto = ui->checkBoxHDG->isChecked();
+    gps_auto = ui->checkBoxGPS->isChecked();
+
+    no_hdg_count = 20;
+    no_gps_count = 20;
+
+    int ret_val;
+
+    if(hdg_auto)
+    {
+        ui->lineEditHDG->setEnabled(false);
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            if(ret_val != 0)
+                qWarning()<<"Heading source not available";
+        }
+    }
+    else
+    {
+        ui->lineEditHDG->setEnabled(true);
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
+            if(ret_val != 0)
+                qDebug()<<"error unsubscribe from heading source";
+        }
+    }
+
+    if(gps_auto)
+    {
+        ui->lineEditLat->setEnabled(false);
+        ui->lineEditLon->setEnabled(false);
+        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
+            if(ret_val != 0)
+                qWarning()<<"GPS source not available";
+        }
+    }
+    else
+    {
+        ui->lineEditLat->setEnabled(true);
+        ui->lineEditLon->setEnabled(true);
+        ui->lineEditLat->setStyleSheet("color: rgb(255,255,255);");
+        ui->lineEditLon->setStyleSheet("color: rgb(255,255,255);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
+            if(ret_val != 0)
+                qDebug()<<"error unsubscribe from GPS source";
+        }
+
+    }
+
+    if(!m_mqtt->isConnected())
+        qWarning()<<"Not connected to nav data server";
+    else
+        qInfo()<<"Connected to nav data server";
 }

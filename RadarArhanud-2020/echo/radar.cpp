@@ -15,6 +15,7 @@ ARPASettings arpa_settings;
 TrailSettings trail_settings;
 IFFSettings iff_settings;
 ADSBSettings adsb_settings;
+MqttSettings mqtt_settings;
 
 double currentOwnShipLat;
 double currentOwnShipLon;

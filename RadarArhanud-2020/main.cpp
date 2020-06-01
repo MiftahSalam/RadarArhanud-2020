@@ -106,12 +106,26 @@ int main(int argc, char *argv[])
         iff_settings.port = config.value("iff/port",8330).toUInt();
         iff_settings.show_track = config.value("iff/show_track",true).toBool();
 
+        config.setValue("mqtt/ip","127.0.0.1");
+        config.setValue("mqtt/port",1883);
+        config.setValue("mqtt/id","arhanud3");
+
+        mqtt_settings.ip = config.value("mqtt/ip","127.0.0.1").toString();
+        mqtt_settings.port = config.value("mqtt/port",1883).toUInt();
+        mqtt_settings.id = config.value("mqtt/id",true).toString();
+
         adsb_settings.config = config.value("adsb/config","127.0.0.1;12000").toString();
         adsb_settings.type = (StreamType)config.value("adsb/type",QVariant(-1)).toInt();
         adsb_settings.show_track = config.value("adsb/show_track",true).toBool();
 
         map_settings.show = config.value("map/show",true).toBool();
         map_settings.mode = (quint8)config.value("map/mode",0).toUInt();
+
+        currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
+        currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();
+        currentOwnShipLon = config.value("nav_sensor/longitude",0.0).toDouble();
+        gps_auto = config.value("nav_sensor/gps_auto",true).toBool();
+        hdg_auto = config.value("nav_sensor/heading_auto",true).toBool();
     }
 
     int ret;

@@ -459,7 +459,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkBoxHDG">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -472,7 +472,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="checkBoxGPS">
           <property name="text">
            <string>GPS Auto</string>
           </property>
@@ -491,6 +491,9 @@
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
+              <property name="styleSheet">
+               <string notr="true">color: yellow;</string>
+              </property>
               <property name="text">
                <string>GMT:</string>
               </property>
@@ -501,6 +504,9 @@
             </item>
             <item>
              <widget class="QLabel" name="label">
+              <property name="styleSheet">
+               <string notr="true">color: yellow;</string>
+              </property>
               <property name="text">
                <string>Heading:</string>
               </property>
@@ -514,10 +520,10 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QLineEdit" name="lineEdit_2"/>
+             <widget class="QLineEdit" name="lineEditGMT"/>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_3"/>
+             <widget class="QLineEdit" name="lineEditHDG"/>
             </item>
            </layout>
           </item>
@@ -529,6 +535,9 @@
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
              <widget class="QLabel" name="label_4">
+              <property name="styleSheet">
+               <string notr="true">color: yellow;</string>
+              </property>
               <property name="text">
                <string>Latitude:</string>
               </property>
@@ -539,6 +548,9 @@
             </item>
             <item>
              <widget class="QLabel" name="label_3">
+              <property name="styleSheet">
+               <string notr="true">color: yellow;</string>
+              </property>
               <property name="text">
                <string>Longitude:</string>
               </property>
@@ -552,10 +564,10 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QLineEdit" name="lineEdit"/>
+             <widget class="QLineEdit" name="lineEditLat"/>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_4"/>
+             <widget class="QLineEdit" name="lineEditLon"/>
             </item>
            </layout>
           </item>
@@ -564,7 +576,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButtonApply">
         <property name="text">
          <string>Apply</string>
         </property>

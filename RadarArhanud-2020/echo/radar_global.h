@@ -212,6 +212,12 @@ struct IFFSettings
     QString ip;
     uint port;
 };
+struct MqttSettings
+{
+    QString id;
+    QString ip;
+    uint port;
+};
 struct ADSBSettings
 {
     bool show_track;
@@ -292,6 +298,7 @@ extern MapSettings map_settings;
 extern ARPASettings arpa_settings;
 extern IFFSettings iff_settings;
 extern ADSBSettings adsb_settings;
+extern MqttSettings mqtt_settings;
 extern TrailSettings trail_settings;
 extern QDateTime cur_elapsed_time;
 extern QString cur_id_HDD;
