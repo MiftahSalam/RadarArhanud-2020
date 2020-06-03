@@ -54,6 +54,7 @@ private:
     QImage mapImage;
     QTimer *timer;
     int curLoadingMapSize;
+    double curLat,curLon;
 
     void updateSceneItems();
 };

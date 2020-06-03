@@ -1,5 +1,7 @@
 #include "stream.h"
 
+#include <log4qt/logger.h>
+
 #include <QStringList>
 #include <QDebug>
 #include <QDataStream>
@@ -40,7 +42,7 @@ void Stream::loop()
                 m_status = NO_DATA;
                 update();
                 data_tick = now;
-                qDebug()<<Q_FUNC_INFO<<"sleep";
+                Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<"sleep";
                 sleep(5);
             }
 
@@ -48,7 +50,7 @@ void Stream::loop()
             {
                 update();
                 update_tick = now;
-                qDebug()<<Q_FUNC_INFO<<"update";
+                Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<"update";
             }
         }
         msleep(10);

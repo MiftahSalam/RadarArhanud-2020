@@ -232,6 +232,8 @@ void MainWindow::trigger_rangeChange(int rng)
 
     m_ra->range_meters = rng;
     m_range_meters = rng;
+//    m_range_meters = 400; //tes
+
 
     ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 
@@ -400,6 +402,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     config.setValue("map/show",map_settings.show);
     config.setValue("map/mode",map_settings.mode);
+
+    config.setValue("nav_sensor/heading",currentHeading);
+    config.setValue("nav_sensor/latitude",currentOwnShipLat);
+    config.setValue("nav_sensor/longitude",currentOwnShipLon);
 
     event->accept();
 }

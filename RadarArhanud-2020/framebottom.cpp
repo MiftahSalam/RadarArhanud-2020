@@ -55,7 +55,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     ui->lineEditHDG->setValidator(new QDoubleValidator(0,360,1,ui->lineEditHDG));
 
     ui->lineEditLat->setText(QString::number(currentOwnShipLat,'f',6));
-    ui->lineEditLon->setText(QString::number(currentOwnShipLon,'f',7));
+    ui->lineEditLon->setText(QString::number(currentOwnShipLon,'f',6));
     ui->lineEditHDG->setText(QString::number(currentHeading,'f',1));
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
 
@@ -608,7 +608,7 @@ void FrameBottom::on_pushButtonApply_clicked()
     else
         currentHeading = currentHeading_buf;
 
-    if((currentOwnShipLat_buf < -90) || (currentOwnShipLat_buf > 90))
+    if((currentOwnShipLat_buf < -90.0) || (currentOwnShipLat_buf > 90.0))
     {
         ui->lineEditLat->setText(QString::number(currentOwnShipLat,'f',6));
         QMessageBox::warning(this,"Nav Data Input error","Invalid Latitude input.\n Input range -90 to 90");
@@ -616,46 +616,21 @@ void FrameBottom::on_pushButtonApply_clicked()
     else
         currentOwnShipLat = currentOwnShipLat_buf;
 
-    if((currentOwnShipLon_buf < -180) || (currentOwnShipLon_buf > 180))
+    if((currentOwnShipLon_buf < -180.0) || (currentOwnShipLon_buf > 180.0))
     {
         ui->lineEditLon->setText(QString::number(currentOwnShipLon,'f',6));
         QMessageBox::warning(this,"Nav Data Input error","Invalid Longitude input.\n Input range -180 to 180");
     }
     else
         currentOwnShipLon = currentOwnShipLon_buf;
+}
 
-    hdg_auto = ui->checkBoxHDG->isChecked();
-    gps_auto = ui->checkBoxGPS->isChecked();
-
-    no_hdg_count = 20;
+void FrameBottom::on_checkBoxGPS_clicked(bool checked)
+{
+    gps_auto = checked;
     no_gps_count = 20;
 
     int ret_val;
-
-    if(hdg_auto)
-    {
-        ui->lineEditHDG->setEnabled(false);
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
-
-        if(m_mqtt->isConnected())
-        {
-            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
-            if(ret_val != 0)
-                qWarning()<<"Heading source not available";
-        }
-    }
-    else
-    {
-        ui->lineEditHDG->setEnabled(true);
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
-
-        if(m_mqtt->isConnected())
-        {
-            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
-            if(ret_val != 0)
-                qDebug()<<"error unsubscribe from heading source";
-        }
-    }
 
     if(gps_auto)
     {
@@ -684,11 +659,51 @@ void FrameBottom::on_pushButtonApply_clicked()
             if(ret_val != 0)
                 qDebug()<<"error unsubscribe from GPS source";
         }
-
     }
 
     if(!m_mqtt->isConnected())
         qWarning()<<"Not connected to nav data server";
     else
         qInfo()<<"Connected to nav data server";
+
+}
+
+void FrameBottom::on_checkBoxHDG_clicked(bool checked)
+{
+    hdg_auto = checked;
+    no_hdg_count = 20;
+
+    int ret_val;
+
+    if(hdg_auto)
+    {
+        ui->lineEditHDG->setEnabled(false);
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            if(ret_val != 0)
+                qWarning()<<"Heading source not available";
+        }
+    }
+    else
+    {
+        ui->lineEditHDG->setEnabled(true);
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
+
+        if(m_mqtt->isConnected())
+        {
+            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
+            if(ret_val != 0)
+                qDebug()<<"error unsubscribe from heading source";
+        }
+    }
+
+
+    if(!m_mqtt->isConnected())
+        qWarning()<<"Not connected to nav data server";
+    else
+        qInfo()<<"Connected to nav data server";
+
 }

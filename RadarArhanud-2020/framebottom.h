@@ -47,6 +47,10 @@ private slots:
 
     void on_pushButtonApply_clicked();
 
+    void on_checkBoxGPS_clicked(bool checked);
+
+    void on_checkBoxHDG_clicked(bool checked);
+
 private:
     Ui::FrameBottom *ui;
     QStandardItemModel *arpaModel;

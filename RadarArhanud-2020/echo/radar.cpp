@@ -10,6 +10,7 @@ ReportFilter filter;
 ReportAlign align;
 ReportScanSignal scanSignal;
 MapSettings map_settings;
+ProxySetting proxy_settings;
 RadarSettings radar_settings;
 ARPASettings arpa_settings;
 TrailSettings trail_settings;

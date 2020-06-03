@@ -237,7 +237,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         painter->setPen(pen);
         painter->rotate(currentHeading);
         painter->drawLine(0,0,0,-side);
-        painter->rotate(-30); //temporary
+        painter->rotate(-currentHeading);
     }
 
     /*

@@ -77,6 +77,12 @@ int main(int argc, char *argv[])
         config.setValue("map/show",true);
         config.setValue("map/mode",0);
 
+        config.setValue("proxy_settings/host","127.0.0.1");
+        config.setValue("proxy_settings/username","");
+        config.setValue("proxy_settings/password","");
+        config.setValue("proxy_settings/port",10000);
+        config.setValue("proxy_settings/enable",false);
+
         config.setValue("mti/enable",true);
         config.setValue("mti/threshold",0);
     }
@@ -120,6 +126,12 @@ int main(int argc, char *argv[])
 
         map_settings.show = config.value("map/show",true).toBool();
         map_settings.mode = (quint8)config.value("map/mode",0).toUInt();
+
+        proxy_settings.host = config.value("proxy_settings/host","127.0.0.1").toString();
+        proxy_settings.username = config.value("proxy_settings/username","").toString();
+        proxy_settings.password = config.value("proxy_settings/password","").toString();
+        proxy_settings.port = config.value("proxy_settings/port",10000).toInt();
+        proxy_settings.enable = config.value("proxy_settings/enable",false).toBool();
 
         currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
         currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();

@@ -204,8 +204,16 @@ struct MapSettings
 {
     bool show;
     bool loading;
-    quint8 mode;
+    quint8 mode;    
 };
+struct ProxySetting{
+    QString host;
+    QString username;
+    QString password;
+    int port;
+    bool enable;
+};
+
 struct IFFSettings
 {
     bool show_track;
@@ -295,6 +303,7 @@ extern ReportAlign align;
 extern ReportScanSignal scanSignal;
 extern RadarSettings radar_settings;
 extern MapSettings map_settings;
+extern ProxySetting proxy_settings;
 extern ARPASettings arpa_settings;
 extern IFFSettings iff_settings;
 extern ADSBSettings adsb_settings;

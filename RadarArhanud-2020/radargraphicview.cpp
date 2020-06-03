@@ -4,6 +4,8 @@
 #include "ifftrackitem.h"
 #include "adsbtrackitem.h"
 
+#include <log4qt/logger.h>
+
 #include <QDebug>
 
 RadarGraphicView::RadarGraphicView(QWidget *parent) :
@@ -17,8 +19,8 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
     mc->showCrosshairs(true);
     mc->enablePersistentCache();
 
-//    if(proxy_settings.enable)
-//        mc->setProxy(proxy_settings.host,proxy_settings.port,proxy_settings.user,proxy_settings.password);
+    if(proxy_settings.enable)
+        mc->setProxy(proxy_settings.host,proxy_settings.port,proxy_settings.username,proxy_settings.password);
 
     mapadapter = new GoogleMapAdapter(map_settings.mode ? GoogleMapAdapter::roadmap : GoogleMapAdapter::satellite);
 
@@ -26,6 +28,8 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
 //    mapCenter = QPointF(108.6090623,-5.88818);
     mapCenter = QPointF(currentOwnShipLon,currentOwnShipLat);
+    curLat = currentOwnShipLat;
+    curLon = currentOwnShipLon;
 
     map_settings.loading = true;
 
@@ -53,10 +57,20 @@ void RadarGraphicView::onTimeOut()
 {
 //    qDebug()<<Q_FUNC_INFO<<mc->loadingQueueSize()<<curLoadingMapSize<<mc->getLayerManager()->getImage().size()<<size();
 
+//    qDebug()<<Q_FUNC_INFO<<"lat diff"<<fabs(currentOwnShipLat - curLat)<<"lon diff"<<fabs(currentOwnShipLon - curLon);
+    if((fabs(currentOwnShipLat - curLat) > 0.000001) || (fabs(currentOwnShipLon - curLon) > 0.000001))
+    {
+        qDebug()<<Q_FUNC_INFO<<"map update view"<<currentOwnShipLat<<currentOwnShipLon;
+        curLat = currentOwnShipLat;
+        curLon = currentOwnShipLon;
+
+        mc->setView(QPointF(curLon,curLat));
+    }
+
     if((mc->loadingQueueSize() != curLoadingMapSize) || map_settings.loading)
     {
         map_settings.loading = true;
-        qDebug()<<Q_FUNC_INFO<<"not equal";
+        Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<"not equal";
 
         if(mc->loadingQueueSize() == 0)
         {
@@ -64,7 +78,10 @@ void RadarGraphicView::onTimeOut()
             mapImage = mc->grab().toImage();
             curLoadingMapSize = mc->loadingQueueSize();
             emit signal_mapChange(mapImage);
-            qDebug()<<Q_FUNC_INFO<<"loadingQueueSize zero and image size is"<<mapImage.size();
+            Log4Qt::Logger::rootLogger()->trace()
+                    <<Q_FUNC_INFO
+                   <<"loadingQueueSize zero and image size is"<<mapImage.size().width()<<mapImage.size().height();
+            qDebug()<<Q_FUNC_INFO<<"map display change";
         }
     }
 
