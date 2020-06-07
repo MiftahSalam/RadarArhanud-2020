@@ -40,6 +40,8 @@ private slots:
                                   QString call_sign,
                                   QString country);
     void trigger_OSD_received(QString msg);
+    void trigger_OSD_connected();
+    void trigger_OSD_disconnected();
 
     void on_pushButtonDelSel_clicked();
 

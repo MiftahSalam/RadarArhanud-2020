@@ -64,10 +64,10 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
     m_mqtt = getMQTT();
     connect(m_mqtt,SIGNAL(messageReceived(QString)),this,SLOT(trigger_OSD_received(QString)));
-    connect(m_mqtt,SIGNAL(connected()),this,SLOT(on_pushButtonApply_clicked()));
-    connect(m_mqtt,SIGNAL(connectEnable()),this,SLOT(on_pushButtonApply_clicked()));
-    connect(m_mqtt,SIGNAL(disconnected()),this,SLOT(on_pushButtonApply_clicked()));
-    connect(m_mqtt,SIGNAL(disconnectEnable()),this,SLOT(on_pushButtonApply_clicked()));
+    connect(m_mqtt,SIGNAL(connected()),this,SLOT(trigger_OSD_connected()));
+    connect(m_mqtt,SIGNAL(connectEnable()),this,SLOT(trigger_OSD_connected()));
+    connect(m_mqtt,SIGNAL(disconnected()),this,SLOT(trigger_OSD_disconnected()));
+    connect(m_mqtt,SIGNAL(disconnectEnable()),this,SLOT(trigger_OSD_disconnected()));
 
     dataCount_mqtt_arpa = 0;
     no_hdg_count = 20;
@@ -591,7 +591,6 @@ void FrameBottom::on_pushButtonDelAll_clicked()
 
         emit signal_request_del_track(-100);
     }
-
 }
 
 void FrameBottom::on_pushButtonApply_clicked()
@@ -663,9 +662,6 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 
     if(!m_mqtt->isConnected())
         qWarning()<<"Not connected to nav data server";
-    else
-        qInfo()<<"Connected to nav data server";
-
 }
 
 void FrameBottom::on_checkBoxHDG_clicked(bool checked)
@@ -700,10 +696,58 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
         }
     }
 
-
     if(!m_mqtt->isConnected())
         qWarning()<<"Not connected to nav data server";
-    else
-        qInfo()<<"Connected to nav data server";
+}
 
+void FrameBottom::trigger_OSD_connected()
+{
+    qInfo()<<"Connected to nav data server";
+
+    int ret_val;
+
+    no_gps_count = 20;
+    no_hdg_count = 20;
+
+    if(gps_auto)
+    {
+        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+
+        ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
+        if(ret_val != 0)
+            qWarning()<<"GPS source not available";
+
+    }
+
+    if(hdg_auto)
+    {
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+
+        ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+        if(ret_val != 0)
+            qWarning()<<"Heading source not available";
+
+    }
+}
+
+void FrameBottom::trigger_OSD_disconnected()
+{
+    no_gps_count = 20;
+    no_hdg_count = 20;
+
+    if(gps_auto)
+    {
+        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+    }
+
+    if(hdg_auto)
+    {
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+    }
+
+    qWarning()<<"Disconnect from nav data server";
 }

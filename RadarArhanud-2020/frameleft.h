@@ -22,12 +22,22 @@ public:
     ~FrameLeft();
 
     void setRangeRings(qreal range_ring);
+    void setRangeText(int range);
 
 signals:
     void signal_exit();
     void signal_mapChange(quint8 id, quint8 val);
+    void signal_Standby();
+    void signal_Tx();
+    void signal_radarSettingChange();
+    void signal_req_range(int range_meter);
+    void signal_req_control(int ct, int val);
 
 private slots:
+    void trigger_newLog(QString msg);
+    void trigger_stateChange();
+    void trigger_reportChange();
+
     void on_checkBoxShowRing_clicked(bool checked);
 
     void on_checkBoxShowMap_clicked(bool checked);
@@ -46,10 +56,17 @@ private slots:
 
     void on_pushButtonSetADSB_clicked();
 
-    void on_pushButtonARPA_2_clicked();
+    void on_pushButtonLogger_clicked();
 
-    void trigger_newLog(QString msg);
+    void on_pushButtonTxStnb_clicked();
 
+    void on_pushButtonZoomIn_clicked();
+
+    void on_pushButtonZoomOut_clicked();
+
+    void on_pushButtonGain_clicked();
+
+    void on_horizontalSliderGain_valueChanged(int value);
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;

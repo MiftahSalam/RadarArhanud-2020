@@ -68,6 +68,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));
+    connect(ui->frameLeft,SIGNAL(signal_Standby()),m_ri,SIGNAL(signal_sendStby()));
+    connect(ui->frameLeft,SIGNAL(signal_Tx()),m_ri,SIGNAL(signal_sendTx()));
+    connect(ui->frameLeft,SIGNAL(signal_radarSettingChange()),
+            m_ri,SLOT(trigger_ReqRadarSetting()));
+    connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
+            m_ri,SLOT(trigger_ReqControlChange(int,int)));
+    connect(ui->frameLeft,SIGNAL(signal_req_range(int)),this,SLOT(trigger_rangeChange(int)));
 
     connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
             this,SLOT(trigger_ReqDelTrack(int)));
@@ -86,13 +93,26 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(trigger_DrawSpoke(int,u_int8_t*,size_t)));
     connect(m_ri,SIGNAL(signal_forceExit()),
             this,SLOT(trigger_forceExit()));
+    connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
+    connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_stateChange()));
 
     connect(this,SIGNAL(signal_arpa_target_param(int,double,double,double,double,double,double)),
             ui->frameBottom,SLOT(trigger_arpa_target_param(int,double,double,double,double,double,double)));
     connect(this,SIGNAL(signal_adsb_target_param(quint32,double,double,double,double,double,double,double,QString,QString)),
             ui->frameBottom,SLOT(trigger_adsb_target_update(quint32,double,double,double,double,double,double,double,QString,QString)));
-
+    connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
+
+    int g;
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    {
+        if (QString(g_ranges_metric[g].name )== "1.5 km")
+        {
+            trigger_rangeChange(g_ranges_metric[g].actual_meters);
+            break;
+        }
+    }
+
     timer->start(1000);
 }
 
@@ -234,8 +254,12 @@ void MainWindow::trigger_rangeChange(int rng)
     m_range_meters = rng;
 //    m_range_meters = 400; //tes
 
-
     ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+    if(state_radar == RADAR_TRANSMIT)
+    {
+        ui->frameLeft->setRangeText(rng);
+        emit signal_reqRangeChange(rng);
+    }
 
     calculateRadarScale();
 }

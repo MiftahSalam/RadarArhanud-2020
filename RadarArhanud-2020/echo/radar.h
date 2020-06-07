@@ -318,6 +318,31 @@ private:
 
 
 
+/**********************transmit*********************/
+class radarTransmit : public QObject
+{
+    Q_OBJECT
+public:
+    explicit radarTransmit(QObject *parent = 0);
+
+    void setControlValue(ControlType controlType, int value);
+    void setMulticastData(QString addr,uint port);
+    void setRange(int meters);
+
+    QUdpSocket socket;
+signals:
+
+public slots:
+    void RadarTx();
+    void RadarStby();
+    void RadarStayAlive();
+
+private:
+    QString _data;
+    uint _data_port;
+};
+
+
 /****************ri************************/
 #define SECONDS_TO_REVOLUTIONS(x) ((x)*2 / 5)
 #define TRAIL_MAX_REVOLUTIONS SECONDS_TO_REVOLUTIONS(600) + 1 //241
@@ -347,13 +372,17 @@ public:
     quint64 data_timeout;
     quint64 stay_alive_timeout;
     int m_range_meters;
-    int rng_gz;
 
     RadarReceive *receiveThread;
+    radarTransmit *transmitHandler;
 
 signals:
     void signal_range_change(int range);
     void signal_stay_alive();
+    void signal_sendTx();
+    void signal_sendStby();
+    void signal_state_change();
+    void signal_updateReport();
     void signal_plotRadarSpoke(int angle, u_int8_t* data, size_t len);
     void signal_forceExit();
 
@@ -364,9 +393,9 @@ private slots:
                                         bool radar_heading_true);
     void timerTimeout();
     void trigger_clearTrail();
-
     void trigger_ReqRadarSetting();
-
+    void trigger_ReqRangeChange(int range);
+    void trigger_ReqControlChange(int ct,int val);
 
 private:
     QTimer *timer;
@@ -384,7 +413,7 @@ private:
 
 
     int m_old_range;
-
+    RadarState cur_radar_state;
     bool old_draw_trails;
     int old_trail;
 
@@ -598,31 +627,6 @@ private:
 };
 
 
-
-
-/**********************transmit*********************/
-class radarTransmit : public QObject
-{
-    Q_OBJECT
-public:
-    explicit radarTransmit(QObject *parent = 0);
-
-    void setControlValue(ControlType controlType, int value);
-    void setMulticastData(QString addr,uint port);
-    void setRange(int meters);
-
-    QUdpSocket socket;
-signals:
-
-public slots:
-    void RadarTx();
-    void RadarStby();
-    void RadarStayAlive();
-
-private:
-    QString _data;
-    uint _data_port;
-};
 
 class GLTexture
 {

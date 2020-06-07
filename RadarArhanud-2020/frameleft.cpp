@@ -30,6 +30,11 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail->setModal(true);
     dLog->setModal(true);
 
+    ui->labelRange->setText("1.5 km");
+
+    connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
+//    state_radar = RADAR_TRANSMIT; //temporary
+    trigger_stateChange();
 }
 
 void FrameLeft::setRangeRings(qreal range)
@@ -104,7 +109,126 @@ void FrameLeft::on_pushButtonSetADSB_clicked()
     dADSB->show();
 }
 
-void FrameLeft::on_pushButtonARPA_2_clicked()
+void FrameLeft::on_pushButtonLogger_clicked()
 {
     dLog->show();
+}
+
+void FrameLeft::on_pushButtonTxStnb_clicked()
+{
+    if(ui->pushButtonTxStnb->text() == "Standby")
+        emit signal_Standby();
+    else if(ui->pushButtonTxStnb->text() == "Transmit")
+        emit signal_Tx();
+}
+
+void FrameLeft::trigger_stateChange()
+{
+    if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
+    {
+        ui->pushButtonTxStnb->setText("Tx/Stby");
+        ui->pushButtonGain->setEnabled(false);
+        ui->pushButtonRain->setEnabled(false);
+        ui->horizontalSliderRain->setEnabled(false);
+        ui->horizontalSliderGain->setEnabled(false);
+        ui->pushButtonTxStnb->setEnabled(false);
+    }
+    else if(state_radar == RADAR_STANDBY)
+    {
+        ui->pushButtonTxStnb->setText("Transmit");
+        ui->pushButtonGain->setEnabled(true);
+        ui->pushButtonRain->setEnabled(true);
+        ui->horizontalSliderRain->setEnabled(true);
+        ui->horizontalSliderGain->setEnabled(true);
+        ui->pushButtonTxStnb->setEnabled(true);
+    }
+    else if(state_radar == RADAR_TRANSMIT)
+    {
+        ui->pushButtonTxStnb->setText("Standby");
+        ui->pushButtonGain->setEnabled(true);
+        ui->pushButtonRain->setEnabled(true);
+        ui->horizontalSliderRain->setEnabled(true);
+        ui->horizontalSliderGain->setEnabled(true);
+        ui->pushButtonTxStnb->setEnabled(true);
+    }
+}
+
+void FrameLeft::trigger_reportChange()
+{
+    ui->horizontalSliderGain->setValue(filter.gain);
+    ui->horizontalSliderRain->setValue(filter.rain);
+}
+
+void FrameLeft::on_pushButtonZoomIn_clicked()
+{
+    qDebug()<<Q_FUNC_INFO<<ui->labelRange->text();
+    int g;
+    QString rngName = ui->labelRange->text();
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    {
+        if (QString(g_ranges_metric[g].name )== rngName)
+            break;
+    }
+    g++;
+    if(g >= ARRAY_SIZE(g_ranges_metric))
+        g--;
+
+    ui->labelRange->setText(g_ranges_metric[g].name);
+    emit signal_req_range(g_ranges_metric[g].actual_meters);
+//    emit signal_req_range(g_ranges_metric[g].meters);
+}
+
+void FrameLeft::setRangeText(int range)
+{
+    qDebug()<<Q_FUNC_INFO;
+    int g;
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    {
+        if (QString(g_ranges_metric[g].actual_meters )== range)
+//            if (QString(g_ranges_metric[g].meters )== rngName)
+            break;
+    }
+    g++;
+    if(g >= ARRAY_SIZE(g_ranges_metric))
+        g--;
+
+    ui->labelRange->setText(g_ranges_metric[g].name);
+}
+
+void FrameLeft::on_pushButtonZoomOut_clicked()
+{
+    qDebug()<<Q_FUNC_INFO;
+    int g;
+    QString rngName = ui->labelRange->text();
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    {
+        if (QString(g_ranges_metric[g].name )== rngName)
+            break;
+    }
+    if(g != 0)
+        g--;
+
+    ui->labelRange->setText(g_ranges_metric[g].name);
+}
+
+void FrameLeft::on_pushButtonGain_clicked()
+{
+    QString cur_text = ui->pushButtonGain->text();
+    if(cur_text.contains("Manual"))
+    {
+        cur_text.replace("Manual","Auto");
+        ui->horizontalSliderGain->setEnabled(false);
+        emit signal_req_control(CT_GAIN,-1);
+    }
+    else
+    {
+        cur_text.replace("Auto","Manual");
+        ui->horizontalSliderGain->setEnabled(true);
+    }
+    ui->pushButtonGain->setText(cur_text);
+}
+
+void FrameLeft::on_horizontalSliderGain_valueChanged(int value)
+{
+    emit signal_req_control(CT_GAIN,value);
 }

@@ -1228,6 +1228,19 @@ struct common_header
     UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
 };
 
+struct br24_header {
+  UINT8 headerLen;       // 1 bytes
+  UINT8 status;          // 1 bytes
+  UINT8 scan_number[2];  // 2 bytes, 0-4095
+  UINT8 mark[4];         // 4 bytes 0x00, 0x44, 0x0d, 0x0e
+  UINT8 angle[2];        // 2 bytes
+  UINT8 heading[2];      // 2 bytes heading with RI-10/11. See bitmask explanation above.
+  UINT8 range[4];        // 4 bytes
+  UINT8 u01[2];          // 2 bytes blank
+  UINT8 u02[2];          // 2 bytes
+  UINT8 u03[4];          // 4 bytes blank
+};                       /* total size = 24 */
+
 struct br4g_header
 {
     UINT8 headerLen;       // 1 bytes
@@ -1247,6 +1260,7 @@ struct radar_line
     union
     {
         common_header common;
+        br24_header br24;
         br4g_header br4g;
     };
     UINT8 data[RETURNS_PER_LINE];
@@ -1284,13 +1298,13 @@ void RadarReceive::setMulticastReport(QString addr, uint port)
 
 void RadarReceive::run()
 {
-    //    qDebug()<<Q_FUNC_INFO;
+//    qDebug()<<Q_FUNC_INFO;
     QUdpSocket socketDataReceive;
     QUdpSocket socketReportReceive;
-    QString data_thread = "127.0.0.1"/*_data*/;
-    QString report_thread = "236.6.7.101"/*_report*/;
-    uint data_port_thread = 6678/*_data_port*/;
-    uint reportport_thread = 6367/*_report_port*/;
+    QString data_thread = /*"127.0.0.1"*/_data;
+    QString report_thread = /*"236.6.7.101"*/_report;
+    uint data_port_thread = /*6678*/_data_port;
+    uint reportport_thread = /*6367*/_report_port;
     exit_req = false;
 
     QHostAddress groupAddress = QHostAddress(data_thread);
@@ -1506,8 +1520,8 @@ void RadarReceive::processFrame(QByteArray data, int len)
 
         heading_raw = (line->common.heading[1] << 8) | line->common.heading[0];
 
-        short int large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
-        short int small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
+        ushort large_range = (line->br4g.largerange[1] << 8) | line->br4g.largerange[0];
+        ushort small_range = (line->br4g.smallrange[1] << 8) | line->br4g.smallrange[0];
         angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
 
         /* tapping result
@@ -1532,18 +1546,25 @@ void RadarReceive::processFrame(QByteArray data, int len)
              * tx : 96 km-> rec :  -23349 large range?
 
       from lib plugin
-      if (large_range == 0x80) {
-        if (small_range == -1) {
-          range_raw = 0;  // Invalid range received
-        } else {
-          range_raw = small_range;
-        }
-      } else {
-        range_raw = large_range * 256;
-      }
-      range_meters = range_raw / 4;
-
+        qDebug()<<Q_FUNC_INFO<<line->br4g.largerange[1]
+               <<line->br4g.largerange[0]
+              <<line->br4g.smallrange[1]
+             <<line->br4g.smallrange[0];
 */
+
+        if (large_range == 0x80)
+        {
+            if (small_range == -1)
+                range_meters = 0;  // Invalid range received
+            else
+                range_meters = small_range/4;
+        }
+        else
+            range_meters = large_range*64;
+
+//        range_meters = range_raw / 4;
+
+        /*
         if (large_range == 0x80)
         {
             if (small_range == -1)
@@ -1560,9 +1581,7 @@ void RadarReceive::processFrame(QByteArray data, int len)
             range_raw = large_range;
         }
         range_meters = range_raw;
-        //        range_meters *= 0.5688;
-        //        qDebug()<<Q_FUNC_INFO<<range_raw;
-
+        */
         bool radar_heading_valid = HEADING_VALID(heading_raw);
         bool radar_heading_true = (heading_raw & HEADING_TRUE_FLAG) != 0;
         double heading = -400;
@@ -1619,8 +1638,8 @@ RI::RI(QObject *parent) :
 
     radar_timeout = 0;
     m_range_meters = 0;
-    //    draw_trails = false; //next implementation load from conf file
 
+    cur_radar_state = state_radar;
     old_draw_trails = trail_settings.enable;
     old_trail = trail_settings.trail;
 
@@ -1637,12 +1656,17 @@ RI::RI(QObject *parent) :
     }
 
     receiveThread = new RadarReceive(this);
+    transmitHandler = new radarTransmit(this);
+
     connect(receiveThread,SIGNAL(updateReport(quint8,quint8,quint32)),
             this,SLOT(receiveThread_Report(quint8,quint8,quint32)));
     connect(receiveThread,SIGNAL(ProcessRadarSpoke(int,QByteArray,int,int,double,bool)),
             this,SLOT(radarReceive_ProcessRadarSpoke(int,QByteArray,int,int,double,bool)));
+    connect(this,SIGNAL(signal_sendStby()),transmitHandler,SLOT(RadarStby()));
+    connect(this,SIGNAL(signal_sendTx()),transmitHandler,SLOT(RadarTx()));
+    connect(this,SIGNAL(signal_stay_alive()),transmitHandler,SLOT(RadarStayAlive()));
 
-    receiveThread->start();
+    trigger_ReqRadarSetting();
     timer->start(1000);
 }
 RI::~RI()
@@ -1668,7 +1692,7 @@ void RI::timerTimeout()
 
     if(state_radar == RADAR_TRANSMIT && TIMED_OUT(now,data_timeout))
     {
-        state_radar = RADAR_STANDBY;
+        emit signal_state_change();
         ResetSpokes();
     }
     if(state_radar == RADAR_TRANSMIT && TIMED_OUT(now,stay_alive_timeout))
@@ -1682,7 +1706,14 @@ void RI::timerTimeout()
         ResetSpokes();
     }
 
-    //    state_radar = RADAR_STANDBY;
+//    state_radar = RADAR_STANDBY; //temporary
+//    state_radar = RADAR_TRANSMIT; //temporary
+
+    if(cur_radar_state != state_radar)
+    {
+        cur_radar_state = state_radar;
+        emit signal_state_change();
+    }
 
     if(old_draw_trails != trail_settings.enable)
     {
@@ -1699,6 +1730,26 @@ void RI::timerTimeout()
         ComputeColourMap();
         ComputeTargetTrails();
         old_trail = trail_settings.trail;
+    }
+}
+
+void RI::trigger_ReqControlChange(int ct, int val)
+{
+    transmitHandler->setControlValue((ControlType)ct,val);
+}
+
+void RI::trigger_ReqRangeChange(int range)
+{
+    int g;
+    int meter;
+    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    {
+        if (g_ranges_metric[g].actual_meters == range)
+        {
+            meter = g_ranges_metric[g].meters;
+            transmitHandler->setRange(meter);
+            break;
+        }
     }
 }
 
@@ -1732,15 +1783,6 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     {
         ResetSpokes();
         qDebug()<<Q_FUNC_INFO<<"detected spoke range change from "<<m_range_meters<<" to "<<range_meter;
-        int g;
-        for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
-        {
-            if (g_ranges_metric[g].actual_meters == range_meter)
-            {
-                rng_gz = g_ranges_metric[g].meters;
-                break;
-            }
-        }
         m_range_meters = range_meter;
         emit signal_range_change(m_range_meters);
     }
@@ -1936,6 +1978,7 @@ void RI::ResetSpokes()
         emit signal_plotRadarSpoke(r,zap,sizeof(zap));
 
 }
+
 void RI::trigger_clearTrail()
 {
     ClearTrails();
@@ -1948,6 +1991,8 @@ void RI::trigger_ReqRadarSetting()
     receiveThread->setMulticastData(radar_settings.ip_data,radar_settings.port_data);
     receiveThread->setMulticastReport(radar_settings.ip_report,radar_settings.port_report);
     receiveThread->start();
+
+    transmitHandler->setMulticastData(radar_settings.ip_command,radar_settings.port_command);
 }
 
 void RI::receiveThread_Report(quint8 report_type, quint8 report_field, quint32 value)
@@ -3487,12 +3532,14 @@ radarTransmit::radarTransmit(QObject *parent) :
 }
 void radarTransmit::setMulticastData(QString addr, uint port)
 {
+    qDebug()<<Q_FUNC_INFO<<addr<<port;
     _data = addr;
     _data_port = port;
 }
 
 void radarTransmit::setRange(int meters)
 {
+    qDebug()<<Q_FUNC_INFO<<"transmit: range "<<meters;
     if (meters >= 50 && meters <= 72704)
     {
         unsigned int decimeters = (unsigned int)meters * 10;
