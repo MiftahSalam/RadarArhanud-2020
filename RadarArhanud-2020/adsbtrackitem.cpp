@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <qmath.h>
 
-AdsbTrackItem::AdsbTrackItem(ADSBTargetData* Atarget) :
+AdsbTrackItem::AdsbTrackItem(AdsbArhnd::ADSBTargetData* Atarget) :
     m_adsb_target(Atarget)
 {
     itemType = RadarSceneItems::ADSB;

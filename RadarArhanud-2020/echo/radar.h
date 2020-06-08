@@ -21,44 +21,7 @@
 #include <QDir>
 
 #include "radar_global.h"
-
-/******************************encrypt**********************************/
-#ifndef CBC
-  #define CBC 1
-#endif
-
-#ifndef ECB
-  #define ECB 1
-#endif
-
-#if defined(ECB) && ECB
-
-void AES128_ECB_encrypt(uint8_t* input, const uint8_t* key, uint8_t *output);
-void AES128_ECB_decrypt(uint8_t* input, const uint8_t* key, uint8_t *output);
-
-#endif // #if defined(ECB) && ECB
-
-
-#if defined(CBC) && CBC
-
-void AES128_CBC_encrypt_buffer(uint8_t* output, uint8_t* input, uint32_t length, const uint8_t* key, const uint8_t* iv);
-void AES128_CBC_decrypt_buffer(uint8_t* output, uint8_t* input, uint32_t length, const uint8_t* key, const uint8_t* iv);
-
-#endif // #if defined(CBC) && CBC
-
-
-
-QString encodeText(const QString &rawText) ;
-QString decodeText(QString hexEncodedText) ;
-extern QDateTime TIME_EXPIRED;
-extern bool checkExpired;
-
-bool getProtect();
-QDateTime getExpiredTime();
-void setProtect();
-/******************************encrypt**********************************/
-
-
+#include <Crypto/crypto.h>
 
 /*MAtrix definition*/
 template <typename Ty, int N, int M = N>
@@ -240,11 +203,6 @@ class Polar {
   int r;
   quint64 time;  // wxGetUTCTimeMillis
 };
-
-static Matrix<double, 4, 2> ZeroMatrix42;
-static Matrix<double, 2, 4> ZeroMatrix24;
-static Matrix<double, 4> ZeroMatrix4;
-static Matrix<double, 2> ZeroMatrix2;
 
 class KalmanFilter : public QObject
 {
@@ -556,7 +514,8 @@ class RDVert : public RD
 public:
     RDVert(RI* ri)
     {
-        if(!getProtect())
+        cur_elapsed_time = Crypto::initProtect();
+        if(!Crypto::checkProtect(cur_elapsed_time))
         {
             qDebug()<<"not valid";
             exit(0);

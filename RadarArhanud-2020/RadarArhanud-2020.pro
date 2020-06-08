@@ -28,10 +28,6 @@ SOURCES += main.cpp\
     traildialog.cpp \
     dialogiff.cpp \
     dialogadsb.cpp \
-    stream/streamdevice.cpp \
-    stream/stream.cpp \
-    adsb/adsbstream.cpp \
-    adsb/adsb.cpp \
     qtmosq.cpp \
     dialoglogging.cpp \
     dialoglogdetail.cpp \
@@ -52,10 +48,6 @@ HEADERS  += mainwindow.h \
     traildialog.h \
     dialogiff.h \
     dialogadsb.h \
-    stream/streamdevice.h \
-    stream/stream.h \
-    adsb/adsbstream.h \
-    adsb/adsb.h \
     qtmosq.h \
     dialoglogging.h \
     dialoglogdetail.h \
@@ -84,13 +76,23 @@ unix:!macx: LIBS += -L/usr/lib/ -llog4qt
 INCLUDEPATH += /include
 DEPENDPATH += /include
 
-unix:!macx: LIBS += -L/usr/share/RMAP/lib/ -lqmapcontrol
+unix:!macx: LIBS += -L/usr/lib/RMAP/ -lqmapcontrol
 
-INCLUDEPATH += /usr/share/RMAP/include
-DEPENDPATH += /usr/share/RMAP/include
+INCLUDEPATH += /usr/include/RMAP/
+DEPENDPATH += /usr/include/RMAP/
 
 unix:!macx: LIBS += -L/usr/local/lib/ -lmosquittopp
 
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 
+
+unix:!macx: LIBS += -L/usr/lib/ -ladsb-arhnd
+
+INCLUDEPATH += /usr/include/adsb-arhnd
+DEPENDPATH += /usr/include/adsb-arhnd
+
+unix:!macx: LIBS += -L/usr/lib/Crypto/ -lCrypto
+
+INCLUDEPATH += /usr/include/Crypto
+DEPENDPATH += /usr/include/Crypto

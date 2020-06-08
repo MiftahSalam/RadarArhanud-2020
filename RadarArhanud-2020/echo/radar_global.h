@@ -296,9 +296,8 @@ extern IFFSettings iff_settings;
 extern ADSBSettings adsb_settings;
 extern MqttSettings mqtt_settings;
 extern TrailSettings trail_settings;
-extern QDateTime cur_elapsed_time;
-extern QString cur_id_HDD;
 
+extern QDateTime cur_elapsed_time;
 extern double currentOwnShipLat;
 extern double currentOwnShipLon;
 extern double radarHeading;

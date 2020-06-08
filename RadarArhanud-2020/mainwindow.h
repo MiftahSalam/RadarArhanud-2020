@@ -60,7 +60,7 @@ private:
 
     RI *m_ri;
     RA *m_ra;
-    ADSBStream *adsb;
+    AdsbArhnd::ADSBStream *adsb;
     QSet<quint32> adsb_list;
 
     RadarScene *scene;

@@ -383,7 +383,7 @@ void RadarScene::reqNewArpa(bool create, ARPATarget *arpa_ptr)
     */
 }
 
-void RadarScene::reqNewADSB(ADSBTargetData* target)
+void RadarScene::reqNewADSB(AdsbArhnd::ADSBTargetData* target)
 {
 //    qDebug()<<Q_FUNC_INFO<<target;
     addItem(new AdsbTrackItem(target));

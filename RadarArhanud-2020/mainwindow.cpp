@@ -183,7 +183,7 @@ void MainWindow::timeOut()
             cur_arpa_id_count = 0;
     }
 
-    QHash<int,ADSBTargetData*> buf_adsb = adsb->getADSB().getTargets();
+    QHash<int,AdsbArhnd::ADSBTargetData*> buf_adsb = adsb->getADSB().getTargets();
 
     /*
     ui->frameADSB->updateADSBList(buf_adsb);
@@ -206,16 +206,16 @@ void MainWindow::timeOut()
 
 void MainWindow::initADSB()
 {
-    StreamSettings adsbSettingIn;
+    AdsbArhnd::StreamSettings adsbSettingIn;
 
     adsbSettingIn.config = adsb_settings.config;
-    adsbSettingIn.mode = In;
-    adsbSettingIn.type = (StreamType)adsb_settings.type;
+    adsbSettingIn.mode = AdsbArhnd::In;
+    adsbSettingIn.type = (AdsbArhnd::StreamType)adsb_settings.type;
 
     if(adsb)
         adsb->setInSettings(adsbSettingIn);
     else
-        adsb = new ADSBStream(0,adsbSettingIn);
+        adsb = new AdsbArhnd::ADSBStream(0,adsbSettingIn);
 
     /*
     */
@@ -241,7 +241,6 @@ void MainWindow::initADSB()
 void MainWindow::trigger_forceExit()
 {
     qDebug()<<Q_FUNC_INFO;
-//    rt->RadarStby();
     sleep(1);
     close();
 }

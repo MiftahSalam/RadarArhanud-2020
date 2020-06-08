@@ -9,10 +9,10 @@
 class AdsbTrackItem : public RadarSceneItems
 {
 public:
-    explicit AdsbTrackItem(ADSBTargetData *ATarget=0);
+    explicit AdsbTrackItem(AdsbArhnd::ADSBTargetData *ATarget=0);
 
     int getTargetIcao() { return m_adsb_target->icao; }
-    ADSBTargetData *m_adsb_target;
+    AdsbArhnd::ADSBTargetData *m_adsb_target;
 
     enum { Type = UserType + 1 };
     int type() const override { return Type; }
