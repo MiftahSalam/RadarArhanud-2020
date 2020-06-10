@@ -94,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri,SIGNAL(signal_forceExit()),
             this,SLOT(trigger_forceExit()));
     connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
-    connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_stateChange()));
+    connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
     connect(this,SIGNAL(signal_arpa_target_param(int,double,double,double,double,double,double)),
             ui->frameBottom,SLOT(trigger_arpa_target_param(int,double,double,double,double,double,double)));
@@ -102,13 +102,14 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->frameBottom,SLOT(trigger_adsb_target_update(quint32,double,double,double,double,double,double,double,QString,QString)));
     connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
+    connect(timer,SIGNAL(timeout()),ui->frameLeft,SLOT(trigger_stateChange()));
 
     int g;
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
     {
-        if (QString(g_ranges_metric[g].name )== "1.5 km")
+        if (QString(g_ranges_metric[g].name )== "1.5 NM")
         {
-            trigger_rangeChange(g_ranges_metric[g].actual_meters);
+            trigger_rangeChange(g_ranges_metric[g].meters);
             break;
         }
     }

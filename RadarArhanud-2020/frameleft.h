@@ -68,6 +68,10 @@ private slots:
 
     void on_horizontalSliderGain_valueChanged(int value);
 
+    void on_pushButtonRain_clicked();
+
+    void on_horizontalSliderRain_valueChanged(int value);
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 

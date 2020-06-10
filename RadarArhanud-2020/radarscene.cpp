@@ -202,7 +202,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         QString lat_lon = QString("Latitude : %1 \t Longitude: %2")
                 .arg(QString::number(currentCursor.latitude,'f',6))
                 .arg(QString::number(currentCursor.longitude,'f',6));
-        QString rng_brn = QString("Range : %1 Km \t Bearing: %2%3")
+        QString rng_brn = QString("Range : %1 NM \t Bearing: %2%3")
                 .arg(QString::number(currentCursor.range,'f',1))
                 .arg(QString::number(currentCursor.bearing,'f',1))
                 .arg(176);

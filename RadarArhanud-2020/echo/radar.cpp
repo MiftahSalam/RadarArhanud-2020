@@ -432,7 +432,7 @@ void RadarReceive::run()
 
         if(socketReportReceive.state()==QAbstractSocket::BoundState)
         {
-            //            qDebug()<<Q_FUNC_INFO<<"bind report multicast access ";
+//            qDebug()<<Q_FUNC_INFO<<"bind report multicast access ";
             while (socketReportReceive.hasPendingDatagrams())
             {
                 QByteArray datagram;
@@ -593,7 +593,6 @@ void RadarReceive::processFrame(QByteArray data, int len)
             qDebug()<<Q_FUNC_INFO<<"strange header status "<<line->common.status;
         }
 
-        int range_raw = 0;
         int angle_raw = 0;
         short int heading_raw = 0;
         int range_meters = 0;
@@ -605,31 +604,26 @@ void RadarReceive::processFrame(QByteArray data, int len)
         angle_raw = (line->br4g.angle[1] << 8) | line->br4g.angle[0];
 
         /* tapping result
-             * tx : 100 -> rec : 176/2c0
-             * tx : 250 -> rec : 439/6dc
-             * tx : 500 -> rec : 879/dbc
-             * tx : 750 -> rec : 2029/1498
-             * tx : 1 km -> rec : 2841
-             * tx : 1.5 km -> rec :  4057
-             * tx : 2 km -> rec :  3514
-             * tx : 3 km -> rec :  8285
-             * tx : 4 km -> rec :  9940
-             * tx : 6 km -> rec :  16538
-             * tx : 8 km -> rec :  21263 large range?
-             * tx : 12 km-> rec :  31950 large range?
-             * tx : 16 km-> rec :  -19411 large range?
-             * tx : 24 km-> rec :  -1636 large range?
-             * tx : 36     -> rec :  -2255 large range?
-             * tx : 48 km -> rec :  -23349 large range?
-             * tx : 64 km-> rec :  -9286 large range?
-             * tx : 72 km-> rec :  -2255 large range?
-             * tx : 96 km-> rec :  -23349 large range?
+             * tx : 200 m  -> rec : 407 -> 0 128 6 92
+             * tx : 1/4 NM -> rec : 813 -> 0 128 12 180
+             * tx : 1/2 NM -> rec : 879/dbc -> 0 128 25 108
+             * tx : 3/4 NM -> rec : 2029/1498 -> 0 128 38 36
+             * tx : 1.5 NM -> rec : 2841 -> 0 128 76 76
+             * tx : 3   NM -> rec :  8285 > 38 38 2 0
+             * tx : 6   NM -> rec :  16538 -> 76 76 2 0
+             * tx : 12  NM -> rec :  31950 large range? 152 153 2 0
+             * tx : 24  NM -> rec :  -1636 large range? 152 153 4 0
+             * tx : 36  NM -> rec :  -2255 large range? 228 230 4 0
+             * tx : 48  NM -> rec :  -23349 large range? 152 153 8 0
+             * tx : 64  NM -> rec :  -9286 large range? 203 119 8 0
+             * tx : 72  NM -> rec :  -2255 large range? 228 230 8 0
 
       from lib plugin
         qDebug()<<Q_FUNC_INFO<<line->br4g.largerange[1]
                <<line->br4g.largerange[0]
               <<line->br4g.smallrange[1]
              <<line->br4g.smallrange[0];
+
 */
 
         if (large_range == 0x80)
@@ -640,8 +634,9 @@ void RadarReceive::processFrame(QByteArray data, int len)
                 range_meters = small_range/4;
         }
         else
-            range_meters = large_range*64;
+            range_meters = large_range*small_range;
 
+//        qDebug()<<Q_FUNC_INFO<<range_meters;
 //        range_meters = range_raw / 4;
 
         /*
@@ -826,7 +821,7 @@ void RI::trigger_ReqRangeChange(int range)
     int meter;
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
     {
-        if (g_ranges_metric[g].actual_meters == range)
+        if (g_ranges_metric[g].meters == range)
         {
             meter = g_ranges_metric[g].meters;
             transmitHandler->setRange(meter);
@@ -864,9 +859,16 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
     if ((m_range_meters != range_meter))
     {
         ResetSpokes();
-        qDebug()<<Q_FUNC_INFO<<"detected spoke range change from "<<m_range_meters<<" to "<<range_meter;
         m_range_meters = range_meter;
-        emit signal_range_change(m_range_meters);
+        qDebug()<<Q_FUNC_INFO<<"detected spoke range change from "<<m_range_meters<<" to "<<range_meter;
+
+        int g;
+        for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+        {
+            if (g_ranges_metric[g].actual_meters == range_meter)
+                break;
+        }
+        emit signal_range_change(g_ranges_metric[g].meters);
     }
 
     UINT8 weakest_normal_blob = 50; //next load from configuration file
@@ -1110,14 +1112,17 @@ void RI::receiveThread_Report(quint8 report_type, quint8 report_field, quint32 v
         case RADAR_GAIN:
             filter.gain = value;
             qDebug()<<Q_FUNC_INFO<<"report gain"<<filter.gain;
+            emit signal_updateReport();
             break;
         case RADAR_RAIN:
             filter.rain = value;
             qDebug()<<Q_FUNC_INFO<<"report rain"<<filter.rain;
+            emit signal_updateReport();
             break;
         case RADAR_SEA:
             filter.sea = value;
             qDebug()<<Q_FUNC_INFO<<"report sea"<<filter.sea;
+            emit signal_updateReport();
             break;
         case RADAR_TARGET_BOOST:
             filter.targetBoost = value;
@@ -2623,7 +2628,7 @@ void radarTransmit::setMulticastData(QString addr, uint port)
 void radarTransmit::setRange(int meters)
 {
     qDebug()<<Q_FUNC_INFO<<"transmit: range "<<meters;
-    if (meters >= 50 && meters <= 72704)
+    if (meters >= 50 && meters <= 3750272)
     {
         unsigned int decimeters = (unsigned int)meters * 10;
         const uchar pck[6] = {0x03,

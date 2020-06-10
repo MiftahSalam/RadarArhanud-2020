@@ -258,7 +258,7 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
 
     dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
 
-    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    double NM = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
     qreal bearing = atan2(dif_lon,dif_lat)*180./M_PI;
 
     while(bearing < 0.0)
@@ -266,7 +266,7 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
         bearing += 360.0;
     }
 
-    emit signal_cursorPosition(latitude,longitude,km,bearing);
+    emit signal_cursorPosition(latitude,longitude,NM/1.852,bearing);
 //    qDebug()<<Q_FUNC_INFO<<displayToImage<<screen_middle<<map_middle<<displayToCoordinat<<km<<bearing;
 }
 

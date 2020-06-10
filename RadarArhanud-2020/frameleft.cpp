@@ -124,6 +124,8 @@ void FrameLeft::on_pushButtonTxStnb_clicked()
 
 void FrameLeft::trigger_stateChange()
 {
+    qDebug()<<Q_FUNC_INFO<<(int)state_radar;
+
     if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
     {
         ui->pushButtonTxStnb->setText("Tx/Stby");
@@ -155,27 +157,30 @@ void FrameLeft::trigger_stateChange()
 
 void FrameLeft::trigger_reportChange()
 {
-    ui->horizontalSliderGain->setValue(filter.gain);
-    ui->horizontalSliderRain->setValue(filter.rain);
+//    qDebug()<<Q_FUNC_INFO<<filter.gain<<filter.rain<<filter.sea;
+//    ui->horizontalSliderGain->setValue(filter.gain);
+//    ui->horizontalSliderRain->setValue(filter.rain);
+    ui->lineEditGain->setText(QString::number(filter.gain));
+    ui->lineEditRain->setText(QString::number(filter.rain));
 }
 
 void FrameLeft::on_pushButtonZoomIn_clicked()
 {
     qDebug()<<Q_FUNC_INFO<<ui->labelRange->text();
+
     int g;
     QString rngName = ui->labelRange->text();
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
+    for (g = ARRAY_SIZE(g_ranges_metric); g > 0; g--)
     {
         if (QString(g_ranges_metric[g].name )== rngName)
             break;
     }
-    g++;
-    if(g >= ARRAY_SIZE(g_ranges_metric))
-        g--;
+    g--;
+    if(g < 0)
+        g = 0;
 
     ui->labelRange->setText(g_ranges_metric[g].name);
-    emit signal_req_range(g_ranges_metric[g].actual_meters);
-//    emit signal_req_range(g_ranges_metric[g].meters);
+    emit signal_req_range(g_ranges_metric[g].meters);
 }
 
 void FrameLeft::setRangeText(int range)
@@ -184,11 +189,9 @@ void FrameLeft::setRangeText(int range)
     int g;
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
     {
-        if (QString(g_ranges_metric[g].actual_meters )== range)
-//            if (QString(g_ranges_metric[g].meters )== rngName)
+        if (QString(g_ranges_metric[g].meters )== range)
             break;
     }
-    g++;
     if(g >= ARRAY_SIZE(g_ranges_metric))
         g--;
 
@@ -198,6 +201,7 @@ void FrameLeft::setRangeText(int range)
 void FrameLeft::on_pushButtonZoomOut_clicked()
 {
     qDebug()<<Q_FUNC_INFO;
+
     int g;
     QString rngName = ui->labelRange->text();
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
@@ -205,10 +209,12 @@ void FrameLeft::on_pushButtonZoomOut_clicked()
         if (QString(g_ranges_metric[g].name )== rngName)
             break;
     }
-    if(g != 0)
+    g++;
+    if(g >= ARRAY_SIZE(g_ranges_metric))
         g--;
 
     ui->labelRange->setText(g_ranges_metric[g].name);
+    emit signal_req_range(g_ranges_metric[g].meters);
 }
 
 void FrameLeft::on_pushButtonGain_clicked()
@@ -224,6 +230,7 @@ void FrameLeft::on_pushButtonGain_clicked()
     {
         cur_text.replace("Auto","Manual");
         ui->horizontalSliderGain->setEnabled(true);
+        emit signal_req_control(CT_GAIN,10);
     }
     ui->pushButtonGain->setText(cur_text);
 }
@@ -231,4 +238,27 @@ void FrameLeft::on_pushButtonGain_clicked()
 void FrameLeft::on_horizontalSliderGain_valueChanged(int value)
 {
     emit signal_req_control(CT_GAIN,value);
+}
+
+void FrameLeft::on_pushButtonRain_clicked()
+{
+    QString cur_text = ui->pushButtonRain->text();
+    if(cur_text.contains("Manual"))
+    {
+        cur_text.replace("Manual","Auto");
+        ui->horizontalSliderRain->setEnabled(false);
+        emit signal_req_control(CT_RAIN,-1);
+    }
+    else
+    {
+        cur_text.replace("Auto","Manual");
+        ui->horizontalSliderRain->setEnabled(true);
+        emit signal_req_control(CT_RAIN,10);
+    }
+    ui->pushButtonRain->setText(cur_text);
+}
+
+void FrameLeft::on_horizontalSliderRain_valueChanged(int value)
+{
+    emit signal_req_control(CT_RAIN,value);
 }
