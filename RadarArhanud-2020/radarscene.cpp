@@ -106,6 +106,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         glViewport((width - side) / 2,(height - side) / 2,side,side);
         glLoadIdentity();
+//        curScale = 1.0f; //temporary
         glScaled(curScale, curScale, 1.);
 
         m_rd->DrawRadarImage();
@@ -203,8 +204,8 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
                 .arg(QString::number(currentCursor.latitude,'f',6))
                 .arg(QString::number(currentCursor.longitude,'f',6));
         QString rng_brn = QString("Range : %1 NM \t Bearing: %2%3")
-                .arg(QString::number(currentCursor.range,'f',1))
-                .arg(QString::number(currentCursor.bearing,'f',1))
+                .arg(QString::number(currentCursor.range,'f',2))
+                .arg(QString::number(currentCursor.bearing,'f',2))
                 .arg(176);
         painter->drawText((-width/2)+10,(height/2)-35,lat_lon);
         painter->drawText((-width/2)+10,(height/2)-20,rng_brn);

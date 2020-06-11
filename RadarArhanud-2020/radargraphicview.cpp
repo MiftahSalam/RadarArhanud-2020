@@ -176,8 +176,8 @@ qreal RadarGraphicView::calculateRangeRing() const
 {
     QPoint screen_middle(width()/2,height()/2);
     QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
-
-    QPoint displayToImage = QPoint(-screen_middle.x()+map_middle.x(),map_middle.y());
+    QPoint ref = (width() >= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
+    QPoint displayToImage = QPoint(ref.x()+map_middle.x(),ref.y()+map_middle.y());
     QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
 
     double dif_lat = deg2rad(displayToCoordinat.y());
@@ -188,7 +188,8 @@ qreal RadarGraphicView::calculateRangeRing() const
     dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
 
     double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
-    qDebug()<<Q_FUNC_INFO<<km;
+    km /= 1.852; //NM
+    qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
     return km/7.0;
 }

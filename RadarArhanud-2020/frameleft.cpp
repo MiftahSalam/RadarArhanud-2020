@@ -30,7 +30,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail->setModal(true);
     dLog->setModal(true);
 
-    ui->labelRange->setText("1.5 km");
+    ui->labelRange->setText("1.5 NM");
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
 //    state_radar = RADAR_TRANSMIT; //temporary
@@ -39,7 +39,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
 
 void FrameLeft::setRangeRings(qreal range)
 {
-    ui->labelRingRange->setText(QString::number(range,'f',2)+" Km");
+    ui->labelRingRange->setText(QString::number(range,'f',2)+" NM");
 }
 
 void FrameLeft::contextMenuEvent(QContextMenuEvent *event)
@@ -116,10 +116,23 @@ void FrameLeft::on_pushButtonLogger_clicked()
 
 void FrameLeft::on_pushButtonTxStnb_clicked()
 {
-    if(ui->pushButtonTxStnb->text() == "Standby")
-        emit signal_Standby();
-    else if(ui->pushButtonTxStnb->text() == "Transmit")
+    if(ui->pushButtonTxStnb->text() == "Transmit")
+    {
+        int g;
+        QString rngName = ui->labelRange->text();
+        for (g = ARRAY_SIZE(g_ranges_metric); g > 0; g--)
+        {
+            if (QString(g_ranges_metric[g].name )== rngName)
+                break;
+        }
+        if(g < 0)
+            g = 0;
+
+        emit signal_req_range(g_ranges_metric[g].meters);
         emit signal_Tx();
+    }
+    else if(ui->pushButtonTxStnb->text() == "Standby")
+        emit signal_Standby();
 }
 
 void FrameLeft::trigger_stateChange()

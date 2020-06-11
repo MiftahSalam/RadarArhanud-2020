@@ -611,7 +611,7 @@ void RadarReceive::processFrame(QByteArray data, int len)
              * tx : 1.5 NM -> rec : 2841 -> 0 128 76 76
              * tx : 3   NM -> rec :  8285 > 38 38 2 0
              * tx : 6   NM -> rec :  16538 -> 76 76 2 0
-             * tx : 12  NM -> rec :  31950 large range? 152 153 2 0
+             * tx : 12  NM -> rec :  31950 large range? 152 153 2 0 (0x98990200)
              * tx : 24  NM -> rec :  -1636 large range? 152 153 4 0
              * tx : 36  NM -> rec :  -2255 large range? 228 230 4 0
              * tx : 48  NM -> rec :  -23349 large range? 152 153 8 0
@@ -770,6 +770,7 @@ void RI::timerTimeout()
     if(state_radar == RADAR_TRANSMIT && TIMED_OUT(now,data_timeout))
     {
         emit signal_state_change();
+        state_radar = RADAR_STANDBY;
         ResetSpokes();
     }
     if(state_radar == RADAR_TRANSMIT && TIMED_OUT(now,stay_alive_timeout))
@@ -1088,23 +1089,8 @@ void RI::receiveThread_Report(quint8 report_type, quint8 report_field, quint32 v
     switch (report_type)
     {
     case RADAR_STATE:
-        switch (report_field)
-        {
-        case RADAR_STANDBY:
-            state_radar = state_radar != RADAR_TRANSMIT ? RADAR_STANDBY : RADAR_TRANSMIT;
-            qDebug()<<Q_FUNC_INFO<<"report status RADAR_STANDBY";
-            break;
-        case RADAR_TRANSMIT:
-            state_radar = RADAR_TRANSMIT;
-            qDebug()<<Q_FUNC_INFO<<"report status RADAR_TRANSMIT";
-            break;
-        case RADAR_WAKING_UP:
-            state_radar = RADAR_WAKING_UP;
-            qDebug()<<Q_FUNC_INFO<<"report status RADAR_WAKING_UP";
-            break;
-        default:
-            break;
-        }
+        state_radar = (RadarState)report_field;
+        qDebug()<<Q_FUNC_INFO<<"report status"<<state_radar;
         break;
     case RADAR_FILTER:
         switch (report_field)
@@ -2628,7 +2614,7 @@ void radarTransmit::setMulticastData(QString addr, uint port)
 void radarTransmit::setRange(int meters)
 {
     qDebug()<<Q_FUNC_INFO<<"transmit: range "<<meters;
-    if (meters >= 50 && meters <= 3750272)
+    if (meters >= 50 && meters <= 120008704)
     {
         unsigned int decimeters = (unsigned int)meters * 10;
         const uchar pck[6] = {0x03,

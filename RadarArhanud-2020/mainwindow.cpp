@@ -254,7 +254,6 @@ void MainWindow::trigger_rangeChange(int rng)
     m_range_meters = rng;
 //    m_range_meters = 400; //tes
 
-    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
     if(state_radar == RADAR_TRANSMIT)
     {
         ui->frameLeft->setRangeText(rng);
@@ -262,6 +261,7 @@ void MainWindow::trigger_rangeChange(int rng)
     }
 
     calculateRadarScale();
+    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::trigger_ReqDelAdsb(quint32 icao)
@@ -370,6 +370,7 @@ void MainWindow::calculateRadarScale()
     float line_per_cur_scale;
     float map_meter_per_pixel;
     float radar_meter_per_pixel =  ((double)m_range_meters)/(double)m_range_pixel;
+    radar_meter_per_pixel *= 1.0;
 
     for(zoom_index = distanceList.size()-1; zoom_index>=0
         ; zoom_index--)

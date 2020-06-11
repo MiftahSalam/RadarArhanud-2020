@@ -134,9 +134,9 @@ enum RadarReportType
 enum RadarState
 {
     RADAR_OFF,
+    RADAR_WAKING_UP,
     RADAR_STANDBY,
-    RADAR_TRANSMIT,
-    RADAR_WAKING_UP
+    RADAR_TRANSMIT
 };
 
 enum RadarFilter
@@ -272,9 +272,24 @@ struct TrailSettings
     int trail;
 };
 
-static const QList<int> distanceList = QList<int>()<<5000000<<2000000<<1000000<<1000000<<1000000<<
-                                               100000<<100000<<50000<<50000<<10000<<10000<<
-                                               10000<<1000<<1000<<500<<200<<100<<50<<25;
+static const QList<int> distanceList = QList<int>()<<5000000 //0
+                                                  <<2000000
+                                                 <<1000000
+                                                <<1000000
+                                               <<1000000
+                                              <<100000
+                                             <<100000
+                                            <<50000
+                                           <<50000
+                                          <<10000
+                                         <<10000
+                                        <<10000
+                                       <<1000
+                                      <<1000
+                                     <<500
+                                    <<200
+                                   <<100
+                                  <<50; //17
 
 static const int METRIC_RANGE_COUNT = ARRAY_SIZE(g_ranges_metric);
 
