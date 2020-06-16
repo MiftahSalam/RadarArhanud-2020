@@ -120,7 +120,13 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     //compass ring text
     pen.setWidth(3);
-    pen.setColor(Qt::green);
+
+    pen.setColor(Qt::yellow);
+
+    if(map_settings.show && map_settings.mode == 0)
+        pen.setColor(Qt::yellow);
+    else if(map_settings.show && map_settings.mode == 1)
+        pen.setColor(Qt::black);
 
     painter->setPen(pen);
 
@@ -216,7 +222,10 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     {
         if(map_settings.loading)
         {
-            pen.setColor(Qt::green);
+            if(map_settings.mode == 0)
+                pen.setColor(Qt::yellow);
+            else if(map_settings.mode == 1)
+                pen.setColor(Qt::black);
 
             font.setPixelSize(20);
             font.setBold(true);
@@ -233,7 +242,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     {
         pen = painter->pen();
         pen.setWidth(3);
-        pen.setColor(Qt::green);
+
+        if(map_settings.show && map_settings.mode == 0)
+            pen.setColor(Qt::yellow);
+        else if(map_settings.show && map_settings.mode == 1)
+            pen.setColor(Qt::black);
 
         painter->setPen(pen);
         painter->rotate(currentHeading);

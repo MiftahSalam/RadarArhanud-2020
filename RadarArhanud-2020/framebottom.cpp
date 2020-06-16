@@ -82,7 +82,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
     if(hdg_auto)
     {
-        ui->lineEditHDG->setEnabled(false);
+        ui->lineEditHDG->setReadOnly(true);
         ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);");
 
         if(m_mqtt->isConnected())
@@ -94,7 +94,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     }
     else
     {
-        ui->lineEditHDG->setEnabled(true);
+        ui->lineEditHDG->setReadOnly(false);
         ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
 
         if(m_mqtt->isConnected())
@@ -107,8 +107,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
     if(gps_auto)
     {
-        ui->lineEditLat->setEnabled(false);
-        ui->lineEditLon->setEnabled(false);
+        ui->lineEditLat->setReadOnly(true);
+        ui->lineEditLon->setReadOnly(true);
 
         if(m_mqtt->isConnected())
         {
@@ -119,8 +119,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
     }
     else
     {
-        ui->lineEditLat->setEnabled(true);
-        ui->lineEditLon->setEnabled(true);
+       ui->lineEditLat->setReadOnly(false);
+       ui->lineEditLon->setReadOnly(false);
 
         if(m_mqtt->isConnected())
         {
@@ -633,8 +633,8 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 
     if(gps_auto)
     {
-        ui->lineEditLat->setEnabled(false);
-        ui->lineEditLon->setEnabled(false);
+        ui->lineEditLat->setReadOnly(true);
+        ui->lineEditLon->setReadOnly(true);
         ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
         ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
 
@@ -647,8 +647,8 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
     }
     else
     {
-        ui->lineEditLat->setEnabled(true);
-        ui->lineEditLon->setEnabled(true);
+       ui->lineEditLat->setReadOnly(false);
+       ui->lineEditLon->setReadOnly(false);
         ui->lineEditLat->setStyleSheet("color: rgb(255,255,255);");
         ui->lineEditLon->setStyleSheet("color: rgb(255,255,255);");
 
@@ -673,7 +673,7 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
 
     if(hdg_auto)
     {
-        ui->lineEditHDG->setEnabled(false);
+        ui->lineEditHDG->setReadOnly(true);
         ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
 
         if(m_mqtt->isConnected())
@@ -685,7 +685,7 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
     }
     else
     {
-        ui->lineEditHDG->setEnabled(true);
+        ui->lineEditHDG->setReadOnly(false);
         ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
 
         if(m_mqtt->isConnected())
