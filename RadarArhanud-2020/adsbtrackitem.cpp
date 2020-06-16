@@ -41,13 +41,15 @@ void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     else if(map_settings.show && map_settings.mode == 1)
         pen.setColor(Qt::black);
 
+    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
+
     painter->setPen(pen);
     painter->drawText(22,-20,QString::number(m_adsb_target->icao,16));
     painter->rotate(m_adsb_target->course);
+    painter->drawLine(0,-20,0,-pixel_line_velocity);
+    painter->rotate(-45.);
     painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane1.png"));
 
-    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
 
-    painter->drawLine(0,-20,0,-pixel_line_velocity);
 }
 
