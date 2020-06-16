@@ -271,6 +271,11 @@ struct TrailSettings
     bool enable;
     int trail;
 };
+struct MTISettings
+{
+    bool enable;
+    quint8 threshold;
+};
 
 static const QList<int> distanceList = QList<int>()<<5000000 //0
                                                   <<2000000
@@ -305,6 +310,7 @@ extern IFFSettings iff_settings;
 extern ADSBSettings adsb_settings;
 extern MqttSettings mqtt_settings;
 extern TrailSettings trail_settings;
+extern MTISettings mti_settings;
 
 extern QDateTime cur_elapsed_time;
 extern double currentOwnShipLat;

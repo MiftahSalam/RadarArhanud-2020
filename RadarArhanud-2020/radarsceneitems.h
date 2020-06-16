@@ -3,7 +3,9 @@
 
 #include <QGraphicsItem>
 
-#define PIXEL_PER_KNOT 2.0
+#include "echo/radar_global.h"
+
+#define PIXEL_PER_KNOT 1.0
 
 class RadarSceneItems : public QGraphicsItem
 {

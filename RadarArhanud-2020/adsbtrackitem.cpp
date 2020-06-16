@@ -34,7 +34,12 @@ QPainterPath AdsbTrackItem::shape() const
 void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     QPen pen;
+
     pen.setColor(Qt::yellow);
+    if(map_settings.show && map_settings.mode == 0)
+        pen.setColor(Qt::yellow);
+    else if(map_settings.show && map_settings.mode == 1)
+        pen.setColor(Qt::black);
 
     painter->setPen(pen);
     painter->drawText(22,-20,QString::number(m_adsb_target->icao,16));

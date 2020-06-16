@@ -17,6 +17,9 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->comboBoxMapMode->setCurrentIndex((int)map_settings.mode);
     ui->checkBoxShowHM->setChecked(radar_settings.show_heading_marker);
     ui->checkBoxShowCompass->setChecked(radar_settings.show_compass);
+    ui->checkBoxMTI->setChecked(mti_settings.enable);
+    ui->horizontalSliderMTI->setValue(mti_settings.threshold);
+    ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
 
     dRadar = new DialogRadar(this);
     dIFF = new DialogIFF(this);
@@ -274,4 +277,15 @@ void FrameLeft::on_pushButtonRain_clicked()
 void FrameLeft::on_horizontalSliderRain_valueChanged(int value)
 {
     emit signal_req_control(CT_RAIN,value);
+}
+
+void FrameLeft::on_checkBoxMTI_clicked(bool checked)
+{
+    mti_settings.enable = checked;
+}
+
+void FrameLeft::on_horizontalSliderMTI_valueChanged(int value)
+{
+    mti_settings.threshold = (quint8)value;
+    ui->lineEditMTI->setText(QString::number(value));
 }

@@ -133,6 +133,9 @@ int main(int argc, char *argv[])
         proxy_settings.port = config.value("proxy_settings/port",10000).toInt();
         proxy_settings.enable = config.value("proxy_settings/enable",false).toBool();
 
+        mti_settings.enable = config.value("mti/enable",true).toBool();
+        mti_settings.threshold = (quint8)config.value("mti/threshold",0).toUInt();
+
         currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
         currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();
         currentOwnShipLon = config.value("nav_sensor/longitude",0.0).toDouble();

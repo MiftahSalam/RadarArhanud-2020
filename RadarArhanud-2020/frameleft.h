@@ -72,6 +72,10 @@ private slots:
 
     void on_horizontalSliderRain_valueChanged(int value);
 
+    void on_checkBoxMTI_clicked(bool checked);
+
+    void on_horizontalSliderMTI_valueChanged(int value);
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 

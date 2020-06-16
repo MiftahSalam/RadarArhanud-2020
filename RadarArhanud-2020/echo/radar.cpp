@@ -17,6 +17,7 @@ TrailSettings trail_settings;
 IFFSettings iff_settings;
 ADSBSettings adsb_settings;
 MqttSettings mqtt_settings;
+MTISettings mti_settings;
 
 QDateTime cur_elapsed_time;
 double currentOwnShipLat;
@@ -886,13 +887,13 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
         /*
         enable_mti = true;
         mti_value = 100;
-        if(enable_mti)
+        */
+        if(mti_settings.enable)
         {
             new_strength_info[bearing][radius] = raw_data[radius];
-            if(abs((int)(old_strength_info[bearing][radius] - new_strength_info[bearing][radius])) < mti_value)
+            if(abs((int)(old_strength_info[bearing][radius] - new_strength_info[bearing][radius])) < mti_settings.threshold)
                 raw_data[radius]=0;
         }
-        */
 
         hist_data[radius] = hist_data[radius] << 1;  // shift left history byte 1 bit
         // clear leftmost 2 bits to 00 for ARPA
@@ -904,9 +905,9 @@ void RI::radarReceive_ProcessRadarSpoke(int angle_raw,
         }
 
         /*
-        if(enable_mti)
-            old_strength_info[bearing][radius] = new_strength_info[bearing][radius];
         */
+        if(mti_settings.enable)
+            old_strength_info[bearing][radius] = new_strength_info[bearing][radius];
     }
 
     /*check Guardzone*/
@@ -1035,6 +1036,7 @@ void RI::ComputeColourMap()
 
     if (trail_settings.enable)
     {
+        /*
         int a1 = 255;
         int a2 = 0;
         float delta_a = (float)((a2 - a1) / BLOB_HISTORY_COLOURS);
@@ -1046,6 +1048,27 @@ void RI::ComputeColourMap()
             m_colour_map[history] = history;
             m_colour_map_rgb[history] = QColor(0, 255, 0,a1);
             a1 += (int)delta_a;
+        }
+        */
+        int r1 = 255.0;
+        int g1 = 255.0;
+        int b1 = 255.0;
+        int r2 = 0.0;
+        int g2 = 0.0;
+        int b2 = 0.0;
+        float delta_r = (float)((r2 - r1) / BLOB_HISTORY_COLOURS);
+        float delta_g = (float)((g2 - g1) / BLOB_HISTORY_COLOURS);
+        float delta_b = (float)((b2 - b1) / BLOB_HISTORY_COLOURS);
+
+        for (BlobColour history = BLOB_HISTORY_0;
+             history <= BLOB_HISTORY_MAX;
+             history = (BlobColour)(history + 1))
+        {
+            m_colour_map[history] = history;
+            m_colour_map_rgb[history] = QColor(r1, g1, b1);
+            r1 += (int)delta_r;
+            g1 += (int)delta_g;
+            b1 += (int)delta_b;
         }
     }
 

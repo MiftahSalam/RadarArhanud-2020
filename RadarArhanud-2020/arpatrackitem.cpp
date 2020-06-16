@@ -32,7 +32,12 @@ QPainterPath ArpaTrackItem::shape() const
 void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     QPen pen;
+
     pen.setColor(Qt::yellow);
+    if(map_settings.show && map_settings.mode == 0)
+        pen.setColor(Qt::yellow);
+    else if(map_settings.show && map_settings.mode == 1)
+        pen.setColor(Qt::black);
 
     if(m_arpa_target->getStatus() < 5 && m_arpa_target->getStatus() > 0)
     {
