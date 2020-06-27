@@ -18,8 +18,8 @@ QGroupBox {
     border-color: rgb(196, 160, 0);
     margin-top: 29px;
     font-size: 16px;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
+/*    border-bottom-left-radius: 15px;*/
+/*    border-bottom-right-radius: 15px;*/
 }
 
 QLineEdit::disabled {
