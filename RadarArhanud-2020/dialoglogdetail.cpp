@@ -27,6 +27,8 @@ void DialogLogDetail::setMessage(const QString msg)
 
     if(msg.contains("QNetworkReplyImplPrivate::error: Internal problem"))
         remark = "Cannot connect to map server. Please check internet connection";
+    else if(msg.contains("source not available"))
+        remark = "Cannot connect to navigation sensor. Please check sensor source availability";
 
     detail_text = QString(detail_format).arg(msg).arg(remark);
 

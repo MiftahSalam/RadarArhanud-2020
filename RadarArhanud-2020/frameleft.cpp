@@ -22,6 +22,8 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->horizontalSliderMTI->setValue(mti_settings.threshold);
     ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
 
+    ui->groupBoxSubSistemStatus->hide();
+
     dRadar = new DialogRadar(this);
     dIFF = new DialogIFF(this);
     dADSB = new DialogADSB(this);
@@ -295,7 +297,13 @@ void FrameLeft::resizeEvent(QResizeEvent *event)
 {
     qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
 
+    /*
     int margin = height() - ui->groupBoxSubSistemStatus->height();
     if(margin >= qApp->desktop()->size().height())
+    {
         ui->groupBoxSubSistemStatus->hide();
+        resize(width(),qApp->desktop()->size().height());
+        qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
+    }
+    */
 }
