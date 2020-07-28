@@ -8,7 +8,7 @@
 #include "adsb/adsb.h"
 #include "qtmosq.h"
 
-class RI;
+class RadarEngine;
 
 namespace Ui {
 class FrameBottom;

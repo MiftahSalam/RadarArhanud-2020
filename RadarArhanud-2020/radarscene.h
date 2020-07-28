@@ -3,15 +3,19 @@
 
 #include <QGraphicsScene>
 #include <QTimer>
+#include <QGLBuffer>
+#include <QGLShader>
 
-#include "echo/radar.h"
+#include "radarengine.h"
 #include "adsb/adsbstream.h"
+
+using namespace RadarEngineARND;
 
 class RadarScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    explicit RadarScene(QObject *parent = 0, RI *ri_ptr=0);
+    explicit RadarScene(QObject *parent = 0, RadarEngine *ri_ptr=0);
     ~RadarScene();
 
     void DrawSpoke(int, u_int8_t*, size_t);
@@ -32,9 +36,7 @@ private slots:
     void trigger_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
 
 private:
-    RI *m_ri;
-    RD *m_rd;
-
+    RadarEngine *m_ri;
     QTimer *m_timer;
 
     struct Cursor

@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <qmath.h>
 
-ArpaTrackItem::ArpaTrackItem(ARPATarget *ATarget):
+ArpaTrackItem::ArpaTrackItem(RadarEngineARND::ARPATarget *ATarget):
     m_arpa_target(ATarget)
 {
     itemType = RadarItemsType::ARPA;

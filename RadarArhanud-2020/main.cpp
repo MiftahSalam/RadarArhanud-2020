@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "echo/radar_global.h"
+#include "radarengine_global.h"
 
 #include <log4qt/logger.h>
 #include <log4qt/propertyconfigurator.h>
@@ -8,6 +8,8 @@
 
 #include <QApplication>
 #include <QFile>
+#include <QDir>
+#include <QFileInfo>
 #include <QDebug>
 #include <QSettings>
 

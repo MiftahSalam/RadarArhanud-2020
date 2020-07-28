@@ -7,7 +7,6 @@
 #include <log4qt/signalappender.h>
 
 #include "radarscene.h"
-#include "echo/radar.h"
 #include "adsb/adsbstream.h"
 
 namespace Ui {
@@ -58,8 +57,7 @@ private:
     Ui::MainWindow *ui;
     QTimer *timer;
 
-    RI *m_ri;
-    RA *m_ra;
+    RadarEngineARND::RadarEngine *m_ri;
     AdsbArhnd::ADSBStream *adsb;
     QSet<quint32> adsb_list;
 

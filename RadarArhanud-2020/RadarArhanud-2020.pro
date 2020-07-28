@@ -20,7 +20,6 @@ SOURCES += main.cpp\
     radargraphicview.cpp \
     radarscene.cpp \
     arpatrackitem.cpp \
-    echo/radar.cpp \
     ifftrackitem.cpp \
     radarsceneitems.cpp \
     adsbtrackitem.cpp \
@@ -39,8 +38,6 @@ HEADERS  += mainwindow.h \
     radargraphicview.h \
     radarscene.h \
     arpatrackitem.h \
-    echo/radar.h \
-    echo/radar_global.h \
     ifftrackitem.h \
     radarsceneitems.h \
     adsbtrackitem.h \
@@ -96,3 +93,10 @@ unix:!macx: LIBS += -L/usr/lib/Crypto/ -lCrypto
 
 INCLUDEPATH += /usr/include/Crypto
 DEPENDPATH += /usr/include/Crypto
+
+unix:!macx: LIBS += -L/usr/lib/ -lRadarEngine-arnd
+
+INCLUDEPATH += /usr/include/RadarEngine
+DEPENDPATH += /usr/include/RadarEngine
+
+unix:!macx: PRE_TARGETDEPS += /usr/lib/libRadarEngine-arnd.a

@@ -3,16 +3,16 @@
 
 #include <QGraphicsItem>
 
-#include "echo/radar.h"
+#include <radarengine.h>
 #include "radarsceneitems.h"
 
 class ArpaTrackItem : public RadarSceneItems
 {
 public:
-    explicit ArpaTrackItem(ARPATarget *ATarget);
+    explicit ArpaTrackItem(RadarEngineARND::ARPATarget *ATarget);
 
     int getArpaId() { return m_arpa_target->m_target_id; }
-    ARPATarget *m_arpa_target;
+    RadarEngineARND::ARPATarget *m_arpa_target;
 
     enum { Type = UserType + 1 };
     int type() const override { return Type; }

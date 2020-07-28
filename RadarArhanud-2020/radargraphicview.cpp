@@ -1,5 +1,5 @@
 #include "radargraphicview.h"
-#include "echo/radar_global.h"
+#include <radarengine.h>
 #include "arpatrackitem.h"
 #include "ifftrackitem.h"
 #include "adsbtrackitem.h"

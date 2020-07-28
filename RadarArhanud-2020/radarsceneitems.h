@@ -3,7 +3,7 @@
 
 #include <QGraphicsItem>
 
-#include "echo/radar_global.h"
+#include <radarengine.h>
 
 #define PIXEL_PER_KNOT 1.0
 

@@ -1,6 +1,8 @@
 #include "framebottom.h"
 #include "ui_framebottom.h"
-#include "echo/radar.h"
+#include <radarengine.h>
+
+#include <QMessageBox>
 
 FrameBottom::FrameBottom(QWidget *parent) :
     QFrame(parent),

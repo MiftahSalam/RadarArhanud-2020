@@ -3,8 +3,7 @@
 #include "adsbtrackitem.h"
 
 #include <QDebug>
-
-//ProxySetting proxy_settings;
+#include <qmath.h>
 
 const char fShader [] =
         "uniform sampler2D texture1;\n"
@@ -26,11 +25,9 @@ const char vShader [] =
         "}\n"
         ;
 
-RadarScene::RadarScene(QObject *parent, RI *ri_ptr) :
+RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr) :
     QGraphicsScene(parent),m_ri(ri_ptr),curScale(1.0f)
 {
-    m_rd = RD::make_Draw(m_ri,0);
-
     initGL();
 
     currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
@@ -44,7 +41,7 @@ RadarScene::RadarScene(QObject *parent, RI *ri_ptr) :
 
 void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
-    m_rd->ProcessRadarSpoke(angle,data,len);
+    m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
 }
 
@@ -109,7 +106,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 //        curScale = 1.0f; //temporary
         glScaled(curScale, curScale, 1.);
 
-        m_rd->DrawRadarImage();
+        m_ri->radarDraw->DrawRadarImage();
         glDisable(GL_BLEND);
     }
 

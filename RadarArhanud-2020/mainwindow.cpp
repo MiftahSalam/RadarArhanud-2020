@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QMessageBox>
+#include <QSettings>
 #include <unistd.h>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -18,8 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(logEvent,SIGNAL(appended(QString)),this,SLOT(trigger_logEvent(QString)));
     Log4Qt::Logger::rootLogger()->addAppender(logEvent);
 
-    m_ri = new RI(this);
-    m_ra = new RA(this,m_ri);
+    m_ri = new RadarEngineARND::RadarEngine(this);
     timer = new QTimer(this);
     adsb = NULL;
     adsb_list.clear();
@@ -120,7 +121,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
     scene->DrawSpoke(angle,data,len);
-    m_ra->RefreshArpaTargets();
+    m_ri->radarArpa->RefreshArpaTargets();
 }
 
 /*
@@ -129,31 +130,31 @@ void MainWindow::trigger_ReqDelTrack(int id)
 {
     if(id>-10)
     {
-        for(int i=0;i<m_ra->m_number_of_targets;i++)
-            if(m_ra->m_target[i]->m_target_id == id)
-                m_ra->m_target[i]->SetStatusLost();
+        for(int i=0;i<m_ri->radarArpa->m_number_of_targets;i++)
+            if(m_ri->radarArpa->m_target[i]->m_target_id == id)
+                m_ri->radarArpa->m_target[i]->SetStatusLost();
     }
     else
-        m_ra->DeleteAllTargets();
+        m_ri->radarArpa->DeleteAllTargets();
 }
 /**/
 void MainWindow::timeOut()
 {
 //    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
 
-    m_ra->RefreshArpaTargets();
+    m_ri->radarArpa->RefreshArpaTargets();
 
-    if(m_ra->m_number_of_targets > 0)
+    if(m_ri->radarArpa->m_number_of_targets > 0)
     {
         int num_limit = 5;
-        while ((cur_arpa_id_count < m_ra->m_number_of_targets) && num_limit > 0)
+        while ((cur_arpa_id_count < m_ri->radarArpa->m_number_of_targets) && num_limit > 0)
         {
-            if(m_ra->m_target[cur_arpa_id_count]->m_target_id > 0)
+            if(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id > 0)
             {
-                double dif_lat = deg2rad(m_ra->m_target[cur_arpa_id_count]->m_position.lat);
-                double dif_lon = (deg2rad(m_ra->m_target[cur_arpa_id_count]->m_position.lon)
+                double dif_lat = deg2rad(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat);
+                double dif_lon = (deg2rad(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon)
                                   - deg2rad(currentOwnShipLon))
-                        *cos(deg2rad((currentOwnShipLat+m_ra->m_target[cur_arpa_id_count]->m_position.lat)/2.));
+                        *cos(deg2rad((currentOwnShipLat+m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat)/2.));
                 double R = 6371.;
 
                 dif_lat =  dif_lat - (deg2rad(currentOwnShipLat));
@@ -166,21 +167,21 @@ void MainWindow::timeOut()
                     bearing += 360.0;
                 }
 
-//                qDebug()<<Q_FUNC_INFO<<m_ra->m_target[cur_arpa_id_count]->m_target_id<<km<<bearing;
+//                qDebug()<<Q_FUNC_INFO<<m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id<<km<<bearing;
 
-                emit signal_arpa_target_param(m_ra->m_target[cur_arpa_id_count]->m_target_id,
+                emit signal_arpa_target_param(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id,
                                               km,
                                               bearing,
-                                              m_ra->m_target[cur_arpa_id_count]->m_position.lat,
-                                              m_ra->m_target[cur_arpa_id_count]->m_position.lon,
-                                              m_ra->m_target[cur_arpa_id_count]->m_speed_kn,
-                                              m_ra->m_target[cur_arpa_id_count]->m_course
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat,
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon,
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_speed_kn,
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course
                                               );
             }
             cur_arpa_id_count++;
             num_limit--;
         }
-        if(cur_arpa_id_count >= m_ra->m_number_of_targets)
+        if(cur_arpa_id_count >= m_ri->radarArpa->m_number_of_targets)
             cur_arpa_id_count = 0;
     }
 
@@ -250,7 +251,7 @@ void MainWindow::trigger_rangeChange(int rng)
 {
     qDebug()<<Q_FUNC_INFO<<rng;
 
-    m_ra->range_meters = rng;
+    m_ri->radarArpa->range_meters = rng;
     m_range_meters = rng;
 //    m_range_meters = 400; //tes
 
@@ -358,9 +359,9 @@ void MainWindow::trigger_reqCreateArpa(QPointF position)
     arpa_pos.lat = position.y();
     arpa_pos.lon = position.x();
 
-    m_ra->AcquireNewMARPATarget(arpa_pos);
+    m_ri->radarArpa->AcquireNewMARPATarget(arpa_pos);
 
-    scene->reqNewArpa(true,m_ra->m_target[m_ra->m_number_of_targets-1]);
+    scene->reqNewArpa(true,m_ri->radarArpa->m_target[m_ri->radarArpa->m_number_of_targets-1]);
 }
 
 void MainWindow::calculateRadarScale()
