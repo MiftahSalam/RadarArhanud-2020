@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QAction>
+#include <QDesktopWidget>
 
 FrameLeft::FrameLeft(QWidget *parent) :
     QFrame(parent),
@@ -288,4 +289,13 @@ void FrameLeft::on_horizontalSliderMTI_valueChanged(int value)
 {
     mti_settings.threshold = (quint8)value;
     ui->lineEditMTI->setText(QString::number(value));
+}
+
+void FrameLeft::resizeEvent(QResizeEvent *event)
+{
+    qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
+
+    int margin = height() - ui->groupBoxSubSistemStatus->height();
+    if(margin >= qApp->desktop()->size().height())
+        ui->groupBoxSubSistemStatus->hide();
 }

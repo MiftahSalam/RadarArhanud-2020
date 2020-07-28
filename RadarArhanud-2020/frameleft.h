@@ -78,6 +78,7 @@ private slots:
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     Ui::FrameLeft *ui;
