@@ -185,8 +185,7 @@ void MainWindow::timeOut()
             cur_arpa_id_count = 0;
     }
 
-    QHash<int,AdsbArhnd::ADSBTargetData*> buf_adsb = adsb->getADSB().getTargets();
-
+    qDebug()<<Q_FUNC_INFO<<adsb->getCurrentInputError();
     /*
     ui->frameADSB->updateADSBList(buf_adsb);
     ui->frameADSB->updateADSBStatus(adsb->getCurrentSensorStatus(),cms->getCurrentError().isEmpty());

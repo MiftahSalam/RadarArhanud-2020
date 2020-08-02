@@ -1,6 +1,6 @@
 #include "dialogadsb.h"
 #include "ui_dialogadsb.h"
-#include "echo/radar_global.h"
+#include <radarengine_global.h>
 
 DialogADSB::DialogADSB(QWidget *parent) :
     QDialog(parent),
@@ -17,7 +17,7 @@ DialogADSB::DialogADSB(QWidget *parent) :
     if(conf_list.size() == 2)
     {
         ui->lineEditIPData->setText(conf_list.at(0));
-        ui->lineEditPortData->setText(conf_list.at(0));
+        ui->lineEditPortData->setText(conf_list.at(1));
     }
 
 }
