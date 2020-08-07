@@ -88,6 +88,28 @@ void RadarGraphicView::onTimeOut()
     updateSceneItems();
 }
 
+void RadarGraphicView::showAdsb(bool show)
+{
+    QList<QGraphicsItem*> item_list = items();
+
+    if(item_list.size() > 0)
+    {
+        RadarSceneItems *item;
+
+        for(int i=0; i<item_list.size(); i++)
+        {
+            item = dynamic_cast<RadarSceneItems *>(item_list.at(i));
+
+            if(item->getRadarItemType() == RadarSceneItems::ADSB)
+            {
+                AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(item);
+                adsb_item->setShow(show);
+            }
+        }
+        invalidateScene();
+    }
+}
+
 void RadarGraphicView::updateSceneItems()
 {
     QList<QGraphicsItem*> item_list = items();

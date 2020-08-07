@@ -30,6 +30,7 @@ public:
 
     qreal calculateRangeRing() const;
     void setMapZoomLevel(int index);
+    void showAdsb(bool show);
     void tesCreateItem(); //temporary
 
 signals:

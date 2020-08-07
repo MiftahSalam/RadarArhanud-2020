@@ -1,6 +1,6 @@
 #include "frameleft.h"
 #include "ui_frameleft.h"
-#include "echo/radar_global.h"
+#include <radarengine.h>
 
 #include <QMenu>
 #include <QContextMenuEvent>
@@ -22,7 +22,8 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->horizontalSliderMTI->setValue(mti_settings.threshold);
     ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
 
-    ui->groupBoxSubSistemStatus->hide();
+    if(qApp->desktop()->height() < 1000)
+        ui->groupBoxSubSistemStatus->hide();
 
     dRadar = new DialogRadar(this);
     dIFF = new DialogIFF(this);
@@ -39,8 +40,13 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->labelRange->setText("1.5 NM");
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
+    connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
 //    state_radar = RADAR_TRANSMIT; //temporary
     trigger_stateChange();
+}
+void FrameLeft::setAdsbStatus(int status)
+{
+    dADSB->setStatus(status);
 }
 
 void FrameLeft::setRangeRings(qreal range)

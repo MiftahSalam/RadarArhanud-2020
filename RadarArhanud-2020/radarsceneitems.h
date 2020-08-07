@@ -20,11 +20,13 @@ public:
     };
 
     RadarItemsType getRadarItemType() { return itemType; }
+    void setShow(bool shown);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
     RadarItemsType itemType;
+//    bool show;
 };
 
 #endif // RADARSCENEITEMS_H

@@ -25,16 +25,6 @@ MainWindow::MainWindow(QWidget *parent) :
     adsb = NULL;
     adsb_list.clear();
 
-    first = true;
-
-    initADSB();
-
-    first = false;
-    /*
-    connect(ui->frameAdvanceConnSetting,SIGNAL(signal_ADSBSettingsChanged()),
-            this,SLOT(initADSB()));
-    */
-
     cur_arpa_id_count = 0;
 
     QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
@@ -65,6 +55,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->graphicsView->tesCreateItem(); // temporary
 
+    first = true;
+    initADSB();
+    first = false;
+
     connect(this,SIGNAL(signal_trueLog(QString)),ui->frameLeft,SLOT(trigger_newLog(QString)));
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
@@ -73,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameLeft,SIGNAL(signal_Tx()),m_ri,SIGNAL(signal_sendTx()));
     connect(ui->frameLeft,SIGNAL(signal_radarSettingChange()),
             m_ri,SLOT(trigger_ReqRadarSetting()));
+    connect(ui->frameLeft,SIGNAL(signal_adsbSettingChange()),
+            this,SLOT(initADSB()));
     connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
             m_ri,SLOT(trigger_ReqControlChange(int,int)));
     connect(ui->frameLeft,SIGNAL(signal_req_range(int)),this,SLOT(trigger_rangeChange(int)));
@@ -185,10 +181,9 @@ void MainWindow::timeOut()
             cur_arpa_id_count = 0;
     }
 
-    qDebug()<<Q_FUNC_INFO<<adsb->getCurrentInputError();
+    ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
     /*
-    ui->frameADSB->updateADSBList(buf_adsb);
-    ui->frameADSB->updateADSBStatus(adsb->getCurrentSensorStatus(),cms->getCurrentError().isEmpty());
+    qDebug()<<Q_FUNC_INFO<<adsb->getCurrentInputError();
     */
 
     /*
@@ -218,24 +213,12 @@ void MainWindow::initADSB()
     else
         adsb = new AdsbArhnd::ADSBStream(0,adsbSettingIn);
 
-    /*
-    */
     if(adsb_settings.show_track)
-    {
         connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
-//        connect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
-//        connect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
-    }
     else
-    {
         disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
-//        disconnect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
-    }
 
-    if(!adsb->getCurrentInputError().isEmpty() && (!first))
-    {
-        QMessageBox::warning(this,"Warning",QString("ADSB input error : ").append(adsb->getCurrentInputError()),QMessageBox::Ok);
-    }
+    ui->graphicsView->showAdsb(adsb_settings.show_track);
 }
 
 
@@ -319,7 +302,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         {
 //            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;
             adsb_list.insert(icao);
-            scene->reqNewADSB(adsb->getADSB().getTarget(icao));
+            scene->reqNewADSB(adsb->getADSB().getTarget(icao),adsb_settings.show_track);
         }
         /*
         QSetIterator<quint32> i(adsb_list);
@@ -360,7 +343,7 @@ void MainWindow::trigger_reqCreateArpa(QPointF position)
 
     m_ri->radarArpa->AcquireNewMARPATarget(arpa_pos);
 
-    scene->reqNewArpa(true,m_ri->radarArpa->m_target[m_ri->radarArpa->m_number_of_targets-1]);
+    scene->reqNewArpa(true,true,m_ri->radarArpa->m_target[m_ri->radarArpa->m_number_of_targets-1]);
 }
 
 void MainWindow::calculateRadarScale()

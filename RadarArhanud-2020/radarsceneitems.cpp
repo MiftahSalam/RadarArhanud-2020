@@ -6,6 +6,14 @@ RadarSceneItems::RadarSceneItems()
     setFlag(ItemIsSelectable);
 }
 
+void RadarSceneItems::setShow(bool shown)
+{
+    if(shown)
+        show();
+    else
+        hide();
+}
+
 QVariant RadarSceneItems::itemChange(GraphicsItemChange change, const QVariant &value)
 {
 //    qDebug()<<Q_FUNC_INFO<<change<<value;

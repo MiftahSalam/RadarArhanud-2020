@@ -10,7 +10,7 @@ DialogADSB::DialogADSB(QWidget *parent) :
 
     ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
     ui->lineEditPortData->setValidator(new QIntValidator(3000,65536,ui->lineEditPortData));
-
+    ui->checkBoxShowTrack->setChecked(adsb_settings.show_track);
     QStringList conf_list = adsb_settings.config.split(";");
     qDebug()<<Q_FUNC_INFO<<conf_list;
 
@@ -20,6 +20,39 @@ DialogADSB::DialogADSB(QWidget *parent) :
         ui->lineEditPortData->setText(conf_list.at(1));
     }
 
+}
+
+void DialogADSB::setStatus(int status)
+{
+    switch (status)
+    {
+    case 0:
+        ui->labelConnection->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelConnection->setText("Offline");
+        ui->labelError->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelError->setText("Not available");
+        break;
+    case 1:
+        ui->labelConnection->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelConnection->setText("Online");
+        ui->labelError->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelError->setText("No Data");
+        break;
+    case 2:
+        ui->labelConnection->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelConnection->setText("Online");
+        ui->labelError->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelError->setText("Data Unknown");
+        break;
+    case 3:
+        ui->labelConnection->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelConnection->setText("Online");
+        ui->labelError->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelError->setText("No Error");
+        break;
+    default:
+        break;
+    }
 }
 
 DialogADSB::~DialogADSB()
@@ -34,5 +67,11 @@ void DialogADSB::on_pushButtonApply_clicked()
     conf_list<<ui->lineEditIPData->text().remove(" ")<<ui->lineEditPortData->text();
     adsb_settings.config = conf_list.join(";");
 
+    emit signal_settingChange();
+}
+
+void DialogADSB::on_checkBoxShowTrack_clicked(bool checked)
+{
+    adsb_settings.show_track = checked;
     emit signal_settingChange();
 }

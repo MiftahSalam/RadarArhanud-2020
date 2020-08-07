@@ -381,21 +381,25 @@ void RadarScene::mouseReleaseEvent(QMouseEvent *event)
     qDebug()<<Q_FUNC_INFO;
 }
 
-void RadarScene::reqNewArpa(bool create, ARPATarget *arpa_ptr)
+void RadarScene::reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr)
 {
     qDebug()<<Q_FUNC_INFO<<create<<arpa_ptr;
     qDebug()<<Q_FUNC_INFO<<items().size();
 
     if(create)
     {
-        addItem(new ArpaTrackItem(arpa_ptr));
+        ArpaTrackItem *newArpaTrack = new ArpaTrackItem(arpa_ptr);
+        newArpaTrack->setShow(show);
+        addItem(newArpaTrack);
     }
     /*
     */
 }
 
-void RadarScene::reqNewADSB(AdsbArhnd::ADSBTargetData* target)
+void RadarScene::reqNewADSB(AdsbArhnd::ADSBTargetData* target, bool show)
 {
 //    qDebug()<<Q_FUNC_INFO<<target;
-    addItem(new AdsbTrackItem(target));
+    AdsbTrackItem *newAdsbTrack = new AdsbTrackItem(target);
+    newAdsbTrack->setShow(show);
+    addItem(newAdsbTrack);
 }

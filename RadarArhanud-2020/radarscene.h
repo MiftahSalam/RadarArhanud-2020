@@ -19,8 +19,8 @@ public:
     ~RadarScene();
 
     void DrawSpoke(int, u_int8_t*, size_t);
-    void reqNewArpa(bool create, ARPATarget *arpa_ptr);
-    void reqNewADSB(AdsbArhnd::ADSBTargetData *target);
+    void reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr);
+    void reqNewADSB(AdsbArhnd::ADSBTargetData *target,bool show);
     void setRadarScale(float scale);
     void drawBackground(QPainter *painter, const QRectF &) override;
 //    void drawForeground(QPainter *painter, const QRectF &) override;

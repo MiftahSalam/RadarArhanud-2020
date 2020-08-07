@@ -23,6 +23,7 @@ public:
 
     void setRangeRings(qreal range_ring);
     void setRangeText(int range);
+    void setAdsbStatus(int status);
 
 signals:
     void signal_exit();
@@ -32,6 +33,7 @@ signals:
     void signal_radarSettingChange();
     void signal_req_range(int range_meter);
     void signal_req_control(int ct, int val);
+    void signal_adsbSettingChange();
 
 private slots:
     void trigger_newLog(QString msg);

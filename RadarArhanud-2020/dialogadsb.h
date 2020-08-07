@@ -15,11 +15,15 @@ public:
     explicit DialogADSB(QWidget *parent = 0);
     ~DialogADSB();
     
+    void setStatus(int status);
+
 signals:
     void signal_settingChange();
 
 private slots:
     void on_pushButtonApply_clicked();
+
+    void on_checkBoxShowTrack_clicked(bool checked);
 
 private:
     Ui::DialogADSB *ui;
