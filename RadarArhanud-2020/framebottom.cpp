@@ -72,6 +72,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     connect(m_mqtt,SIGNAL(disconnectEnable()),this,SLOT(trigger_OSD_disconnected()));
 
     dataCount_mqtt_arpa = 0;
+    dataCount_mqtt_adsb = 0;
     no_hdg_count = 20;
     hdg_col_normal = true;
     no_gps_count = 20;
@@ -456,23 +457,54 @@ void FrameBottom::timeoutUpdate()
             m_mqtt->publish(m_mqtt->getMID(), "radar", mq_databyte.size(), mq_databyte.data(), 2, false);
 
             dataCount_mqtt_arpa++;
-//            qDebug()<<"dataCount_mqtt1"<<dataCount_mqtt_arpa;
+        }
+
+        if(adsbModel->rowCount()>0 && adsbModel->rowCount()>dataCount_mqtt_adsb)
+        {
+            QString id,rng,brn,spd,crs,mq_data;
+            QModelIndex index = arpaModel->index(dataCount_mqtt_adsb,0);
+            QByteArray mq_databyte;
+
+            id = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,1);
+            rng = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,2);
+            brn = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,3);
+            spd = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,4);
+            crs = adsbModel->data(index).toString();
+
+            mq_data = id+"#"+rng+"#"+brn+"#"+spd+"#"+crs;
+            mq_databyte = mq_data.toUtf8();
+            m_mqtt->publish(m_mqtt->getMID(), "adsb", mq_databyte.size(), mq_databyte.data(), 2, false);
+
+            dataCount_mqtt_adsb++;
         }
     }
 
     if(dataCount_mqtt_arpa == arpaModel->rowCount())
     {
-//        qDebug()<<"dataCount_mqtt_arpa"<<dataCount_mqtt_arpa;
         dataCount_mqtt_arpa = 0;
     }
     else if(dataCount_mqtt_arpa > arpaModel->rowCount())
     {
-//        qDebug()<<"dataCount_mqtt3"<<dataCount_mqtt_arpa;
         dataCount_mqtt_arpa = arpaModel->rowCount() - 1;
         if(dataCount_mqtt_arpa<1)
             dataCount_mqtt_arpa = 0;
     }
-//    qDebug()<<Q_FUNC_INFO<<target_time_tag_list.size()<<target_to_delete.size();
+
+    if(dataCount_mqtt_adsb == adsbModel->rowCount())
+    {
+        dataCount_mqtt_adsb = 0;
+    }
+    else if(dataCount_mqtt_adsb > adsbModel->rowCount())
+    {
+        dataCount_mqtt_adsb = adsbModel->rowCount() - 1;
+        if(dataCount_mqtt_adsb<1)
+            dataCount_mqtt_adsb = 0;
+    }
+    //    qDebug()<<Q_FUNC_INFO<<target_time_tag_list.size()<<target_to_delete.size();
 
 
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
