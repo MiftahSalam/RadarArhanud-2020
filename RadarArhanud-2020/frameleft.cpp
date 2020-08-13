@@ -41,7 +41,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
-//    state_radar = RADAR_TRANSMIT; //temporary
+//    state_radar = RADAR_TRANSMIT; //temporary for test
     trigger_stateChange();
 }
 void FrameLeft::setAdsbStatus(int status)
@@ -302,14 +302,4 @@ void FrameLeft::on_horizontalSliderMTI_valueChanged(int value)
 void FrameLeft::resizeEvent(QResizeEvent *event)
 {
     qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
-
-    /*
-    int margin = height() - ui->groupBoxSubSistemStatus->height();
-    if(margin >= qApp->desktop()->size().height())
-    {
-        ui->groupBoxSubSistemStatus->hide();
-        resize(width(),qApp->desktop()->size().height());
-        qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
-    }
-    */
 }

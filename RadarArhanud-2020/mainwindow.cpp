@@ -182,22 +182,6 @@ void MainWindow::timeOut()
     }
 
     ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
-    /*
-    qDebug()<<Q_FUNC_INFO<<adsb->getCurrentInputError();
-    */
-
-    /*
-    if(curShowADSBStream ^ showADSBStream)
-    {
-        qDebug()<<Q_FUNC_INFO<<curShowADSBStream<<showADSBStream;
-        curShowADSBStream = showADSBStream;
-
-        if(curShowADSBStream)
-            connect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
-        else
-            disconnect(adsb,SIGNAL(signal_sendStreamData(QByteArray)),ui->frameAdvanceStream,SLOT(setADSBStreamData(QByteArray)));
-    }
-    */
 }
 
 void MainWindow::initADSB()
