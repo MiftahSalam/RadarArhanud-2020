@@ -135,7 +135,6 @@ FrameBottom::FrameBottom(QWidget *parent) :
     }
 
     timer.start(1000);
-
 }
 
 void FrameBottom::trigger_OSD_received(QString msg)

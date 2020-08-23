@@ -1,6 +1,6 @@
 #include "dialogradar.h"
 #include "ui_dialogradar.h"
-#include "echo/radar_global.h"
+#include <RadarEngine/radarengine_global.h>
 
 DialogRadar::DialogRadar(QWidget *parent) :
     QDialog(parent),

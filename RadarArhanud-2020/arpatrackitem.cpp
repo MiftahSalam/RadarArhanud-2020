@@ -28,7 +28,6 @@ QPainterPath ArpaTrackItem::shape() const
     return path;
 }
 
-#include <QRadialGradient>
 void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     QPen pen;

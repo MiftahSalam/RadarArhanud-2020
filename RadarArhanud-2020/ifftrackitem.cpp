@@ -17,7 +17,7 @@ QRectF IFFTrackItem::boundingRect() const
 {
     qreal pixel_line_velocity = PIXEL_PER_KNOT*10.0;
 
-    return QRectF( -20, -20-pixel_line_velocity, 52, 40+pixel_line_velocity);
+    return QRectF( -10, -10-pixel_line_velocity, 32, 20+pixel_line_velocity);
 }
 
 QPainterPath IFFTrackItem::shape() const
@@ -25,8 +25,8 @@ QPainterPath IFFTrackItem::shape() const
     qreal pixel_line_velocity = PIXEL_PER_KNOT*10.0;
     QPainterPath path;
 
-    path.addRect(-20, -20-pixel_line_velocity, 40, 40+pixel_line_velocity);
-    path.addRect(22, -20, 10, 5);
+    path.addRect(-10, -10-pixel_line_velocity, 20, 20+pixel_line_velocity);
+    path.addRect(20, -20, 10, 5);
     return path;
 }
 
@@ -41,13 +41,28 @@ void IFFTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         pen.setColor(Qt::black);
 
     painter->setPen(pen);
-    painter->drawText(22,-20,"Quadron-31");
+    painter->setBrush(QBrush(Qt::yellow,Qt::SolidPattern));
+
+    QPoint points[6];
+    points[0] = QPoint(0,0);
+    points[1] = QPoint(10,-10);
+    points[2] = QPoint(20,0);
+    points[3] = QPoint(20,-20);
+    points[4] = QPoint(10,-10);
+    points[5] = QPoint(0,-20);
+
+    painter->drawPolygon(&points[0],6);
+    painter->drawText(20,20,"Quadron-31");
+
+    /*
+    painter->setPen(pen);
     painter->rotate(170.0);
     painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane_militer1.png"));
 
     qreal pixel_line_velocity = PIXEL_PER_KNOT*20.0;
 
     painter->drawLine(0,-20,0,-pixel_line_velocity);
+    */
 
     /*
     QPen pen;

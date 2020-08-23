@@ -297,7 +297,6 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         }
         */
     }
-//    qDebug()<<endl;
     emit signal_adsb_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
 
     /*

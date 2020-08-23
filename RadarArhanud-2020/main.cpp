@@ -58,9 +58,6 @@ int main(int argc, char *argv[])
         config.setValue("nav_sensor/gps_auto",true);
         config.setValue("nav_sensor/heading_auto",false);
 
-        config.setValue("mqtt/ip","127.0.0.1");
-        config.setValue("mqtt/port",18830);
-
         config.setValue("adsb/config","127.0.0.1;12000");
         config.setValue("adsb/type",(int)AdsbArhnd::UDP);
         config.setValue("adsb/show_track",true);
@@ -114,13 +111,9 @@ int main(int argc, char *argv[])
         iff_settings.port = config.value("iff/port",8330).toUInt();
         iff_settings.show_track = config.value("iff/show_track",true).toBool();
 
-        config.setValue("mqtt/ip","127.0.0.1");
-        config.setValue("mqtt/port",1883);
-        config.setValue("mqtt/id","arhanud3");
-
         mqtt_settings.ip = config.value("mqtt/ip","127.0.0.1").toString();
         mqtt_settings.port = config.value("mqtt/port",1883).toUInt();
-        mqtt_settings.id = config.value("mqtt/id",true).toString();
+        mqtt_settings.id = config.value("mqtt/id","arhanud3").toString();
 
         adsb_settings.config = config.value("adsb/config","127.0.0.1;12000").toString();
         adsb_settings.type = (AdsbArhnd::StreamType)config.value("adsb/type",QVariant(-1)).toInt();
