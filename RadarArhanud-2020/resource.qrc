@@ -8,5 +8,6 @@
         <file>airplane_militer1.png</file>
         <file>airplane1.png</file>
         <file>airplane.png</file>
+        <file>icon_radar.png</file>
     </qresource>
 </RCC>

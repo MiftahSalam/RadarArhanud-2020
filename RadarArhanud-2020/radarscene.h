@@ -55,7 +55,7 @@ private:
     GLTextureCube *m_text;
     QVector<GLfloat> vertData;
 
-    float curScale;
+    float curScale,curAngle;
 
     QImage mapImage;
 

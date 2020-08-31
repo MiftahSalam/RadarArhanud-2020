@@ -78,6 +78,8 @@ private slots:
 
     void on_horizontalSliderMTI_valueChanged(int value);
 
+    void on_pushButtonARPA_clicked();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;

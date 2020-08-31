@@ -303,3 +303,8 @@ void FrameLeft::resizeEvent(QResizeEvent *event)
 {
     qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
 }
+
+void FrameLeft::on_pushButtonARPA_clicked()
+{
+    system("gedit"); //path to tilt application
+}

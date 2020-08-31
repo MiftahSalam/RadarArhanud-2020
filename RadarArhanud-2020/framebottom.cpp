@@ -18,8 +18,10 @@ FrameBottom::FrameBottom(QWidget *parent) :
     QStandardItem *item1 = new QStandardItem("ID");
     QStandardItem *item2 = new QStandardItem("Range (Km)");
     QStandardItem *item3 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item4 = new QStandardItem("Speed (kts)");
-    QStandardItem *item5 = new QStandardItem("Course (deg)");
+    QStandardItem *item4 = new QStandardItem("Latitude (deg)");
+    QStandardItem *item5 = new QStandardItem("Longitude (deg)");
+    QStandardItem *item6 = new QStandardItem("Speed (kts)");
+    QStandardItem *item7 = new QStandardItem("Course (deg)");
 
     arpaModel = new QStandardItemModel(this);
     arpaModel->setColumnCount(5);
@@ -28,26 +30,28 @@ FrameBottom::FrameBottom(QWidget *parent) :
     arpaModel->setHorizontalHeaderItem(2,item3);
     arpaModel->setHorizontalHeaderItem(3,item4);
     arpaModel->setHorizontalHeaderItem(4,item5);
+    arpaModel->setHorizontalHeaderItem(5,item6);
+    arpaModel->setHorizontalHeaderItem(6,item7);
 
-    QStandardItem *item6 = new QStandardItem("ICAO");
-    QStandardItem *item7 = new QStandardItem("Range (Km)");
-    QStandardItem *item8 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item9 = new QStandardItem("Altitude (m)");
-    QStandardItem *item10 = new QStandardItem("Speed (kts)");
-    QStandardItem *item11 = new QStandardItem("Course (deg)");
-    QStandardItem *item12 = new QStandardItem("Callsign");
-    QStandardItem *item13 = new QStandardItem("Country");
+    QStandardItem *item8 = new QStandardItem("ICAO");
+    QStandardItem *item9 = new QStandardItem("Range (Km)");
+    QStandardItem *item10 = new QStandardItem("Bearing (deg)");
+    QStandardItem *item11 = new QStandardItem("Altitude (m)");
+    QStandardItem *item12 = new QStandardItem("Speed (kts)");
+    QStandardItem *item13 = new QStandardItem("Course (deg)");
+    QStandardItem *item14 = new QStandardItem("Callsign");
+    QStandardItem *item15 = new QStandardItem("Country");
 
     adsbModel = new QStandardItemModel(this);
     adsbModel->setColumnCount(8);
-    adsbModel->setHorizontalHeaderItem(0,item6);
-    adsbModel->setHorizontalHeaderItem(1,item7);
-    adsbModel->setHorizontalHeaderItem(2,item8);
-    adsbModel->setHorizontalHeaderItem(3,item9);
-    adsbModel->setHorizontalHeaderItem(4,item10);
-    adsbModel->setHorizontalHeaderItem(5,item11);
-    adsbModel->setHorizontalHeaderItem(6,item12);
-    adsbModel->setHorizontalHeaderItem(7,item13);
+    adsbModel->setHorizontalHeaderItem(0,item8);
+    adsbModel->setHorizontalHeaderItem(1,item9);
+    adsbModel->setHorizontalHeaderItem(2,item10);
+    adsbModel->setHorizontalHeaderItem(3,item11);
+    adsbModel->setHorizontalHeaderItem(4,item12);
+    adsbModel->setHorizontalHeaderItem(5,item13);
+    adsbModel->setHorizontalHeaderItem(6,item14);
+    adsbModel->setHorizontalHeaderItem(7,item15);
 
     ui->tableViewTrackArpa->setModel(arpaModel);
     ui->tableViewTrackAdsb->setModel(adsbModel);
@@ -342,8 +346,12 @@ void FrameBottom::trigger_arpa_target_param(int id, double rng, double brn, doub
             arpaModel->setData(arpaModel->index(row,2,QModelIndex()),
                            QString::number(brn,'f',1));
             arpaModel->setData(arpaModel->index(row,3,QModelIndex()),
-                           QString::number(spd,'f',1));
+                           QString::number(lat,'f',6));
             arpaModel->setData(arpaModel->index(row,4,QModelIndex()),
+                           QString::number(lon,'f',6));
+            arpaModel->setData(arpaModel->index(row,5,QModelIndex()),
+                           QString::number(spd,'f',1));
+            arpaModel->setData(arpaModel->index(row,6,QModelIndex()),
                            QString::number(crs,'f',1));
         }
         else
@@ -370,8 +378,12 @@ void FrameBottom::insertArpaList(int id, double rng, double brn, double lat, dou
     arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,2,QModelIndex()),
                    QString::number(brn,'f',1));
     arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,3,QModelIndex()),
-                   QString::number(spd,'f',1));
+                   QString::number(lat,'f',6));
     arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,4,QModelIndex()),
+                   QString::number(lon,'f',6));
+    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,5,QModelIndex()),
+                   QString::number(spd,'f',1));
+    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,6,QModelIndex()),
                    QString::number(crs,'f',1));
 
     arpaModel->item(arpaModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
@@ -379,6 +391,8 @@ void FrameBottom::insertArpaList(int id, double rng, double brn, double lat, dou
     arpaModel->item(arpaModel->rowCount()-1,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     arpaModel->item(arpaModel->rowCount()-1,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     arpaModel->item(arpaModel->rowCount()-1,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    arpaModel->item(arpaModel->rowCount()-1,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    arpaModel->item(arpaModel->rowCount()-1,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 }
 
 void FrameBottom::timeoutUpdate()

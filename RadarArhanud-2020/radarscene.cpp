@@ -26,7 +26,7 @@ const char vShader [] =
         ;
 
 RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr) :
-    QGraphicsScene(parent),m_ri(ri_ptr),curScale(1.0f)
+    QGraphicsScene(parent),m_ri(ri_ptr),curScale(1.0f),curAngle(0.)
 {
     initGL();
 
@@ -41,6 +41,7 @@ RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr) :
 
 void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
+    curAngle = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
 }
@@ -108,6 +109,13 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
         m_ri->radarDraw->DrawRadarImage();
         glDisable(GL_BLEND);
+
+        glBegin(GL_LINES);
+        glColor3f(0,1,0);
+        glVertex2f(0,0);
+        glVertex2f(sin(static_cast<float>(deg2rad(curAngle))),
+                   cos(static_cast<float>(deg2rad(curAngle))));
+        glEnd();
     }
 
     QFont font;
