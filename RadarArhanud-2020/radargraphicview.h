@@ -37,6 +37,7 @@ signals:
     void signal_mapChange(QImage img);
     void signal_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
     void signal_reqCreateArpa(QPointF position);
+    void signal_positionChange();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -55,7 +56,6 @@ private:
     QImage mapImage;
     QTimer *timer;
     int curLoadingMapSize;
-    double curLat,curLon;
 
     void updateSceneItems();
 };

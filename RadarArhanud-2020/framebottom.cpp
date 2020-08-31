@@ -36,11 +36,13 @@ FrameBottom::FrameBottom(QWidget *parent) :
     QStandardItem *item8 = new QStandardItem("ICAO");
     QStandardItem *item9 = new QStandardItem("Range (Km)");
     QStandardItem *item10 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item11 = new QStandardItem("Altitude (m)");
-    QStandardItem *item12 = new QStandardItem("Speed (kts)");
-    QStandardItem *item13 = new QStandardItem("Course (deg)");
-    QStandardItem *item14 = new QStandardItem("Callsign");
-    QStandardItem *item15 = new QStandardItem("Country");
+    QStandardItem *item11 = new QStandardItem("Latitude (deg)");
+    QStandardItem *item12 = new QStandardItem("Longitude (deg)");
+    QStandardItem *item13 = new QStandardItem("Altitude (m)");
+    QStandardItem *item14 = new QStandardItem("Speed (kts)");
+    QStandardItem *item15 = new QStandardItem("Course (deg)");
+    QStandardItem *item16 = new QStandardItem("Callsign");
+    QStandardItem *item17 = new QStandardItem("Country");
 
     adsbModel = new QStandardItemModel(this);
     adsbModel->setColumnCount(8);
@@ -52,6 +54,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
     adsbModel->setHorizontalHeaderItem(5,item13);
     adsbModel->setHorizontalHeaderItem(6,item14);
     adsbModel->setHorizontalHeaderItem(7,item15);
+    adsbModel->setHorizontalHeaderItem(8,item16);
+    adsbModel->setHorizontalHeaderItem(9,item17);
 
     ui->tableViewTrackArpa->setModel(arpaModel);
     ui->tableViewTrackAdsb->setModel(adsbModel);
@@ -77,10 +81,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
     dataCount_mqtt_arpa = 0;
     dataCount_mqtt_adsb = 0;
-    no_hdg_count = 20;
-    hdg_col_normal = true;
-    no_gps_count = 20;
-    gps_col_normal = true;
+    no_osd_count = 20;
+    osd_col_normal = true;
 
     if(m_mqtt->isConnected())
         qInfo()<<"Connected to nav data server";
@@ -94,7 +96,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
         if(m_mqtt->isConnected())
         {
-            int ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            int ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
             if(ret_val != 0)
                 qWarning()<<"Heading source not available";
         }
@@ -106,7 +108,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
         if(m_mqtt->isConnected())
         {
-            int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
+            int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
             if(ret_val != 0)
                 qDebug()<<"error unsubscribe from heading source";
         }
@@ -143,24 +145,26 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
 void FrameBottom::trigger_OSD_received(QString msg)
 {
-    if(msg.contains("gyro"))
+    if(msg.contains("gps>") )
     {
-        no_hdg_count = 0;
-        msg.remove("gyro>");
-        qDebug()<<Q_FUNC_INFO<<"hdg"<<msg;
-        ui->lineEditHDG->setText(msg);
-        currentHeading = msg.toDouble();
-    }
-    else if(msg.contains("gps>") )
-    {
-        no_gps_count = 0;
-        qDebug()<<Q_FUNC_INFO<<"lat"<<msg;
-        msg.remove("gps>");
-        QStringList gpsData = msg.split("#");
-        ui->lineEditLat->setText(gpsData.at(0));
-        ui->lineEditLon->setText(gpsData.at(1));
-        currentOwnShipLat = gpsData.at(0).toDouble();
-        currentOwnShipLon = gpsData.at(1).toDouble();
+        no_osd_count = 0;
+
+        qDebug()<<Q_FUNC_INFO<<"osd"<<msg.remove("?").remove("!").remove("gps>");
+        QStringList msg_list = msg.split("#",QString::SkipEmptyParts);
+
+        if(msg_list.size() == 3)
+        {
+            currentOwnShipLat = msg_list.at(0).toDouble();
+            currentOwnShipLon = msg_list.at(1).toDouble();
+            currentHeading = msg_list.at(2).toDouble();
+
+            ui->lineEditLat->setText(msg_list.at(0));
+            ui->lineEditLon->setText(msg_list.at(1));
+            ui->lineEditHDG->setText(msg_list.at(2));
+        }
+        else
+            qDebug()<<Q_FUNC_INFO<<"osd invalid";
+
     }
 }
 
@@ -221,27 +225,40 @@ void FrameBottom::trigger_adsb_target_update(
                                    QString::number(brn,'f',1));
             }
 
-            if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+            if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
+            {
                 adsbModel->setData(adsbModel->index(row,3,QModelIndex()),"-");
+                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
+            }
             else
+            {
                 adsbModel->setData(adsbModel->index(row,3,QModelIndex()),
+                                   QString::number(lat,'f',6));
+                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
+                                   QString::number(lat,'f',6));
+            }
+
+            if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
+            else
+                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
                                    QString::number(alt,'f',1));
 
             if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
             {
-                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
-                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
+                adsbModel->setData(adsbModel->index(row,6,QModelIndex()),"-");
+                adsbModel->setData(adsbModel->index(row,7,QModelIndex()),"-");
             }
             else
             {
-                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
+                adsbModel->setData(adsbModel->index(row,6,QModelIndex()),
                                    QString::number(spd,'f',1));
-                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
+                adsbModel->setData(adsbModel->index(row,7,QModelIndex()),
                                    QString::number(crs,'f',1));
             }
 
-            adsbModel->setData(adsbModel->index(row,6,QModelIndex()),call_sign);
-            adsbModel->setData(adsbModel->index(row,7,QModelIndex()),country);
+            adsbModel->setData(adsbModel->index(row,8,QModelIndex()),call_sign);
+            adsbModel->setData(adsbModel->index(row,9,QModelIndex()),country);
         }
         else
             insertADSBList(icao,rng,brn,lat,lon,spd,crs,alt,call_sign,country);
@@ -288,27 +305,40 @@ void FrameBottom::insertADSBList(
                            QString::number(brn,'f',1));
     }
 
-    if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+    if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
+    {
         adsbModel->setData(adsbModel->index(row,3,QModelIndex()),"-");
+        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
+    }
     else
+    {
         adsbModel->setData(adsbModel->index(row,3,QModelIndex()),
+                           QString::number(lat,'f',5));
+        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
+                           QString::number(lon,'f',5));
+    }
+
+    if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
+    else
+        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
                            QString::number(alt,'f',1));
 
     if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
     {
-        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
-        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
+        adsbModel->setData(adsbModel->index(row,6,QModelIndex()),"-");
+        adsbModel->setData(adsbModel->index(row,7,QModelIndex()),"-");
     }
     else
     {
-        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
+        adsbModel->setData(adsbModel->index(row,6,QModelIndex()),
                            QString::number(spd,'f',1));
-        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
+        adsbModel->setData(adsbModel->index(row,7,QModelIndex()),
                            QString::number(crs,'f',1));
     }
 
-    adsbModel->setData(adsbModel->index(row,6,QModelIndex()),call_sign);
-    adsbModel->setData(adsbModel->index(row,7,QModelIndex()),country);
+    adsbModel->setData(adsbModel->index(row,8,QModelIndex()),call_sign);
+    adsbModel->setData(adsbModel->index(row,9,QModelIndex()),country);
 
     adsbModel->item(row,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     adsbModel->item(row,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
@@ -318,6 +348,8 @@ void FrameBottom::insertADSBList(
     adsbModel->item(row,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     adsbModel->item(row,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     adsbModel->item(row,7)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    adsbModel->item(row,8)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    adsbModel->item(row,9)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
 }
 
@@ -451,7 +483,7 @@ void FrameBottom::timeoutUpdate()
     {
         if(arpaModel->rowCount()>0 && arpaModel->rowCount()>dataCount_mqtt_arpa)
         {
-            QString id,rng,brn,spd,crs,mq_data;
+            QString id,rng,brn,lat,lon,spd,crs,mq_data;
             QModelIndex index = arpaModel->index(dataCount_mqtt_arpa,0);
             QByteArray mq_databyte;
 
@@ -461,11 +493,15 @@ void FrameBottom::timeoutUpdate()
             index = arpaModel->index(dataCount_mqtt_arpa,2);
             brn = arpaModel->data(index).toString();
             index = arpaModel->index(dataCount_mqtt_arpa,3);
-            spd = arpaModel->data(index).toString();
+            lat = arpaModel->data(index).toString();
             index = arpaModel->index(dataCount_mqtt_arpa,4);
+            lon = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,5);
+            spd = arpaModel->data(index).toString();
+            index = arpaModel->index(dataCount_mqtt_arpa,6);
             crs = arpaModel->data(index).toString();
 
-            mq_data = id+"#"+rng+"#"+brn+"#"+spd+"#"+crs;
+            mq_data = id+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+spd+"#"+crs;
             mq_databyte = mq_data.toUtf8();
             m_mqtt->publish(m_mqtt->getMID(), "radar", mq_databyte.size(), mq_databyte.data(), 2, false);
 
@@ -474,21 +510,28 @@ void FrameBottom::timeoutUpdate()
 
         if(adsbModel->rowCount()>0 && adsbModel->rowCount()>dataCount_mqtt_adsb)
         {
-            QString id,rng,brn,spd,crs,mq_data;
-            QModelIndex index = arpaModel->index(dataCount_mqtt_adsb,0);
+            QString icao,rng,brn,lat,lon,alt,spd,crs,mq_data;
+            QModelIndex index = adsbModel->index(dataCount_mqtt_adsb,0);
             QByteArray mq_databyte;
 
-            id = adsbModel->data(index).toString();
+            icao = adsbModel->data(index).toString();
             index = adsbModel->index(dataCount_mqtt_adsb,1);
             rng = adsbModel->data(index).toString();
             index = adsbModel->index(dataCount_mqtt_adsb,2);
             brn = adsbModel->data(index).toString();
             index = adsbModel->index(dataCount_mqtt_adsb,3);
-            spd = adsbModel->data(index).toString();
+            lat = adsbModel->data(index).toString();
             index = adsbModel->index(dataCount_mqtt_adsb,4);
+            lon = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,5);
+            alt = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,6);
+            spd = adsbModel->data(index).toString();
+            index = adsbModel->index(dataCount_mqtt_adsb,7);
             crs = adsbModel->data(index).toString();
 
-            mq_data = id+"#"+rng+"#"+brn+"#"+spd+"#"+crs;
+//            qDebug()<<Q_FUNC_INFO<<icao<<rng<<brn<<lat<<lon<<alt<<spd<<crs;
+            mq_data = icao+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs;
             mq_databyte = mq_data.toUtf8();
             m_mqtt->publish(m_mqtt->getMID(), "adsb", mq_databyte.size(), mq_databyte.data(), 2, false);
 
@@ -522,61 +565,34 @@ void FrameBottom::timeoutUpdate()
 
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
 
-    if(hdg_auto)
+    if(hdg_auto && gps_auto)
     {
-        bool hdg_col_normal_buf;
-        no_hdg_count++;
-        if(no_hdg_count>200)
-            no_hdg_count = 11;
+        bool osd_col_normal_buf;
+        no_osd_count++;
+        if(no_osd_count>200)
+            no_osd_count = 11;
 
-        if(no_hdg_count>10)
-            hdg_col_normal_buf = false;
+        if(no_osd_count>10)
+            osd_col_normal_buf = false;
         else
-            hdg_col_normal_buf = true;
+            osd_col_normal_buf = true;
 
-        if(hdg_col_normal_buf^hdg_col_normal)
+        if(osd_col_normal_buf^osd_col_normal)
         {
-            hdg_col_normal = hdg_col_normal_buf;
-            if(hdg_col_normal)
+            osd_col_normal = osd_col_normal_buf;
+            if(osd_col_normal)
             {
                 ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);");
-                qInfo()<<"Heading source available";
+                ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);");
+                ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);");
+                qInfo()<<"nav source available";
             }
             else
             {
                 ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
-                qWarning()<<"Heading source not available";
-            }
-        }
-
-    }
-
-    if(gps_auto)
-    {
-        bool gps_col_normal_buf;
-        no_gps_count++;
-        if(no_gps_count>200)
-            no_gps_count = 11;
-
-        if(no_gps_count>10)
-            gps_col_normal_buf = false;
-        else
-            gps_col_normal_buf = true;
-
-        if(gps_col_normal_buf^gps_col_normal)
-        {
-            gps_col_normal = gps_col_normal_buf;
-            if(gps_col_normal)
-            {
-                ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);");
-                ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);");
-                qInfo()<<"GPS source available";
-            }
-            else
-            {
                 ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
                 ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
-                qWarning()<<"GPS source not available";
+                qWarning()<<"nav source not available";
             }
         }
 
@@ -592,18 +608,11 @@ void FrameBottom::timeoutUpdate()
         qDebug()<<Q_FUNC_INFO<<"reconnecting to "<<m_mqtt->getMID()<<mqtt_settings.ip<<mqtt_settings.port<<con_result;
 
         int ret_val;
-        if(hdg_auto)
-        {
-            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
-            if(ret_val != 0)
-                qInfo()<<"cannot connected to heading source";
-        }
-
-        if(gps_auto)
+        if(hdg_auto && gps_auto)
         {
             ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
             if(ret_val != 0)
-                qInfo()<<"cannot connected to GPS source";
+                qInfo()<<"cannot connected to nav source";
         }
     }
 }
@@ -673,8 +682,8 @@ void FrameBottom::on_pushButtonApply_clicked()
 
 void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 {
-    gps_auto = checked;
-    no_gps_count = 20;
+    gps_auto = checked;    
+    no_osd_count = 20;
 
     int ret_val;
 
@@ -689,13 +698,13 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
         {
             ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
             if(ret_val != 0)
-                qWarning()<<"GPS source not available";
+                qWarning()<<"nav source not available";
         }
     }
     else
     {
-       ui->lineEditLat->setReadOnly(false);
-       ui->lineEditLon->setReadOnly(false);
+        ui->lineEditLat->setReadOnly(false);
+        ui->lineEditLon->setReadOnly(false);
         ui->lineEditLat->setStyleSheet("color: rgb(255,255,255);");
         ui->lineEditLon->setStyleSheet("color: rgb(255,255,255);");
 
@@ -703,8 +712,15 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
         {
             ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
             if(ret_val != 0)
-                qDebug()<<"error unsubscribe from GPS source";
+                qDebug()<<"error unsubscribe from nav source";
         }
+    }
+
+    qWarning()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
+    if(gps_auto != hdg_auto)
+    {
+        ui->checkBoxHDG->setChecked(gps_auto);
+        on_checkBoxHDG_clicked(gps_auto);
     }
 
     if(!m_mqtt->isConnected())
@@ -714,7 +730,7 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 void FrameBottom::on_checkBoxHDG_clicked(bool checked)
 {
     hdg_auto = checked;
-    no_hdg_count = 20;
+    no_osd_count = 20;
 
     int ret_val;
 
@@ -725,7 +741,7 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
 
         if(m_mqtt->isConnected())
         {
-            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+            ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
             if(ret_val != 0)
                 qWarning()<<"Heading source not available";
         }
@@ -737,12 +753,18 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
 
         if(m_mqtt->isConnected())
         {
-            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gyro");
+            ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
             if(ret_val != 0)
                 qDebug()<<"error unsubscribe from heading source";
         }
     }
 
+    qWarning()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
+    if(hdg_auto != gps_auto)
+    {
+        ui->checkBoxGPS->setChecked(hdg_auto);
+        on_checkBoxGPS_clicked(hdg_auto);
+    }
     if(!m_mqtt->isConnected())
         qWarning()<<"Not connected to nav data server";
 }
@@ -753,8 +775,7 @@ void FrameBottom::trigger_OSD_connected()
 
     int ret_val;
 
-    no_gps_count = 20;
-    no_hdg_count = 20;
+    no_osd_count = 20;
 
     if(gps_auto)
     {
@@ -772,7 +793,7 @@ void FrameBottom::trigger_OSD_connected()
         ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
         ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
 
-        ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gyro",2);
+        ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
         if(ret_val != 0)
             qWarning()<<"Heading source not available";
 
@@ -781,8 +802,7 @@ void FrameBottom::trigger_OSD_connected()
 
 void FrameBottom::trigger_OSD_disconnected()
 {
-    no_gps_count = 20;
-    no_hdg_count = 20;
+    no_osd_count = 20;
 
     if(gps_auto)
     {

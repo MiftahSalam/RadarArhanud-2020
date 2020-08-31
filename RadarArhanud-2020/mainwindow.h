@@ -41,6 +41,7 @@ signals:
                                   QString country);
 
 private slots:
+    void trigger_positionChange();
     void trigger_ReqDelTrack(int id);
     void trigger_rangeChange(int rng);
     void trigger_reqCreateArpa(QPointF position);

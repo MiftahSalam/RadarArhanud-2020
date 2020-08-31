@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
             scene,SLOT(trigger_mapChange(QImage)));
     connect(ui->graphicsView,SIGNAL(signal_cursorPosition(qreal,qreal,qreal,qreal)),
             scene,SLOT(trigger_cursorPosition(qreal,qreal,qreal,qreal)));
+    connect(ui->graphicsView,&RadarGraphicView::signal_positionChange,this,&MainWindow::trigger_positionChange);
+
     connect(m_ri,SIGNAL(signal_range_change(int)),
             this,SLOT(trigger_rangeChange(int)));
     connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
@@ -112,6 +114,11 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     timer->start(1000);
+}
+
+void MainWindow::trigger_positionChange()
+{
+    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)

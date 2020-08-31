@@ -80,6 +80,8 @@ private slots:
 
     void on_pushButtonARPA_clicked();
 
+    void on_pushButtonShutdown_clicked();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;

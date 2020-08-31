@@ -66,8 +66,8 @@ private:
     qtmosq *m_mqtt;
 
     int dataCount_mqtt_arpa,dataCount_mqtt_adsb;
-    quint8 no_hdg_count,no_gps_count;
-    bool hdg_col_normal,gps_col_normal;
+    quint8 no_osd_count;
+    bool osd_col_normal;
 
     void insertArpaList(int id, double lat, double lon, double spd, double crs, double rng, double brn);
     void insertADSBList(quint32 icao,

@@ -6,6 +6,7 @@
 #include <QContextMenuEvent>
 #include <QAction>
 #include <QDesktopWidget>
+#include <QMessageBox>
 
 FrameLeft::FrameLeft(QWidget *parent) :
     QFrame(parent),
@@ -56,12 +57,15 @@ void FrameLeft::setRangeRings(qreal range)
 
 void FrameLeft::contextMenuEvent(QContextMenuEvent *event)
 {
+    Q_UNUSED(event);
     qDebug()<<Q_FUNC_INFO;
 
+    /*
     QMenu menu;
 
     menu.addAction("Exit",this,SIGNAL(signal_exit()));
     menu.exec(event->pos());
+    */
 }
 
 FrameLeft::~FrameLeft()
@@ -307,4 +311,12 @@ void FrameLeft::resizeEvent(QResizeEvent *event)
 void FrameLeft::on_pushButtonARPA_clicked()
 {
     system("gedit"); //path to tilt application
+}
+
+void FrameLeft::on_pushButtonShutdown_clicked()
+{
+    if(QMessageBox::information(this,"Information","Really quit application?",
+                                QMessageBox::Ok,
+                                QMessageBox::No) == QMessageBox::Ok)
+        emit signal_exit();
 }

@@ -28,8 +28,6 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
 //    mapCenter = QPointF(108.6090623,-5.88818);
     mapCenter = QPointF(currentOwnShipLon,currentOwnShipLat);
-    curLat = currentOwnShipLat;
-    curLon = currentOwnShipLon;
 
     map_settings.loading = true;
 
@@ -58,13 +56,13 @@ void RadarGraphicView::onTimeOut()
 //    qDebug()<<Q_FUNC_INFO<<mc->loadingQueueSize()<<curLoadingMapSize<<mc->getLayerManager()->getImage().size()<<size();
 
 //    qDebug()<<Q_FUNC_INFO<<"lat diff"<<fabs(currentOwnShipLat - curLat)<<"lon diff"<<fabs(currentOwnShipLon - curLon);
-    if((fabs(currentOwnShipLat - curLat) > 0.000001) || (fabs(currentOwnShipLon - curLon) > 0.000001))
+    if((fabs(currentOwnShipLat - mapCenter.y()) > 0.000001) || (fabs(currentOwnShipLon - mapCenter.x()) > 0.000001))
     {
         qDebug()<<Q_FUNC_INFO<<"map update view"<<currentOwnShipLat<<currentOwnShipLon;
-        curLat = currentOwnShipLat;
-        curLon = currentOwnShipLon;
+        mapCenter.setX(currentOwnShipLon);
+        mapCenter.setY(currentOwnShipLat);
 
-        mc->setView(QPointF(curLon,curLat));
+        mc->setView(mapCenter);
     }
 
     if((mc->loadingQueueSize() != curLoadingMapSize) || map_settings.loading)

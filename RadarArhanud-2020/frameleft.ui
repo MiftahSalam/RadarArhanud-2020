@@ -212,7 +212,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonTxStnb_2">
+       <widget class="QPushButton" name="pushButtonShutdown">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
