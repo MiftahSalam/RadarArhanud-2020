@@ -295,7 +295,7 @@ void RadarGraphicView::tesCreateItem()
 {
     if (scene())
     {
-        scene()->addItem(new IFFTrackItem()); //temporary
+//        scene()->addItem(new IFFTrackItem()); //temporary
 //        scene()->addItem(new AdsbTrackItem()); //temporary
     }
 

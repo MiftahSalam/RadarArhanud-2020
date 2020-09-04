@@ -42,8 +42,11 @@ FrameLeft::FrameLeft(QWidget *parent) :
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
-//    state_radar = RADAR_TRANSMIT; //temporary for test
+    connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
+//    state_radar = RADAR_STANDBY; //temporary for test
     trigger_stateChange();
+    cur_antene = 1;
+    first_switch = 0;
 }
 void FrameLeft::setAdsbStatus(int status)
 {
@@ -155,8 +158,11 @@ void FrameLeft::trigger_stateChange()
 {
     qDebug()<<Q_FUNC_INFO<<(int)state_radar;
 
+//    state_radar = RADAR_STANDBY; //faking
     if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
     {
+        cur_antene = 1;
+        first_switch = 0;
         ui->pushButtonTxStnb->setText("Tx/Stby");
         ui->pushButtonGain->setEnabled(false);
         ui->pushButtonRain->setEnabled(false);
@@ -166,6 +172,8 @@ void FrameLeft::trigger_stateChange()
     }
     else if(state_radar == RADAR_STANDBY)
     {
+        cur_antene = 1;
+        first_switch = 0;
         ui->pushButtonTxStnb->setText("Transmit");
         ui->pushButtonGain->setEnabled(true);
         ui->pushButtonRain->setEnabled(true);
@@ -173,7 +181,7 @@ void FrameLeft::trigger_stateChange()
         ui->horizontalSliderGain->setEnabled(true);
         ui->pushButtonTxStnb->setEnabled(true);
     }
-    else if(state_radar == RADAR_TRANSMIT)
+    else if(state_radar == RADAR_TRANSMIT|| (state_radar == RADAR_NO_SPOKE))
     {
         ui->pushButtonTxStnb->setText("Standby");
         ui->pushButtonGain->setEnabled(true);
@@ -182,6 +190,25 @@ void FrameLeft::trigger_stateChange()
         ui->horizontalSliderGain->setEnabled(true);
         ui->pushButtonTxStnb->setEnabled(true);
     }
+
+    if(socket.state() != QAbstractSocket::ConnectedState)
+        socket.connectToHost(antene_switch_settings.ip,antene_switch_settings.port);
+}
+
+void FrameLeft::trigger_changeAntene()
+{
+    if(first_switch)
+    {
+        cur_antene++;
+        if(cur_antene>2)
+            cur_antene = 0;
+        socket.write(QString::number(cur_antene+1).toUtf8());
+    }
+    else
+        first_switch = 1;
+
+    qDebug()<<Q_FUNC_INFO<<cur_antene<<first_switch;
+
 }
 
 void FrameLeft::trigger_reportChange()
@@ -199,7 +226,7 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
 
     int g;
     QString rngName = ui->labelRange->text();
-    for (g = ARRAY_SIZE(g_ranges_metric); g > 0; g--)
+    for (g = ARRAY_SIZE(g_ranges_metric)-1; g > 0; g--)
     {
         if (QString(g_ranges_metric[g].name )== rngName)
             break;
@@ -209,6 +236,7 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
         g = 0;
 
     ui->labelRange->setText(g_ranges_metric[g].name);
+    qDebug()<<Q_FUNC_INFO<<g<<g_ranges_metric[g].name;
     emit signal_req_range(g_ranges_metric[g].meters);
 }
 

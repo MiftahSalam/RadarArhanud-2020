@@ -1,6 +1,6 @@
 #include "traildialog.h"
 #include "ui_traildialog.h"
-#include "echo/radar_global.h"
+#include <radarengine_global.h>
 
 TrailDialog::TrailDialog(QWidget *parent) :
     QDialog(parent),

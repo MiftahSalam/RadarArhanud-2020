@@ -5,7 +5,7 @@
 
 #include <radarengine.h>
 
-#define PIXEL_PER_KNOT 1.0
+#define PIXEL_PER_KNOT .25
 
 class RadarSceneItems : public QGraphicsItem
 {

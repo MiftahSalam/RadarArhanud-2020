@@ -47,7 +47,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QPushButton" name="pushButtonZoomOut">
+         <widget class="QPushButton" name="pushButtonZoomIn">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -125,7 +125,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonZoomIn">
+         <widget class="QPushButton" name="pushButtonZoomOut">
           <property name="minimumSize">
            <size>
             <width>20</width>

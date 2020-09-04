@@ -64,6 +64,7 @@ private:
     QTimer timer;
 
     qtmosq *m_mqtt;
+    QString append_data_osd;
 
     int dataCount_mqtt_arpa,dataCount_mqtt_adsb;
     quint8 no_osd_count;

@@ -69,6 +69,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     ui->lineEditHDG->setText(QString::number(currentHeading,'f',1));
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
 
+    qDebug()<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
     ui->checkBoxGPS->setChecked(gps_auto);
     ui->checkBoxHDG->setChecked(hdg_auto);
 
@@ -81,7 +82,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
 
     dataCount_mqtt_arpa = 0;
     dataCount_mqtt_adsb = 0;
-    no_osd_count = 20;
+    no_osd_count = 40;
     osd_col_normal = true;
 
     if(m_mqtt->isConnected())
@@ -106,6 +107,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
         ui->lineEditHDG->setReadOnly(false);
         ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
 
+        qDebug()<<"unsubscribe from nav source";
         if(m_mqtt->isConnected())
         {
             int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
@@ -131,6 +133,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
        ui->lineEditLat->setReadOnly(false);
        ui->lineEditLon->setReadOnly(false);
 
+       qDebug()<<"unsubscribe from nav source";
         if(m_mqtt->isConnected())
         {
             int ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
@@ -149,22 +152,45 @@ void FrameBottom::trigger_OSD_received(QString msg)
     {
         no_osd_count = 0;
 
-        qDebug()<<Q_FUNC_INFO<<"osd"<<msg.remove("?").remove("!").remove("gps>");
-        QStringList msg_list = msg.split("#",QString::SkipEmptyParts);
+        qDebug()<<Q_FUNC_INFO<<"osd"<<msg.remove("gps>");
+        append_data_osd.append(msg);
 
-        if(msg_list.size() == 3)
+        int index_hdr = append_data_osd.indexOf("?");
+        if(index_hdr >= 0)
         {
-            currentOwnShipLat = msg_list.at(0).toDouble();
-            currentOwnShipLon = msg_list.at(1).toDouble();
-            currentHeading = msg_list.at(2).toDouble();
+            int index_end = append_data_osd.indexOf("!");
+            if(index_end >= 0)
+            {
+                if(index_end > index_hdr)
+                {
+                    //?-6.939176#107.632770#31
+                    append_data_osd = append_data_osd.mid(index_hdr,index_end-index_hdr);
+                    qDebug()<<Q_FUNC_INFO<<"filter"<<append_data_osd.remove("!").remove("?").remove("\r").remove("\n");
+                    QStringList msg_list = append_data_osd.split("#",QString::SkipEmptyParts);
 
-            ui->lineEditLat->setText(msg_list.at(0));
-            ui->lineEditLon->setText(msg_list.at(1));
-            ui->lineEditHDG->setText(msg_list.at(2));
+                    if(msg_list.size() == 3)
+                    {
+                        currentOwnShipLat = msg_list.at(0).toDouble();
+                        currentOwnShipLon = msg_list.at(1).toDouble();
+                        currentHeading = msg_list.at(2).toDouble();
+
+                        ui->lineEditLat->setText(msg_list.at(0));
+                        ui->lineEditLon->setText(msg_list.at(1));
+                        ui->lineEditHDG->setText(msg_list.at(2));
+                    }
+                    else
+                        qDebug()<<Q_FUNC_INFO<<"osd invalid";
+
+                    append_data_osd.clear();
+                }
+                else
+                {
+                    append_data_osd.remove(0,index_hdr);
+                }
+            }
+            qDebug()<<Q_FUNC_INFO<<index_end;
         }
-        else
-            qDebug()<<Q_FUNC_INFO<<"osd invalid";
-
+        qDebug()<<Q_FUNC_INFO<<index_hdr;
     }
 }
 
@@ -235,7 +261,7 @@ void FrameBottom::trigger_adsb_target_update(
                 adsbModel->setData(adsbModel->index(row,3,QModelIndex()),
                                    QString::number(lat,'f',6));
                 adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
-                                   QString::number(lat,'f',6));
+                                   QString::number(lon,'f',6));
             }
 
             if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
@@ -461,7 +487,10 @@ void FrameBottom::timeoutUpdate()
     {
         i_adsb.next();
         if(now-i_adsb.value()>60)
+        {
+            qDebug()<<Q_FUNC_INFO<<now-i_adsb.value();
             target_adsb_to_delete.append(i_adsb.key());
+        }
     }
 
     for(int i=0;i<target_adsb_to_delete.size();i++)
@@ -570,9 +599,9 @@ void FrameBottom::timeoutUpdate()
         bool osd_col_normal_buf;
         no_osd_count++;
         if(no_osd_count>200)
-            no_osd_count = 11;
+            no_osd_count = 41;
 
-        if(no_osd_count>10)
+        if(no_osd_count>20)
             osd_col_normal_buf = false;
         else
             osd_col_normal_buf = true;
@@ -683,7 +712,7 @@ void FrameBottom::on_pushButtonApply_clicked()
 void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 {
     gps_auto = checked;    
-    no_osd_count = 20;
+    no_osd_count = 40;
 
     int ret_val;
 
@@ -708,6 +737,7 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
         ui->lineEditLat->setStyleSheet("color: rgb(255,255,255);");
         ui->lineEditLon->setStyleSheet("color: rgb(255,255,255);");
 
+        qDebug()<<"unsubscribe from nav source";
         if(m_mqtt->isConnected())
         {
             ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
@@ -730,7 +760,7 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
 void FrameBottom::on_checkBoxHDG_clicked(bool checked)
 {
     hdg_auto = checked;
-    no_osd_count = 20;
+    no_osd_count = 40;
 
     int ret_val;
 
@@ -751,6 +781,7 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
         ui->lineEditHDG->setReadOnly(false);
         ui->lineEditHDG->setStyleSheet("color: rgb(255,255,255);");
 
+        qDebug()<<"unsubscribe from nav source";
         if(m_mqtt->isConnected())
         {
             ret_val = m_mqtt->unsubscribe(m_mqtt->getMID(), "gps");
@@ -775,7 +806,7 @@ void FrameBottom::trigger_OSD_connected()
 
     int ret_val;
 
-    no_osd_count = 20;
+    no_osd_count = 40;
 
     if(gps_auto)
     {
@@ -802,7 +833,7 @@ void FrameBottom::trigger_OSD_connected()
 
 void FrameBottom::trigger_OSD_disconnected()
 {
-    no_osd_count = 20;
+    no_osd_count = 40;
 
     if(gps_auto)
     {

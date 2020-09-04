@@ -41,6 +41,9 @@ RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr) :
 
 void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
+    if(angle == 2046)
+        emit signal_zero_detect();
+
     curAngle = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
@@ -282,6 +285,9 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
             break;
         case RADAR_STANDBY:
             text = "Standby";
+            break;
+        case RADAR_NO_SPOKE:
+            text = "Warming Up";
             break;
         default:
             break;

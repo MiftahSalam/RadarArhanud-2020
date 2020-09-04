@@ -2,6 +2,7 @@
 #define FRAMELEFT_H
 
 #include <QFrame>
+#include <QTcpSocket>
 
 #include "dialogradar.h"
 #include "traildialog.h"
@@ -24,6 +25,7 @@ public:
     void setRangeRings(qreal range_ring);
     void setRangeText(int range);
     void setAdsbStatus(int status);
+    void trigger_changeAntene();
 
 signals:
     void signal_exit();
@@ -34,6 +36,7 @@ signals:
     void signal_req_range(int range_meter);
     void signal_req_control(int ct, int val);
     void signal_adsbSettingChange();
+    void signal_clearTrail();
 
 private slots:
     void trigger_newLog(QString msg);
@@ -94,6 +97,10 @@ private:
     DialogIFF *dIFF;
     DialogADSB *dADSB;
     DialogLogging *dLog;
+    QTcpSocket socket;
+
+    int cur_antene;
+    int first_switch;
 };
 
 #endif // FRAMELEFT_H

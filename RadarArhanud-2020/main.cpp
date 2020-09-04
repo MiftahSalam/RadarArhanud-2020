@@ -70,6 +70,9 @@ int main(int argc, char *argv[])
         config.setValue("mqtt/port",1883);
         config.setValue("mqtt/id","arhanud3");
 
+        config.setValue("antene_switch/ip","192.168.1.100");
+        config.setValue("antene_switch/port",80);
+
         config.setValue("trail/enable",true);
         config.setValue("trail/mode",0);
 
@@ -131,11 +134,14 @@ int main(int argc, char *argv[])
         mti_settings.enable = config.value("mti/enable",true).toBool();
         mti_settings.threshold = (quint8)config.value("mti/threshold",0).toUInt();
 
+        antene_switch_settings.ip = config.value("antene_switch/ip","192.168.1.100").toString();
+        antene_switch_settings.port = config.value("antene_switch/port",80).toUInt();
+
         currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
         currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();
         currentOwnShipLon = config.value("nav_sensor/longitude",0.0).toDouble();
         gps_auto = config.value("nav_sensor/gps_auto",true).toBool();
-        hdg_auto = config.value("nav_sensor/heading_auto",true).toBool();
+        hdg_auto = config.value("nav_sensor/hdg_auto",true).toBool();
     }
 
     int ret;

@@ -26,6 +26,7 @@ public:
 //    void drawForeground(QPainter *painter, const QRectF &) override;
 
 signals:
+    void signal_zero_detect();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event);

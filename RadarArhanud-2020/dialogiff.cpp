@@ -1,6 +1,6 @@
 #include "dialogiff.h"
 #include "ui_dialogiff.h"
-#include "echo/radar_global.h"
+#include <radarengine_global.h>
 
 DialogIFF::DialogIFF(QWidget *parent) :
     QDialog(parent),

@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
             m_ri,SLOT(trigger_ReqControlChange(int,int)));
     connect(ui->frameLeft,SIGNAL(signal_req_range(int)),this,SLOT(trigger_rangeChange(int)));
+    connect(ui->frameLeft,SIGNAL(signal_clearTrail()),m_ri,SLOT(trigger_clearTrail()));
+    connect(scene,&RadarScene::signal_zero_detect,ui->frameLeft,&FrameLeft::trigger_changeAntene);
 
     connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
             this,SLOT(trigger_ReqDelTrack(int)));
@@ -123,6 +125,7 @@ void MainWindow::trigger_positionChange()
 
 void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
+//    qDebug()<<Q_FUNC_INFO;
     scene->DrawSpoke(angle,data,len);
     m_ri->radarArpa->RefreshArpaTargets();
 }
@@ -404,6 +407,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     config.setValue("nav_sensor/heading",currentHeading);
     config.setValue("nav_sensor/latitude",currentOwnShipLat);
     config.setValue("nav_sensor/longitude",currentOwnShipLon);
+    config.setValue("nav_sensor/hdg_auto",hdg_auto);
+    config.setValue("nav_sensor/gps_auto",gps_auto);
 
     event->accept();
 }
