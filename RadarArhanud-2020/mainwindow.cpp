@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     int g;
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
     {
-        if (QString(g_ranges_metric[g].name )== "1.5 NM")
+        if (QString(g_ranges_metric[g].name )== "64 NM")
         {
             trigger_rangeChange(g_ranges_metric[g].meters);
             break;
@@ -348,6 +348,19 @@ void MainWindow::calculateRadarScale()
     float radar_meter_per_pixel =  ((double)m_range_meters)/(double)m_range_pixel;
     radar_meter_per_pixel *= 1.0;
 
+    /*
+    for(zoom_index = distanceList.size()-1; zoom_index>=0
+        ; zoom_index--)
+    {
+        if(distanceList.at(zoom_index) >= m_range_meters)
+        {
+            cur_map_scale = distanceList.at(zoom_index);
+            line_per_cur_scale = cur_map_scale / pow(2.0, 18-zoom_index ) / 0.597164;
+            map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
+            break;
+        }
+    }
+    */
     for(zoom_index = distanceList.size()-1; zoom_index>=0
         ; zoom_index--)
     {
@@ -358,11 +371,17 @@ void MainWindow::calculateRadarScale()
         if(map_meter_per_pixel >= radar_meter_per_pixel)
             break;
     }
-
     ui->graphicsView->setMapZoomLevel(zoom_index);
+//    float curRadarScaled = map_meter_per_pixel/radar_meter_per_pixel;
     float curRadarScaled = radar_meter_per_pixel/map_meter_per_pixel;
-    curRadarScaled *= 2.0;
+    curRadarScaled *= 3.;
+//    curRadarScaled *= 2.0;
     scene->setRadarScale(curRadarScaled);
+
+    //QPointF(-244,120) QPointF(-367,176) --> rasio = (0.6648,0.6818)
+    //QPointF(156,-75) QPointF(238,-108) --> rasio = (0.6555,0.6944)
+    //QPointF(-75,-82) QPointF(-115,-118) --> rasio = (0.6522,0.6949)
+    //QPointF(85,93) QPointF(132,141) --> rasio = (0.6439,0.6595)
 
     qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters;
     qDebug()<<Q_FUNC_INFO<<"m_range_pixel"<<m_range_pixel;
@@ -427,7 +446,7 @@ void MainWindow::trigger_logEvent(QString msg)
     int nxt_idx_space = msg.indexOf(" ",20);
     QString type_section = msg.mid(20,nxt_idx_space-20);
 
-    if(type_section == "DEBUG" || type_section == "TRACE")
+    if(type_section == "DEBUG" || type_section == "TRACE" || msg.contains("QObject: Cannot create children for a parent"))
         return;
 
     emit signal_trueLog(msg);

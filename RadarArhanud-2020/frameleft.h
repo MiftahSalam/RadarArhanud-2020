@@ -85,6 +85,10 @@ private slots:
 
     void on_pushButtonShutdown_clicked();
 
+    void on_lineEditGain_editingFinished();
+
+    void on_lineEditRain_editingFinished();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;

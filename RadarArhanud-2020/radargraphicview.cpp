@@ -136,9 +136,15 @@ void RadarGraphicView::updateSceneItems()
 
                 displayToImage = mc->layer("MapLayerView")->mapadapter()
                         ->coordinateToDisplay(arpa_item->m_arpa_target->blobPixelPosition());
-                pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
-                                  displayToImage.y()+screen_middle.y()-map_middle.y());
-//                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->blobPixelPosition()<<pixelPos;
+
+                QPointF displayToImage_f = displayToImage-map_middle;
+//                qDebug()<<Q_FUNC_INFO<<"init displayToImage_f"<<displayToImage_f;
+                displayToImage_f *= (3./2.);
+//                qDebug()<<Q_FUNC_INFO<<"last displayToImage_f"<<displayToImage_f;
+
+                displayToImage = displayToImage_f.toPoint()+screen_middle;
+                pixelPos = displayToImage;
+//                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->blobPixelPosition()<<pixelPos<<displayToImage<<screen_middle<<map_middle;
                 arpa_item->setPos(pixelPos);
             }
             else if(item->getRadarItemType() == RadarSceneItems::IFF)
@@ -208,10 +214,10 @@ qreal RadarGraphicView::calculateRangeRing() const
     dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
 
     double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
-    km /= 1.852; //NM
+//    km /= 1.852; //NM
     qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
-    return km/7.0;
+    return km/5.0;
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)
@@ -249,9 +255,13 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
 
         QPoint screen_middle(width()/2,height()/2);
         QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
-
-        QPoint displayToImage= QPoint(event->pos().x()-screen_middle.x()+map_middle.x(),
-                                      event->pos().y()-screen_middle.y()+map_middle.y());
+        QPoint event_pos_scaled(event->pos().x(),event->pos().y());
+        event_pos_scaled -= screen_middle;
+        QPointF event_pos_scaled_f((qreal)event_pos_scaled.x(),(qreal)event_pos_scaled.y());
+        qDebug()<<Q_FUNC_INFO<<"init event_pos_scaled"<<event_pos_scaled_f;
+        event_pos_scaled_f *= (2./3.);
+        qDebug()<<Q_FUNC_INFO<<"last event_pos_scaled"<<event_pos_scaled_f;
+        QPoint displayToImage = event_pos_scaled_f.toPoint()+map_middle;
         QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
 
         emit signal_reqCreateArpa(displayToCoordinat);
@@ -279,7 +289,7 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
 
     dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
 
-    double NM = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
     qreal bearing = atan2(dif_lon,dif_lat)*180./M_PI;
 
     while(bearing < 0.0)
@@ -287,7 +297,7 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
         bearing += 360.0;
     }
 
-    emit signal_cursorPosition(latitude,longitude,NM/1.852,bearing);
+    emit signal_cursorPosition(latitude,longitude,km,bearing);
 //    qDebug()<<Q_FUNC_INFO<<displayToImage<<screen_middle<<map_middle<<displayToCoordinat<<km<<bearing;
 }
 

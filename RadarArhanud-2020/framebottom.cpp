@@ -33,7 +33,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     arpaModel->setHorizontalHeaderItem(5,item6);
     arpaModel->setHorizontalHeaderItem(6,item7);
 
-    QStandardItem *item8 = new QStandardItem("ICAO");
+    QStandardItem *item8 = new QStandardItem("ID");
     QStandardItem *item9 = new QStandardItem("Range (Km)");
     QStandardItem *item10 = new QStandardItem("Bearing (deg)");
     QStandardItem *item11 = new QStandardItem("Latitude (deg)");

@@ -14,6 +14,11 @@ FrameLeft::FrameLeft(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QIntValidator *int_validator = new QIntValidator(0,255,this);
+
+    ui->lineEditGain->setValidator(int_validator);
+    ui->lineEditRain->setValidator(int_validator);
+
     ui->checkBoxShowRing->setChecked(radar_settings.show_rings);
     ui->checkBoxShowMap->setChecked(map_settings.show);
     ui->comboBoxMapMode->setCurrentIndex((int)map_settings.mode);
@@ -38,7 +43,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail->setModal(true);
     dLog->setModal(true);
 
-    ui->labelRange->setText("1.5 NM");
+    ui->labelRange->setText("64 NM");
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
@@ -55,7 +60,7 @@ void FrameLeft::setAdsbStatus(int status)
 
 void FrameLeft::setRangeRings(qreal range)
 {
-    ui->labelRingRange->setText(QString::number(range,'f',2)+" NM");
+    ui->labelRingRange->setText(QString::number(range,'f',2)+" Km");
 }
 
 void FrameLeft::contextMenuEvent(QContextMenuEvent *event)
@@ -216,8 +221,8 @@ void FrameLeft::trigger_reportChange()
 //    qDebug()<<Q_FUNC_INFO<<filter.gain<<filter.rain<<filter.sea;
 //    ui->horizontalSliderGain->setValue(filter.gain);
 //    ui->horizontalSliderRain->setValue(filter.rain);
-    ui->lineEditGain->setText(QString::number(filter.gain));
-    ui->lineEditRain->setText(QString::number(filter.rain));
+//    ui->lineEditGain->setText(QString::number(filter.gain));
+//    ui->lineEditRain->setText(QString::number(filter.rain));
 }
 
 void FrameLeft::on_pushButtonZoomIn_clicked()
@@ -242,10 +247,10 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
 
 void FrameLeft::setRangeText(int range)
 {
-    qDebug()<<Q_FUNC_INFO;
     int g;
     for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
     {
+        qDebug()<<Q_FUNC_INFO<<g_ranges_metric[g].meters<<range;
         if (QString(g_ranges_metric[g].meters )== range)
             break;
     }
@@ -294,6 +299,7 @@ void FrameLeft::on_pushButtonGain_clicked()
 
 void FrameLeft::on_horizontalSliderGain_valueChanged(int value)
 {
+    ui->lineEditGain->setText(QString::number(value));
     emit signal_req_control(CT_GAIN,value);
 }
 
@@ -317,6 +323,7 @@ void FrameLeft::on_pushButtonRain_clicked()
 
 void FrameLeft::on_horizontalSliderRain_valueChanged(int value)
 {
+    ui->lineEditRain->setText(QString::number(value));
     emit signal_req_control(CT_RAIN,value);
 }
 
@@ -347,4 +354,14 @@ void FrameLeft::on_pushButtonShutdown_clicked()
                                 QMessageBox::Ok,
                                 QMessageBox::No) == QMessageBox::Ok)
         emit signal_exit();
+}
+
+void FrameLeft::on_lineEditGain_editingFinished()
+{
+    ui->horizontalSliderGain->setValue(ui->lineEditGain->text().toInt());
+}
+
+void FrameLeft::on_lineEditRain_editingFinished()
+{
+    ui->horizontalSliderRain->setValue(ui->lineEditRain->text().toInt());
 }

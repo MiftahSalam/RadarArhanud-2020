@@ -674,7 +674,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>ADS-B...</string>
+         <string>Data...</string>
         </property>
        </widget>
       </item>
