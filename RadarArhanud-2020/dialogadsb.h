@@ -25,6 +25,8 @@ private slots:
 
     void on_checkBoxShowTrack_clicked(bool checked);
 
+    void on_checkBoxShowTrackData_clicked(bool checked);
+
 private:
     Ui::DialogADSB *ui;
 };

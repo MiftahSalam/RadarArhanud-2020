@@ -43,7 +43,8 @@ signals:
 private slots:
     void trigger_positionChange();
     void trigger_ReqDelTrack(int id);
-    void trigger_rangeChange(int rng);
+    void trigger_rangeChange();
+    void trigger_radarFeedbackRangeChange(int);
     void trigger_reqCreateArpa(QPointF position);
     void trigger_reqUpdateADSB(QByteArray data);
     void trigger_ReqDelAdsb(quint32 icao);
@@ -66,7 +67,7 @@ private:
 
     Log4Qt::SignalAppender *logEvent;
 
-    int m_range_meters;
+    double m_range_meters,m_radar_range,m_range_to_send;
     int m_range_pixel;
     int cur_arpa_id_count;
     bool first;

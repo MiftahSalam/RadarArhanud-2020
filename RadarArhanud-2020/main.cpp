@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
         radar_settings.port_data = config.value("radar/port_data",6135).toUInt();
 
         arpa_settings.create_arpa_by_click = config.value("arpa/create_arpa_by_click",true).toBool();
-        arpa_settings.show = config.value("arpa/show",true).toBool();
+        arpa_settings.show_track = config.value("arpa/show",true).toBool();
         arpa_settings.min_contour_length = config.value("arpa/min_contour_len",3).toInt();
         arpa_settings.search_radius1 = config.value("arpa/search_radius1",10).toInt();
         arpa_settings.search_radius2 = config.value("arpa/search_radius2",20).toInt();

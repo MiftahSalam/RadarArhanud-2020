@@ -43,15 +43,16 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail->setModal(true);
     dLog->setModal(true);
 
-    ui->labelRange->setText("64 NM");
+//    ui->labelRange->setText("64 NM");
+    cur_zoom_lvl = 10;
+    cur_antene = 1;
+    first_switch = 0;
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
     connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
 //    state_radar = RADAR_STANDBY; //temporary for test
-    trigger_stateChange();
-    cur_antene = 1;
-    first_switch = 0;
+//    trigger_stateChange(); //temporary for test
 }
 void FrameLeft::setAdsbStatus(int status)
 {
@@ -67,13 +68,6 @@ void FrameLeft::contextMenuEvent(QContextMenuEvent *event)
 {
     Q_UNUSED(event);
     qDebug()<<Q_FUNC_INFO;
-
-    /*
-    QMenu menu;
-
-    menu.addAction("Exit",this,SIGNAL(signal_exit()));
-    menu.exec(event->pos());
-    */
 }
 
 FrameLeft::~FrameLeft()
@@ -142,17 +136,7 @@ void FrameLeft::on_pushButtonTxStnb_clicked()
 {
     if(ui->pushButtonTxStnb->text() == "Transmit")
     {
-        int g;
-        QString rngName = ui->labelRange->text();
-        for (g = ARRAY_SIZE(g_ranges_metric); g > 0; g--)
-        {
-            if (QString(g_ranges_metric[g].name )== rngName)
-                break;
-        }
-        if(g < 0)
-            g = 0;
-
-        emit signal_req_range(g_ranges_metric[g].meters);
+        emit signal_req_range();
         emit signal_Tx();
     }
     else if(ui->pushButtonTxStnb->text() == "Standby")
@@ -227,6 +211,11 @@ void FrameLeft::trigger_reportChange()
 
 void FrameLeft::on_pushButtonZoomIn_clicked()
 {
+    cur_zoom_lvl++;
+    if(cur_zoom_lvl > distanceList.size()-1)
+        cur_zoom_lvl = distanceList.size()-1;
+
+    /*
     qDebug()<<Q_FUNC_INFO<<ui->labelRange->text();
 
     int g;
@@ -242,26 +231,26 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
 
     ui->labelRange->setText(g_ranges_metric[g].name);
     qDebug()<<Q_FUNC_INFO<<g<<g_ranges_metric[g].name;
-    emit signal_req_range(g_ranges_metric[g].meters);
+    */
+    emit signal_req_range();
 }
 
-void FrameLeft::setRangeText(int range)
+void FrameLeft::setRangeText(double range,bool match)
 {
-    int g;
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
-    {
-        qDebug()<<Q_FUNC_INFO<<g_ranges_metric[g].meters<<range;
-        if (QString(g_ranges_metric[g].meters )== range)
-            break;
-    }
-    if(g >= ARRAY_SIZE(g_ranges_metric))
-        g--;
-
-    ui->labelRange->setText(g_ranges_metric[g].name);
+    ui->labelRange->setText(QString::number(range,'f',1)+" Km");
+    if(match)
+        ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 255, 0);"));
+    else
+        ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
 }
 
 void FrameLeft::on_pushButtonZoomOut_clicked()
 {
+    cur_zoom_lvl--;
+    if(cur_zoom_lvl < 8)
+        cur_zoom_lvl = 8;
+
+    /*
     qDebug()<<Q_FUNC_INFO;
 
     int g;
@@ -276,7 +265,8 @@ void FrameLeft::on_pushButtonZoomOut_clicked()
         g--;
 
     ui->labelRange->setText(g_ranges_metric[g].name);
-    emit signal_req_range(g_ranges_metric[g].meters);
+    */
+    emit signal_req_range();
 }
 
 void FrameLeft::on_pushButtonGain_clicked()

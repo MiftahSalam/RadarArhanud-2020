@@ -75,3 +75,9 @@ void DialogADSB::on_checkBoxShowTrack_clicked(bool checked)
     adsb_settings.show_track = checked;
     emit signal_settingChange();
 }
+
+void DialogADSB::on_checkBoxShowTrackData_clicked(bool checked)
+{
+    adsb_settings.show_attr = checked;
+    emit signal_settingChange();
+}

@@ -38,6 +38,12 @@ void DialogRadar::on_pushButtonApply_clicked()
     radar_settings.port_report = ui->lineEditPortReport->text().toUInt();
     radar_settings.ip_command = ui->lineEditIPcmd->text().remove(" ");
     radar_settings.port_command = ui->lineEditPortcmd->text().toUInt();
+    arpa_settings.show_attr = ui->checkBoxShowTrackData->isChecked();
 
     emit signal_settingChange();
+}
+
+void DialogRadar::on_checkBoxShowTrackData_clicked(bool checked)
+{
+    arpa_settings.show_attr = checked;
 }

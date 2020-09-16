@@ -23,7 +23,7 @@ public:
     ~FrameLeft();
 
     void setRangeRings(qreal range_ring);
-    void setRangeText(int range);
+    void setRangeText(double range, bool match);
     void setAdsbStatus(int status);
     void trigger_changeAntene();
 
@@ -33,7 +33,7 @@ signals:
     void signal_Standby();
     void signal_Tx();
     void signal_radarSettingChange();
-    void signal_req_range(int range_meter);
+    void signal_req_range();
     void signal_req_control(int ct, int val);
     void signal_adsbSettingChange();
     void signal_clearTrail();

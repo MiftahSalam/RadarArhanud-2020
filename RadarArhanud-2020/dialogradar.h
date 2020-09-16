@@ -21,6 +21,8 @@ signals:
 private slots:
     void on_pushButtonApply_clicked();
 
+    void on_checkBoxShowTrackData_clicked(bool checked);
+
 private:
     Ui::DialogRadar *ui;
 };

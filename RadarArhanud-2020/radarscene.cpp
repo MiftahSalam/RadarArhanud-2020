@@ -322,13 +322,22 @@ void RadarScene::initGL()
     m_environmentProgram->bind();
     m_environmentProgram->setUniformValue("texture1", 0);
 
+    /*
+    float vertices[4][8] = {
+        {-1.f,  1.f, 0.0f,   0.25f, 0.25f},
+        {-1.f, -1.f, 0.0f,   0.25f, .75f},
+        {1.f, -1.f, 0.0f,  0.75f, 0.75f},
+        {1.f,  1.f, 0.0f,  .75f, 0.25f}
+    };
+    */
+    /*
+    */
     float vertices[4][8] = {
         {-1.f,  1.f, 0.0f,   0.f, 0.f},
         {-1.f, -1.f, 0.0f,   0.f, 1.0f},
         {1.f, -1.f, 0.0f,  1.0f, 1.0f},
         {1.f,  1.f, 0.0f,  1.0f, 0.f}
     };
-
     for(int j = 0; j < 4; ++j)
     {
         vertData.append(vertices[j][0]);

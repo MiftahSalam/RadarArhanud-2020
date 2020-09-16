@@ -41,12 +41,18 @@ void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     else if(map_settings.show && map_settings.mode == 1)
         pen.setColor(Qt::black);
 
-    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
 
     painter->setPen(pen);
-    painter->drawText(22,-20,QString::number(m_adsb_target->icao,16));
+    painter->drawText(22,-20,"ID: "+QString::number(m_adsb_target->icao,16).toUpper());
+    if(m_adsb_target->lat_valid && m_adsb_target->lon_valid && adsb_settings.show_attr)
+    {
+        painter->drawText(22,-5,"Rng: "+QString::number(m_adsb_target->rng,'f',1)+"Km");
+        painter->drawText(22,10,"Brn: "+QString::number(m_adsb_target->brn,'f',1)+176);
+        painter->drawText(22,25,"Spd: "+QString::number(m_adsb_target->speed,'f',1)+"kts");
+    }
     painter->rotate(m_adsb_target->course);
-    painter->drawLine(0,20,0,pixel_line_velocity);
+//    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
+//    painter->drawLine(0,20,0,pixel_line_velocity);
     painter->rotate(-45.);
     painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane.png"));
 //    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane1.png"));
