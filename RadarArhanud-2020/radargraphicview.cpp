@@ -198,6 +198,30 @@ void RadarGraphicView::trigger_mapChange(quint8 id, quint8 val)
     }
 }
 
+int RadarGraphicView::calculateRangePixel() const
+{
+    QPoint screen_middle(width()/2,height()/2);
+    QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+    QPoint ref = (width() >= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
+    QPoint displayToImage = QPoint(ref.x()+map_middle.x(),ref.y()+map_middle.y());
+    QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+
+    double dif_lat = deg2rad(displayToCoordinat.y());
+    double dif_lon = (deg2rad(displayToCoordinat.x()) - deg2rad(mapCenter.x()))
+            * cos(deg2rad((mapCenter.y()+displayToCoordinat.y())/2.));
+    double R = 6371.;
+
+    dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
+
+    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    double ref_pix = (width() >= height()) ? fabs(ref.x()) : fabs(ref.y());
+    int tenth_pix = int(10.*ref_pix/km);
+
+    qDebug()<<Q_FUNC_INFO<<km<<tenth_pix;
+
+    return tenth_pix;
+
+}
 qreal RadarGraphicView::calculateRangeRing() const
 {
     QPoint screen_middle(width()/2,height()/2);

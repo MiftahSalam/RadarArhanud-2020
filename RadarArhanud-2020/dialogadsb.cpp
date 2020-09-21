@@ -1,6 +1,7 @@
 #include "dialogadsb.h"
 #include "ui_dialogadsb.h"
 #include <radarengine_global.h>
+#include <adsb-arhnd/stream/streamdevice.h>
 
 DialogADSB::DialogADSB(QWidget *parent) :
     QDialog(parent),
@@ -11,6 +12,7 @@ DialogADSB::DialogADSB(QWidget *parent) :
     ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
     ui->lineEditPortData->setValidator(new QIntValidator(3000,65536,ui->lineEditPortData));
     ui->checkBoxShowTrack->setChecked(adsb_settings.show_track);
+    ui->checkBoxShowTrackData->setChecked(adsb_settings.show_attr);
     QStringList conf_list = adsb_settings.config.split(";");
     qDebug()<<Q_FUNC_INFO<<conf_list;
 
@@ -66,6 +68,7 @@ void DialogADSB::on_pushButtonApply_clicked()
 
     conf_list<<ui->lineEditIPData->text().remove(" ")<<ui->lineEditPortData->text();
     adsb_settings.config = conf_list.join(";");
+    adsb_settings.type = AdsbArhnd::HTTP;
 
     emit signal_settingChange();
 }
@@ -73,11 +76,15 @@ void DialogADSB::on_pushButtonApply_clicked()
 void DialogADSB::on_checkBoxShowTrack_clicked(bool checked)
 {
     adsb_settings.show_track = checked;
+    adsb_settings.type = AdsbArhnd::HTTP;
+
     emit signal_settingChange();
 }
 
 void DialogADSB::on_checkBoxShowTrackData_clicked(bool checked)
 {
     adsb_settings.show_attr = checked;
+    adsb_settings.type = AdsbArhnd::HTTP;
+
     emit signal_settingChange();
 }

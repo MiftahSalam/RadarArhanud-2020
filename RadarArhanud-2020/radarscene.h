@@ -22,6 +22,7 @@ public:
     void reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr);
     void reqNewADSB(AdsbArhnd::ADSBTargetData *target,bool show);
     void setRadarScale(float scale);
+    void setRings(int pix) { ringPix = pix; }
     void drawBackground(QPainter *painter, const QRectF &) override;
 //    void drawForeground(QPainter *painter, const QRectF &) override;
 
@@ -57,6 +58,7 @@ private:
     QVector<GLfloat> vertData;
 
     float curScale,curAngle;
+    int ringPix;
 
     QImage mapImage;
 

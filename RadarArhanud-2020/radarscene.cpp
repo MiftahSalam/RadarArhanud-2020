@@ -187,12 +187,25 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
         painter->setPen(pen);
 
-        int ring_margin = qCeil(side/5);
-        int bufRng = ring_margin;
-        while(bufRng < side)
+        if(radar_settings.op_mode)
         {
-            painter->drawEllipse(-bufRng/2,-bufRng/2,bufRng,bufRng);
-            bufRng += ring_margin;
+            int ring_margin = ringPix;
+            int bufRng = ring_margin;
+            while(bufRng < side)
+            {
+                painter->drawEllipse(-bufRng,-bufRng,bufRng*2,bufRng*2);
+                bufRng += ring_margin;
+            }
+        }
+        else
+        {
+            int ring_margin = qCeil(side/5);
+            int bufRng = ring_margin;
+            while(bufRng < side)
+            {
+                painter->drawEllipse(-bufRng/2,-bufRng/2,bufRng,bufRng);
+                bufRng += ring_margin;
+            }
         }
     }
 
@@ -205,7 +218,9 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         pen = painter->pen();
         pen.setWidth(3);
 
-        if(map_settings.show)
+        if(map_settings.show && map_settings.mode == 0)
+            pen.setColor(Qt::yellow);
+        else if(map_settings.show && map_settings.mode == 1)
             pen.setColor(Qt::black);
 
         font.setPixelSize(15);
@@ -274,6 +289,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
         font.setPixelSize(32);
         painter->setFont(font);
+
+        if(map_settings.show && map_settings.mode == 0)
+            pen.setColor(Qt::yellow);
+        else if(map_settings.show && map_settings.mode == 1)
+            pen.setColor(Qt::black);
 
         switch (state_radar)
         {

@@ -14,8 +14,8 @@ DialogRadar::DialogRadar(QWidget *parent) :
     ui->lineEditPortReport->setValidator(new QIntValidator(3000,65536,ui->lineEditPortReport));
     ui->lineEditIPcmd->setValidator(new QIntValidator(0,255,ui->lineEditIPcmd));
     ui->lineEditPortcmd->setValidator(new QIntValidator(3000,65536,ui->lineEditPortcmd));
-
-    qDebug()<<Q_FUNC_INFO<<radar_settings.ip_data;
+    ui->checkBoxShowTrackData->setChecked(arpa_settings.show_attr);
+//    qDebug()<<Q_FUNC_INFO<<radar_settings.ip_data;
     ui->lineEditIPData->setText(radar_settings.ip_data);
     ui->lineEditPortData->setText(QString::number(radar_settings.port_data));
     ui->lineEditIPReport->setText(radar_settings.ip_report);

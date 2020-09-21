@@ -25,6 +25,7 @@ public:
     void setRangeRings(qreal range_ring);
     void setRangeText(double range, bool match);
     void setAdsbStatus(int status);
+    void setNavStatus(int status);
     void trigger_changeAntene();
 
 signals:
@@ -88,6 +89,8 @@ private slots:
     void on_lineEditGain_editingFinished();
 
     void on_lineEditRain_editingFinished();
+
+    void on_lineEditMTI_editingFinished();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;

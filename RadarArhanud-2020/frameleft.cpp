@@ -29,7 +29,10 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
 
     if(qApp->desktop()->height() < 1000)
+    {
         ui->groupBoxSubSistemStatus->hide();
+        ui->groupBoxSubRoomStatus->hide();
+    }
 
     dRadar = new DialogRadar(this);
     dIFF = new DialogIFF(this);
@@ -48,15 +51,63 @@ FrameLeft::FrameLeft(QWidget *parent) :
     cur_antene = 1;
     first_switch = 0;
 
+    if(radar_settings.op_mode)
+    {
+        ui->pushButtonZoomOut->setEnabled(false);
+        ui->pushButtonZoomIn->setEnabled(false);
+    }
+
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
     connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
 //    state_radar = RADAR_STANDBY; //temporary for test
 //    trigger_stateChange(); //temporary for test
 }
+
+void FrameLeft::setNavStatus(int status)
+{
+    switch (status)
+    {
+    case 0:
+        ui->labelNavStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelNavStatus->setText("Online");
+        break;
+    case 1:
+        ui->labelNavStatus->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelNavStatus->setText("Offline");
+        break;
+    default:
+        break;
+    }
+
+}
+
 void FrameLeft::setAdsbStatus(int status)
 {
     dADSB->setStatus(status);
+
+    switch (status)
+    {
+    case 0:
+        ui->labelAdsbStatus->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelAdsbStatus->setText("Offline");
+        break;
+    case 1:
+        ui->labelAdsbStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelAdsbStatus->setText("No Data");
+        break;
+    case 2:
+        ui->labelAdsbStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelAdsbStatus->setText("Data Unknown");
+        break;
+    case 3:
+        ui->labelAdsbStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelAdsbStatus->setText("Online");
+        break;
+    default:
+        break;
+    }
+
 }
 
 void FrameLeft::setRangeRings(qreal range)
@@ -237,11 +288,17 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
 
 void FrameLeft::setRangeText(double range,bool match)
 {
-    ui->labelRange->setText(QString::number(range,'f',1)+" Km");
-    if(match)
-        ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 255, 0);"));
+    if(range > 1)
+        ui->labelRange->setText(QString::number((int)range)+" Km");
     else
-        ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
+        ui->labelRange->setText(QString::number((int)(range*1000.))+" m");
+
+    ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 255, 0);"));
+    if(!match)
+    {
+        if(range < 50.)
+            ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
+    }
 }
 
 void FrameLeft::on_pushButtonZoomOut_clicked()
@@ -333,9 +390,13 @@ void FrameLeft::resizeEvent(QResizeEvent *event)
     qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
 }
 
+#include <QSettings>
+
 void FrameLeft::on_pushButtonARPA_clicked()
 {
-    system("gedit"); //path to tilt application
+    QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
+
+    system(config.value("tilting/path","/home/arhanud/aktuator").toString().toUtf8()); //path to tilt application
 }
 
 void FrameLeft::on_pushButtonShutdown_clicked()
@@ -354,4 +415,9 @@ void FrameLeft::on_lineEditGain_editingFinished()
 void FrameLeft::on_lineEditRain_editingFinished()
 {
     ui->horizontalSliderRain->setValue(ui->lineEditRain->text().toInt());
+}
+
+void FrameLeft::on_lineEditMTI_editingFinished()
+{
+    ui->horizontalSliderMTI->setValue(ui->lineEditMTI->text().toInt());
 }

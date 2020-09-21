@@ -229,14 +229,14 @@ void FrameBottom::trigger_adsb_target_update(
         target_adsb_time_tag_list.remove(icao);
         target_adsb_time_tag_list.insert(icao,new_target_tt);
 
-        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(icao,16),0);
+        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(icao,16).toUpper(),0);
         if(!listTarget.isEmpty())
         {
             const float MAX_FLOAT = std::numeric_limits<float>::max();
             int row = listTarget.at(0)->row();
 
             adsbModel->setData(arpaModel->index(row,0,QModelIndex()),
-                           QString::number(icao,16));
+                           QString::number(icao,16).toUpper());
 
             if(rng == NAN || rng == INFINITY)
             {
@@ -316,7 +316,7 @@ void FrameBottom::insertADSBList(
     int row = adsbModel->rowCount()-1;
 
     adsbModel->setData(adsbModel->index(row,0,QModelIndex()),
-                   QString::number(icao,16));
+                   QString::number(icao,16).toUpper());
 
     if(rng == NAN || rng == INFINITY)
     {
@@ -486,7 +486,7 @@ void FrameBottom::timeoutUpdate()
     while(i_adsb.hasNext())
     {
         i_adsb.next();
-        if(now-i_adsb.value()>60)
+        if(now-i_adsb.value()>20)
         {
             qDebug()<<Q_FUNC_INFO<<now-i_adsb.value();
             target_adsb_to_delete.append(i_adsb.key());
@@ -498,7 +498,7 @@ void FrameBottom::timeoutUpdate()
         quint32 cur_icao= target_adsb_to_delete.at(i);
         target_adsb_time_tag_list.remove(cur_icao);
 
-        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(cur_icao,16),0);
+        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(cur_icao,16).toUpper(),0);
         if(!listTarget.isEmpty())
         {
             int row = listTarget.at(0)->row();
@@ -848,4 +848,9 @@ void FrameBottom::trigger_OSD_disconnected()
     }
 
     qWarning()<<"Disconnect from nav data server";
+}
+
+int FrameBottom::getNavStatus() const
+{
+    return (no_osd_count < 20) ? 0 : 1;
 }

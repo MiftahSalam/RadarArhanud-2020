@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
         config.setValue("radar/port_report",6137);
         config.setValue("radar/port_data",6135);
         config.setValue("radar/last_scale",8000);
+        config.setValue("radar/op_mode",true);
 
         config.setValue("arpa/min_contour_len",3);
         config.setValue("arpa/create_arpa_by_click",true);
@@ -87,9 +88,11 @@ int main(int argc, char *argv[])
 
         config.setValue("mti/enable",true);
         config.setValue("mti/threshold",0);
+
     }
     else
     {
+        radar_settings.op_mode = config.value("radar/op_mode",true).toBool();
         radar_settings.show_rings = config.value("radar/show_ring",true).toBool();
         radar_settings.show_heading_marker = config.value("radar/show_heading_marker",true).toBool();
         radar_settings.show_compass = config.value("radar/show_compass",true).toBool();
@@ -142,6 +145,9 @@ int main(int argc, char *argv[])
         currentOwnShipLon = config.value("nav_sensor/longitude",0.0).toDouble();
         gps_auto = config.value("nav_sensor/gps_auto",true).toBool();
         hdg_auto = config.value("nav_sensor/hdg_auto",true).toBool();
+
+        adsb_settings.show_attr = true;
+        arpa_settings.show_attr = true;
     }
 
     int ret;

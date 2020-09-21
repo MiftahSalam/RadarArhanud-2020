@@ -22,6 +22,8 @@ public:
     explicit FrameBottom(QWidget *parent = 0);
     ~FrameBottom();
 
+    int getNavStatus() const;
+
 signals:
     void signal_request_del_track(int);
     void signal_request_del_adsb_track(quint32);

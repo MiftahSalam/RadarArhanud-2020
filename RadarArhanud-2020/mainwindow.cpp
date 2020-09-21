@@ -111,7 +111,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::trigger_positionChange()
 {
-    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+    if(radar_settings.op_mode)
+        ui->frameLeft->setRangeRings(10.);
+    else
+        ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
@@ -205,8 +208,10 @@ void MainWindow::timeOut()
             qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 55000.) && (m_radar_range < 50000.)"<<m_range_to_send;
         }
     }
+//    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters<<"m_range_meters"<<m_radar_range;
 
     ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
+    ui->frameLeft->setNavStatus(ui->frameBottom->getNavStatus());
 
     if(adsb)
         adsb->setLatLon(currentOwnShipLat,currentOwnShipLon);
@@ -308,8 +313,8 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         }
         */
     }
-    if(km<60.)
-        emit signal_adsb_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
+//    if(km<60.)
+    emit signal_adsb_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
 
     /*
     qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<QString::number((qint32)icao,16);
@@ -399,7 +404,10 @@ void MainWindow::trigger_rangeChange()
     }
 
 
-    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+    if(radar_settings.op_mode)
+        ui->frameLeft->setRangeRings(10.);
+    else
+        ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::calculateRadarScale()
@@ -409,12 +417,47 @@ void MainWindow::calculateRadarScale()
     double map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
     double cur_radar_scale;
 
-    m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-    m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
-    ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
-    ui->frameLeft->setRangeText(m_radar_range/1000.,fabs(m_radar_range-m_range_meters) < 10);
+    if(radar_settings.op_mode)
+    {
+        for(int zoom_idx = 0; zoom_idx < distanceList.size(); zoom_idx++)
+        {
+            cur_zoom_lvl = zoom_idx;
+            cur_map_scale = distanceList.at(zoom_idx);
+            line_per_cur_scale = cur_map_scale / pow(2.0, 18-zoom_idx ) / 0.597164;
+            map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
+
+            double cur_m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
+            if(cur_m_range_meters < 55000.)
+                break;
+        }
+        cur_zoom_lvl--;
+        if(cur_zoom_lvl >= distanceList.size())
+            cur_zoom_lvl = distanceList.size()-1;
+        else if(cur_zoom_lvl < 0)
+            cur_zoom_lvl = 0;
+
+        cur_map_scale = distanceList.at(cur_zoom_lvl);
+        line_per_cur_scale = cur_map_scale / pow(2.0, 18-cur_zoom_lvl ) / 0.597164;
+        map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
+
+        m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
+        m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
+        ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+        ui->frameLeft->setRangeText(55.,true);
+    }
+    else
+    {
+        m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
+        m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
+        ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+
+        ui->frameLeft->setRangeText(m_radar_range/1000.,fabs(m_radar_range-m_range_meters) < 10);
+    }
+
     cur_radar_scale = m_radar_range/m_range_meters;
     scene->setRadarScale(cur_radar_scale);
+    if(radar_settings.op_mode)
+        scene->setRings(ui->graphicsView->calculateRangePixel());
 
     //QPointF(-244,120) QPointF(-367,176) --> rasio = (0.6648,0.6818)
     //QPointF(156,-75) QPointF(238,-108) --> rasio = (0.6555,0.6944)
@@ -465,6 +508,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     config.setValue("nav_sensor/hdg_auto",hdg_auto);
     config.setValue("nav_sensor/gps_auto",gps_auto);
 
+    config.setValue("mti/enable",mti_settings.enable);
+    config.setValue("mti/threshold",mti_settings.threshold);
+
     event->accept();
 }
 
@@ -474,7 +520,10 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<ui->graphicsView->size().width()<<ui->graphicsView->size().height();
     m_range_pixel = qMax(ui->graphicsView->width(),ui->graphicsView->height());
     calculateRadarScale();
-    ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+    if(radar_settings.op_mode)
+        ui->frameLeft->setRangeRings(10.);
+    else
+        ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::trigger_logEvent(QString msg)
@@ -482,7 +531,10 @@ void MainWindow::trigger_logEvent(QString msg)
     int nxt_idx_space = msg.indexOf(" ",20);
     QString type_section = msg.mid(20,nxt_idx_space-20);
 
-    if(type_section == "DEBUG" || type_section == "TRACE" || msg.contains("QObject: Cannot create children for a parent"))
+    if(type_section == "DEBUG" ||
+            type_section == "TRACE" ||
+            msg.contains("QObject: Cannot create children for a parent") ||
+            msg.contains("alled when already looking up or connecting/conn"))
         return;
 
     emit signal_trueLog(msg);
