@@ -28,8 +28,7 @@ protected:
 signals:
     void signal_reqRangeChange(int range);
     void signal_trueLog(QString msg);
-    void signal_arpa_target_param(int id, double rng, double brn, double lat, double lon, double spd, double crs);
-    void signal_adsb_target_param(quint32 icao,
+    void signal_target_param(quint32 id,
                                   double rng,
                                   double brn,
                                   double lat,

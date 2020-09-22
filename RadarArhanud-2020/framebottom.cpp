@@ -3,6 +3,7 @@
 #include <radarengine.h>
 
 #include <QMessageBox>
+#include <QDesktopWidget>
 
 FrameBottom::FrameBottom(QWidget *parent) :
     QFrame(parent),
@@ -10,55 +11,36 @@ FrameBottom::FrameBottom(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    if(qApp->desktop()->height() < 1000)
+    {
+        setMaximumHeight(280);
+    }
+
     connect(&timer,SIGNAL(timeout()),this,SLOT(timeoutUpdate()));
 
-    target_arpa_time_tag_list.clear();
-    target_adsb_time_tag_list.clear();
+    target_time_tag_list.clear();
 
     QStandardItem *item1 = new QStandardItem("ID");
     QStandardItem *item2 = new QStandardItem("Range (Km)");
     QStandardItem *item3 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item4 = new QStandardItem("Latitude (deg)");
-    QStandardItem *item5 = new QStandardItem("Longitude (deg)");
-    QStandardItem *item6 = new QStandardItem("Speed (kts)");
-    QStandardItem *item7 = new QStandardItem("Course (deg)");
+    QStandardItem *item4 = new QStandardItem("Altitude (m)");
+    QStandardItem *item5 = new QStandardItem("Latitude (deg)");
+    QStandardItem *item6 = new QStandardItem("Longitude (deg)");
+    QStandardItem *item7 = new QStandardItem("Speed (kts)");
+    QStandardItem *item8 = new QStandardItem("Course (deg)");
 
-    arpaModel = new QStandardItemModel(this);
-    arpaModel->setColumnCount(5);
-    arpaModel->setHorizontalHeaderItem(0,item1);
-    arpaModel->setHorizontalHeaderItem(1,item2);
-    arpaModel->setHorizontalHeaderItem(2,item3);
-    arpaModel->setHorizontalHeaderItem(3,item4);
-    arpaModel->setHorizontalHeaderItem(4,item5);
-    arpaModel->setHorizontalHeaderItem(5,item6);
-    arpaModel->setHorizontalHeaderItem(6,item7);
+    trackModel = new QStandardItemModel(this);
+    trackModel->setColumnCount(6);
+    trackModel->setHorizontalHeaderItem(0,item1);
+    trackModel->setHorizontalHeaderItem(1,item2);
+    trackModel->setHorizontalHeaderItem(2,item3);
+    trackModel->setHorizontalHeaderItem(3,item4);
+    trackModel->setHorizontalHeaderItem(4,item5);
+    trackModel->setHorizontalHeaderItem(5,item6);
+    trackModel->setHorizontalHeaderItem(6,item7);
+    trackModel->setHorizontalHeaderItem(7,item8);
 
-    QStandardItem *item8 = new QStandardItem("ID");
-    QStandardItem *item9 = new QStandardItem("Range (Km)");
-    QStandardItem *item10 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item11 = new QStandardItem("Latitude (deg)");
-    QStandardItem *item12 = new QStandardItem("Longitude (deg)");
-    QStandardItem *item13 = new QStandardItem("Altitude (m)");
-    QStandardItem *item14 = new QStandardItem("Speed (kts)");
-    QStandardItem *item15 = new QStandardItem("Course (deg)");
-    QStandardItem *item16 = new QStandardItem("Callsign");
-    QStandardItem *item17 = new QStandardItem("Country");
-
-    adsbModel = new QStandardItemModel(this);
-    adsbModel->setColumnCount(8);
-    adsbModel->setHorizontalHeaderItem(0,item8);
-    adsbModel->setHorizontalHeaderItem(1,item9);
-    adsbModel->setHorizontalHeaderItem(2,item10);
-    adsbModel->setHorizontalHeaderItem(3,item11);
-    adsbModel->setHorizontalHeaderItem(4,item12);
-    adsbModel->setHorizontalHeaderItem(5,item13);
-    adsbModel->setHorizontalHeaderItem(6,item14);
-    adsbModel->setHorizontalHeaderItem(7,item15);
-    adsbModel->setHorizontalHeaderItem(8,item16);
-    adsbModel->setHorizontalHeaderItem(9,item17);
-
-    ui->tableViewTrackArpa->setModel(arpaModel);
-    ui->tableViewTrackAdsb->setModel(adsbModel);
+    ui->tableViewTrack->setModel(trackModel);
 
     ui->lineEditLat->setValidator(new QDoubleValidator(-90,90,6,ui->lineEditLat));
     ui->lineEditLon->setValidator(new QDoubleValidator(-180,180,6,ui->lineEditLon));
@@ -80,8 +62,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     connect(m_mqtt,SIGNAL(disconnected()),this,SLOT(trigger_OSD_disconnected()));
     connect(m_mqtt,SIGNAL(disconnectEnable()),this,SLOT(trigger_OSD_disconnected()));
 
-    dataCount_mqtt_arpa = 0;
-    dataCount_mqtt_adsb = 0;
+    dataCount_mqtt_track = 0;
     no_osd_count = 40;
     osd_col_normal = true;
 
@@ -188,13 +169,13 @@ void FrameBottom::trigger_OSD_received(QString msg)
                     append_data_osd.remove(0,index_hdr);
                 }
             }
-            qDebug()<<Q_FUNC_INFO<<index_end;
+//            qDebug()<<Q_FUNC_INFO<<index_end;
         }
-        qDebug()<<Q_FUNC_INFO<<index_hdr;
+//        qDebug()<<Q_FUNC_INFO<<index_hdr;
     }
 }
 
-void FrameBottom::trigger_adsb_target_update(
+void FrameBottom::trigger_target_update(
         quint32 icao,
         double rng,
         double brn,
@@ -223,80 +204,85 @@ void FrameBottom::trigger_adsb_target_update(
         return;
 
     quint64 new_target_tt;
-    if(target_adsb_time_tag_list.contains(icao))
+//    qDebug()<<Q_FUNC_INFO<<"target_time_tag_list"<<target_time_tag_list;
+    if(target_time_tag_list.contains(icao))
     {
         new_target_tt = QDateTime::currentSecsSinceEpoch();
-        target_adsb_time_tag_list.remove(icao);
-        target_adsb_time_tag_list.insert(icao,new_target_tt);
+        target_time_tag_list.remove(icao);
+        target_time_tag_list.insert(icao,new_target_tt);
 
-        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(icao,16).toUpper(),0);
-        if(!listTarget.isEmpty())
+        QString id_track = QString::number(icao);
+        QList<QStandardItem *> listTarget = trackModel->findItems(id_track,0);
+
+        if(listTarget.isEmpty())
         {
-            const float MAX_FLOAT = std::numeric_limits<float>::max();
-            int row = listTarget.at(0)->row();
+            id_track = QString::number(icao,16).toUpper();
+            listTarget = trackModel->findItems(id_track,0);
+        }
 
-            adsbModel->setData(arpaModel->index(row,0,QModelIndex()),
-                           QString::number(icao,16).toUpper());
+        const float MAX_FLOAT = std::numeric_limits<float>::max();
+        int row = listTarget.at(0)->row();
 
-            if(rng == NAN || rng == INFINITY)
-            {
-                adsbModel->setData(adsbModel->index(row,1,QModelIndex()),"-");
-                adsbModel->setData(adsbModel->index(row,2,QModelIndex()),"-");
-            }
-            else
-            {
-                adsbModel->setData(adsbModel->index(row,1,QModelIndex()),
-                                   QString::number(rng,'f',1));
-                adsbModel->setData(adsbModel->index(row,2,QModelIndex()),
-                                   QString::number(brn,'f',1));
-            }
+        trackModel->setData(trackModel->index(row,0,QModelIndex()),
+                            id_track);
 
-            if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
-            {
-                adsbModel->setData(adsbModel->index(row,3,QModelIndex()),"-");
-                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
-            }
-            else
-            {
-                adsbModel->setData(adsbModel->index(row,3,QModelIndex()),
-                                   QString::number(lat,'f',6));
-                adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
-                                   QString::number(lon,'f',6));
-            }
-
-            if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
-            else
-                adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
-                                   QString::number(alt,'f',1));
-
-            if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
-            {
-                adsbModel->setData(adsbModel->index(row,6,QModelIndex()),"-");
-                adsbModel->setData(adsbModel->index(row,7,QModelIndex()),"-");
-            }
-            else
-            {
-                adsbModel->setData(adsbModel->index(row,6,QModelIndex()),
-                                   QString::number(spd,'f',1));
-                adsbModel->setData(adsbModel->index(row,7,QModelIndex()),
-                                   QString::number(crs,'f',1));
-            }
-
-            adsbModel->setData(adsbModel->index(row,8,QModelIndex()),call_sign);
-            adsbModel->setData(adsbModel->index(row,9,QModelIndex()),country);
+        if(rng == NAN || rng == INFINITY)
+        {
+            trackModel->setData(trackModel->index(row,1,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
         }
         else
-            insertADSBList(icao,rng,brn,lat,lon,spd,crs,alt,call_sign,country);
+        {
+            trackModel->setData(trackModel->index(row,1,QModelIndex()),
+                                QString::number(rng,'f',1));
+            trackModel->setData(trackModel->index(row,2,QModelIndex()),
+                                QString::number(brn,'f',1));
+        }
+
+        if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+            trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
+        else
+            trackModel->setData(trackModel->index(row,3,QModelIndex()),
+                                QString::number(alt,'f',1));
+
+        if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
+        {
+            trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,5,QModelIndex()),"-");
+        }
+        else
+        {
+            trackModel->setData(trackModel->index(row,4,QModelIndex()),
+                                QString::number(lat,'f',6));
+            trackModel->setData(trackModel->index(row,5,QModelIndex()),
+                                QString::number(lon,'f',6));
+        }
+
+        if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
+        {
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
+        }
+        else
+        {
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),
+                                QString::number(spd,'f',1));
+            trackModel->setData(trackModel->index(row,7,QModelIndex()),
+                                QString::number(crs,'f',1));
+        }
+
+        //            trackModel->setData(adsbModel->index(row,8,QModelIndex()),call_sign);
+        //            trackModel->setData(adsbModel->index(row,9,QModelIndex()),country);
+
     }
     else
     {
-        target_adsb_time_tag_list.insert(icao,QDateTime::currentSecsSinceEpoch());
-        insertADSBList(icao,rng,brn,lat,lon,spd,crs,alt,call_sign,country);
+        target_time_tag_list.insert(icao,QDateTime::currentSecsSinceEpoch());
+        insertTrackList(icao,rng,brn,lat,lon,spd,crs,alt,call_sign,country);
     }
 }
 
-void FrameBottom::insertADSBList(
+void FrameBottom::insertTrackList(
         quint32 icao,
         double rng,
         double brn,
@@ -310,290 +296,168 @@ void FrameBottom::insertADSBList(
 {
     /*
     */
-    adsbModel->insertRow(adsbModel->rowCount(),QModelIndex());
+    trackModel->insertRow(trackModel->rowCount(),QModelIndex());
 
     const float MAX_FLOAT = std::numeric_limits<float>::max();
-    int row = adsbModel->rowCount()-1;
+    int row = trackModel->rowCount()-1;
 
-    adsbModel->setData(adsbModel->index(row,0,QModelIndex()),
-                   QString::number(icao,16).toUpper());
+    if(icao > 100)
+        trackModel->setData(trackModel->index(row,0,QModelIndex()),
+                            QString::number(icao,16).toUpper());
+    else
+        trackModel->setData(trackModel->index(row,0,QModelIndex()),
+                            QString::number(icao));
+
 
     if(rng == NAN || rng == INFINITY)
     {
-        adsbModel->setData(adsbModel->index(row,1,QModelIndex()),"-");
-        adsbModel->setData(adsbModel->index(row,2,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,1,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
     }
     else
     {
-        adsbModel->setData(adsbModel->index(row,1,QModelIndex()),
+        trackModel->setData(trackModel->index(row,1,QModelIndex()),
                            QString::number(rng,'f',1));
-        adsbModel->setData(adsbModel->index(row,2,QModelIndex()),
+        trackModel->setData(trackModel->index(row,2,QModelIndex()),
                            QString::number(brn,'f',1));
-    }
-
-    if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
-    {
-        adsbModel->setData(adsbModel->index(row,3,QModelIndex()),"-");
-        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),"-");
-    }
-    else
-    {
-        adsbModel->setData(adsbModel->index(row,3,QModelIndex()),
-                           QString::number(lat,'f',5));
-        adsbModel->setData(adsbModel->index(row,4,QModelIndex()),
-                           QString::number(lon,'f',5));
     }
 
     if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
     else
-        adsbModel->setData(adsbModel->index(row,5,QModelIndex()),
+        trackModel->setData(trackModel->index(row,3,QModelIndex()),
                            QString::number(alt,'f',1));
+
+    if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
+    {
+        trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,5,QModelIndex()),"-");
+    }
+    else
+    {
+        trackModel->setData(trackModel->index(row,4,QModelIndex()),
+                           QString::number(lat,'f',5));
+        trackModel->setData(trackModel->index(row,5,QModelIndex()),
+                           QString::number(lon,'f',5));
+    }
 
     if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
     {
-        adsbModel->setData(adsbModel->index(row,6,QModelIndex()),"-");
-        adsbModel->setData(adsbModel->index(row,7,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
     }
     else
     {
-        adsbModel->setData(adsbModel->index(row,6,QModelIndex()),
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),
                            QString::number(spd,'f',1));
-        adsbModel->setData(adsbModel->index(row,7,QModelIndex()),
+        trackModel->setData(trackModel->index(row,7,QModelIndex()),
                            QString::number(crs,'f',1));
     }
 
-    adsbModel->setData(adsbModel->index(row,8,QModelIndex()),call_sign);
-    adsbModel->setData(adsbModel->index(row,9,QModelIndex()),country);
+//    trackModel->setData(trackModel->index(row,8,QModelIndex()),call_sign);
+//    trackModel->setData(trackModel->index(row,9,QModelIndex()),country);
 
-    adsbModel->item(row,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,7)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,8)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    adsbModel->item(row,9)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,7)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+//    trackModel->item(row,8)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+//    trackModel->item(row,9)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
-}
-
-void FrameBottom::trigger_arpa_target_param(int id, double rng, double brn, double lat, double lon, double spd, double crs)
-{
-//    qDebug()<<Q_FUNC_INFO<<target_arpa_time_tag_list;
-//    qDebug()<<Q_FUNC_INFO<<id<<rng<<brn<<lat<<lon<<spd<<crs;
-
-    quint64 new_target_tt;
-    if(target_arpa_time_tag_list.contains(id))
-    {
-        new_target_tt = QDateTime::currentSecsSinceEpoch();
-        target_arpa_time_tag_list.remove(id);
-        target_arpa_time_tag_list.insert(id,new_target_tt);
-
-        QList<QStandardItem *> listTarget = arpaModel->findItems(QString::number(id),0);
-        if(!listTarget.isEmpty())
-        {
-
-            int row = listTarget.at(0)->row();
-
-            arpaModel->setData(arpaModel->index(row,0,QModelIndex()),
-                           id);
-            arpaModel->setData(arpaModel->index(row,1,QModelIndex()),
-                           QString::number(rng,'f',1));
-            arpaModel->setData(arpaModel->index(row,2,QModelIndex()),
-                           QString::number(brn,'f',1));
-            arpaModel->setData(arpaModel->index(row,3,QModelIndex()),
-                           QString::number(lat,'f',6));
-            arpaModel->setData(arpaModel->index(row,4,QModelIndex()),
-                           QString::number(lon,'f',6));
-            arpaModel->setData(arpaModel->index(row,5,QModelIndex()),
-                           QString::number(spd,'f',1));
-            arpaModel->setData(arpaModel->index(row,6,QModelIndex()),
-                           QString::number(crs,'f',1));
-        }
-        else
-            insertArpaList(id, rng, brn, lat, lon, spd, crs);
-    }
-    else
-    {
-        target_arpa_time_tag_list.insert(id,QDateTime::currentSecsSinceEpoch());
-        insertArpaList(id, rng, brn, lat, lon, spd, crs);
-    }
-
-
-}
-
-void FrameBottom::insertArpaList(int id, double rng, double brn, double lat, double lon, double spd, double crs)
-{
-    /*
-    */
-    arpaModel->insertRow(arpaModel->rowCount(),QModelIndex());
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,0,QModelIndex()),
-                   id);
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,1,QModelIndex()),
-                   QString::number(rng,'f',1));
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,2,QModelIndex()),
-                   QString::number(brn,'f',1));
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,3,QModelIndex()),
-                   QString::number(lat,'f',6));
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,4,QModelIndex()),
-                   QString::number(lon,'f',6));
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,5,QModelIndex()),
-                   QString::number(spd,'f',1));
-    arpaModel->setData(arpaModel->index(arpaModel->rowCount()-1,6,QModelIndex()),
-                   QString::number(crs,'f',1));
-
-    arpaModel->item(arpaModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    arpaModel->item(arpaModel->rowCount()-1,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 }
 
 void FrameBottom::timeoutUpdate()
 {
-    QHashIterator<int,quint64> i(target_arpa_time_tag_list);
-    QList<int> target_to_delete;
+    QHashIterator<quint32,quint64> i(target_time_tag_list);
+    QList<quint32> target_to_delete;
     quint64 now = QDateTime::currentSecsSinceEpoch();
+    quint64 delta;
 
     target_to_delete.clear();
     while(i.hasNext())
     {
         i.next();
-        if(now-i.value()>1)
+        if(i.key() > 100)
+            delta = 20;
+        else
+            delta = 1;
+
+        if(now-i.value()>delta)
             target_to_delete.append(i.key());
     }
 
+    QString id_track;
     for(int i=0;i<target_to_delete.size();i++)
     {
-        target_arpa_time_tag_list.remove(target_to_delete.at(i));
+        target_time_tag_list.remove(target_to_delete.at(i));
+        id_track = QString::number(target_to_delete.at(i));
 
-        QList<QStandardItem *> listTarget = arpaModel->findItems(QString::number(target_to_delete.at(i)),0);
-        if(!listTarget.isEmpty())
+        QList<QStandardItem *> listTarget = trackModel->findItems(id_track,0);
+        int row;
+
+        if(listTarget.isEmpty())
         {
-            int row = listTarget.at(0)->row();
-            arpaModel->removeRow(row);
+            id_track = QString::number(target_to_delete.at(i),16).toUpper();
+            listTarget = trackModel->findItems(id_track,0);
+            if(!listTarget.isEmpty())
+                row = listTarget.at(0)->row();
         }
+        else
+            row = listTarget.at(0)->row();
+
+        trackModel->removeRow(row);
+        if(target_to_delete.at(i) > 100)
+            emit signal_request_del_adsb_track(target_to_delete.at(i));
     }
-
-    QHashIterator<quint32,quint64> i_adsb(target_adsb_time_tag_list);
-    QList<quint32> target_adsb_to_delete;
-
-    target_adsb_to_delete.clear();
-    while(i_adsb.hasNext())
-    {
-        i_adsb.next();
-        if(now-i_adsb.value()>20)
-        {
-            qDebug()<<Q_FUNC_INFO<<now-i_adsb.value();
-            target_adsb_to_delete.append(i_adsb.key());
-        }
-    }
-
-    for(int i=0;i<target_adsb_to_delete.size();i++)
-    {
-        quint32 cur_icao= target_adsb_to_delete.at(i);
-        target_adsb_time_tag_list.remove(cur_icao);
-
-        QList<QStandardItem *> listTarget = adsbModel->findItems(QString::number(cur_icao,16).toUpper(),0);
-        if(!listTarget.isEmpty())
-        {
-            int row = listTarget.at(0)->row();
-            adsbModel->removeRow(row);
-        }
-        emit signal_request_del_adsb_track(cur_icao);
-    }
-
 
     if(m_mqtt->isConnected())
     {
-        if(arpaModel->rowCount()>0 && arpaModel->rowCount()>dataCount_mqtt_arpa)
+        if(trackModel->rowCount()>0 && trackModel->rowCount()>dataCount_mqtt_track)
         {
-            QString id,rng,brn,lat,lon,spd,crs,mq_data;
-            QModelIndex index = arpaModel->index(dataCount_mqtt_arpa,0);
+            QString id,rng,brn,alt,lat,lon,spd,crs,mq_data;
+            QModelIndex index = trackModel->index(dataCount_mqtt_track,0);
             QByteArray mq_databyte;
 
-            id = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,1);
-            rng = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,2);
-            brn = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,3);
-            lat = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,4);
-            lon = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,5);
-            spd = arpaModel->data(index).toString();
-            index = arpaModel->index(dataCount_mqtt_arpa,6);
-            crs = arpaModel->data(index).toString();
+            id = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,1);
+            rng = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,2);
+            brn = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,3);
+            lat = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,4);
+            lon = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,5);
+            alt = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,6);
+            spd = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,7);
+            crs = trackModel->data(index).toString();
 
-            mq_data = id+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+spd+"#"+crs;
+            mq_data = id+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs;
             mq_databyte = mq_data.toUtf8();
-            m_mqtt->publish(m_mqtt->getMID(), "radar", mq_databyte.size(), mq_databyte.data(), 2, false);
+            m_mqtt->publish(m_mqtt->getMID(), "track", mq_databyte.size(), mq_databyte.data(), 2, false);
 
-            dataCount_mqtt_arpa++;
-        }
-
-        if(adsbModel->rowCount()>0 && adsbModel->rowCount()>dataCount_mqtt_adsb)
-        {
-            QString icao,rng,brn,lat,lon,alt,spd,crs,mq_data;
-            QModelIndex index = adsbModel->index(dataCount_mqtt_adsb,0);
-            QByteArray mq_databyte;
-
-            icao = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,1);
-            rng = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,2);
-            brn = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,3);
-            lat = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,4);
-            lon = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,5);
-            alt = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,6);
-            spd = adsbModel->data(index).toString();
-            index = adsbModel->index(dataCount_mqtt_adsb,7);
-            crs = adsbModel->data(index).toString();
-
-//            qDebug()<<Q_FUNC_INFO<<icao<<rng<<brn<<lat<<lon<<alt<<spd<<crs;
-            mq_data = icao+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs;
-            mq_databyte = mq_data.toUtf8();
-            m_mqtt->publish(m_mqtt->getMID(), "adsb", mq_databyte.size(), mq_databyte.data(), 2, false);
-
-            dataCount_mqtt_adsb++;
+            dataCount_mqtt_track++;
         }
     }
 
-    if(dataCount_mqtt_arpa == arpaModel->rowCount())
+    if(dataCount_mqtt_track == trackModel->rowCount())
     {
-        dataCount_mqtt_arpa = 0;
+        dataCount_mqtt_track = 0;
     }
-    else if(dataCount_mqtt_arpa > arpaModel->rowCount())
+    else if(dataCount_mqtt_track > trackModel->rowCount())
     {
-        dataCount_mqtt_arpa = arpaModel->rowCount() - 1;
-        if(dataCount_mqtt_arpa<1)
-            dataCount_mqtt_arpa = 0;
+        dataCount_mqtt_track = trackModel->rowCount() - 1;
+        if(dataCount_mqtt_track<1)
+            dataCount_mqtt_track = 0;
     }
-
-    if(dataCount_mqtt_adsb == adsbModel->rowCount())
-    {
-        dataCount_mqtt_adsb = 0;
-    }
-    else if(dataCount_mqtt_adsb > adsbModel->rowCount())
-    {
-        dataCount_mqtt_adsb = adsbModel->rowCount() - 1;
-        if(dataCount_mqtt_adsb<1)
-            dataCount_mqtt_adsb = 0;
-    }
-    //    qDebug()<<Q_FUNC_INFO<<target_time_tag_list.size()<<target_to_delete.size();
-
 
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
-
     if(hdg_auto && gps_auto)
     {
         bool osd_col_normal_buf;
@@ -641,7 +505,7 @@ void FrameBottom::timeoutUpdate()
         {
             ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
             if(ret_val != 0)
-                qInfo()<<"cannot connected to nav source";
+                qDebug()<<"cannot connected to nav source";
         }
     }
 }
@@ -653,26 +517,30 @@ FrameBottom::~FrameBottom()
 
 void FrameBottom::on_pushButtonDelSel_clicked()
 {
-    int row_count = arpaModel->rowCount();
+    int row_count = trackModel->rowCount();
     if(row_count>0)
     {
-        int row = ui->tableViewTrackArpa->currentIndex().row();
-        int id = arpaModel->index(row,0).data().toInt();
+        int row = ui->tableViewTrack->currentIndex().row();
+        bool ok = false;
+        quint32 id = trackModel->index(row,0).data().toUInt(&ok);
 
-        arpaModel->removeRow(row);
-        target_arpa_time_tag_list.remove(id);
-
-        emit signal_request_del_track(id);
+        qDebug()<<Q_FUNC_INFO<<"remove id"<<id<<ok;
+        if(ok)
+        {
+            trackModel->removeRow(row);
+            target_time_tag_list.remove(id);
+            emit signal_request_del_track(id);
+        }
     }
 }
 
 void FrameBottom::on_pushButtonDelAll_clicked()
 {
-    int row_count = arpaModel->rowCount();
+    int row_count = trackModel->rowCount();
     if(row_count>0)
     {
-        target_arpa_time_tag_list.clear();
-        arpaModel->removeRows(0,row_count);
+        target_time_tag_list.clear();
+        trackModel->removeRows(0,row_count);
 
         emit signal_request_del_track(-100);
     }
@@ -746,7 +614,7 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
         }
     }
 
-    qWarning()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
+    qDebug()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
     if(gps_auto != hdg_auto)
     {
         ui->checkBoxHDG->setChecked(gps_auto);
@@ -790,7 +658,7 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
         }
     }
 
-    qWarning()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
+    qDebug()<<Q_FUNC_INFO<<"hdg_auto"<<hdg_auto<<"gps_auto"<<gps_auto;
     if(hdg_auto != gps_auto)
     {
         ui->checkBoxGPS->setChecked(hdg_auto);

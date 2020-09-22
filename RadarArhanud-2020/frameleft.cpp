@@ -31,7 +31,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     if(qApp->desktop()->height() < 1000)
     {
         ui->groupBoxSubSistemStatus->hide();
-        ui->groupBoxSubRoomStatus->hide();
+//        ui->groupBoxSubRoomStatus->hide();
     }
 
     dRadar = new DialogRadar(this);
@@ -46,7 +46,6 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail->setModal(true);
     dLog->setModal(true);
 
-//    ui->labelRange->setText("64 NM");
     cur_zoom_lvl = 10;
     cur_antene = 1;
     first_switch = 0;
@@ -266,23 +265,6 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
     if(cur_zoom_lvl > distanceList.size()-1)
         cur_zoom_lvl = distanceList.size()-1;
 
-    /*
-    qDebug()<<Q_FUNC_INFO<<ui->labelRange->text();
-
-    int g;
-    QString rngName = ui->labelRange->text();
-    for (g = ARRAY_SIZE(g_ranges_metric)-1; g > 0; g--)
-    {
-        if (QString(g_ranges_metric[g].name )== rngName)
-            break;
-    }
-    g--;
-    if(g < 0)
-        g = 0;
-
-    ui->labelRange->setText(g_ranges_metric[g].name);
-    qDebug()<<Q_FUNC_INFO<<g<<g_ranges_metric[g].name;
-    */
     emit signal_req_range();
 }
 
@@ -307,22 +289,6 @@ void FrameLeft::on_pushButtonZoomOut_clicked()
     if(cur_zoom_lvl < 8)
         cur_zoom_lvl = 8;
 
-    /*
-    qDebug()<<Q_FUNC_INFO;
-
-    int g;
-    QString rngName = ui->labelRange->text();
-    for (g = 0; g < ARRAY_SIZE(g_ranges_metric); g++)
-    {
-        if (QString(g_ranges_metric[g].name )== rngName)
-            break;
-    }
-    g++;
-    if(g >= ARRAY_SIZE(g_ranges_metric))
-        g--;
-
-    ui->labelRange->setText(g_ranges_metric[g].name);
-    */
     emit signal_req_range();
 }
 

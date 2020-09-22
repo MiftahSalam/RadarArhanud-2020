@@ -38,13 +38,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->removeWidget(ui->frameBottom);
     ui->gridLayout->removeWidget(ui->frameLeft);
 
+    ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
+    ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
+    ui->gridLayout->addWidget(ui->frameLeft,0,0,7,1);
+    /*
     ui->gridLayout->addWidget(ui->graphicsView,0,1,4,10);
     ui->gridLayout->addWidget(ui->frameBottom,4,1,1,10);
     ui->gridLayout->addWidget(ui->frameLeft,0,0,5,1);
-    /*
-    ui->gridLayout->addWidget(ui->graphicsView,0,0,3,3);
-    ui->gridLayout->addWidget(ui->frame,3,0,1,3);
-    ui->gridLayout->addWidget(ui->frame_2,0,3,4,1);
     */
 
     ui->graphicsView->setViewport(glw);
@@ -97,10 +97,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
     connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
-    connect(this,SIGNAL(signal_arpa_target_param(int,double,double,double,double,double,double)),
-            ui->frameBottom,SLOT(trigger_arpa_target_param(int,double,double,double,double,double,double)));
-    connect(this,SIGNAL(signal_adsb_target_param(quint32,double,double,double,double,double,double,double,QString,QString)),
-            ui->frameBottom,SLOT(trigger_adsb_target_update(quint32,double,double,double,double,double,double,double,QString,QString)));
+    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString)),
+            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString)));
     connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
     connect(timer,SIGNAL(timeout()),ui->frameLeft,SLOT(trigger_stateChange()));
@@ -128,11 +126,17 @@ void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 */
 void MainWindow::trigger_ReqDelTrack(int id)
 {
+    qDebug()<<Q_FUNC_INFO<<(int)id;
     if(id>-10)
     {
         for(int i=0;i<m_ri->radarArpa->m_number_of_targets;i++)
-            if(m_ri->radarArpa->m_target[i]->m_target_id == id)
+        {
+            if(m_ri->radarArpa->m_target[i]->m_target_id == (int)id)
+            {
                 m_ri->radarArpa->m_target[i]->SetStatusLost();
+                qDebug()<<Q_FUNC_INFO<<m_ri->radarArpa->m_target[i]->m_target_id<<(int)id;
+            }
+        }
     }
     else
         m_ri->radarArpa->DeleteAllTargets();
@@ -150,33 +154,15 @@ void MainWindow::timeOut()
         while ((cur_arpa_id_count < m_ri->radarArpa->m_number_of_targets) && num_limit > 0)
         {
             if(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id > 0)
-            {
-                /*
-                double dif_lat = deg2rad(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat);
-                double dif_lon = (deg2rad(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon)
-                                  - deg2rad(currentOwnShipLon))
-                        *cos(deg2rad((currentOwnShipLat+m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat)/2.));
-                double R = 6371.;
-
-                dif_lat =  dif_lat - (deg2rad(currentOwnShipLat));
-
-                double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
-                qreal bearing = atan2(dif_lon,dif_lat)*180./M_PI;
-
-                while(bearing < 0.0)
-                {
-                    bearing += 360.0;
-                }
-                */
-//                qDebug()<<Q_FUNC_INFO<<m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id<<km<<bearing;
-
-                emit signal_arpa_target_param(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id,
+            {                
+                emit signal_target_param(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.rng,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.brn,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_speed_kn,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course,
+                                              0,"-","-"
                                               );
             }
             cur_arpa_id_count++;
@@ -188,10 +174,10 @@ void MainWindow::timeOut()
 
     if(state_radar == RADAR_TRANSMIT)
     {
-        if(m_range_meters < 55000.)
+        if(m_range_meters < 60000.)
         {
             double cur_radar_scale = m_radar_range/m_range_meters;
-            qDebug()<<Q_FUNC_INFO<<"m_range_meters < 55000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
+            qDebug()<<Q_FUNC_INFO<<"m_range_meters < 60000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
 
             if(fabs(m_range_meters-m_radar_range) > 10)
             {
@@ -201,11 +187,11 @@ void MainWindow::timeOut()
                 qDebug()<<Q_FUNC_INFO<<"beda range detek"<<m_range_to_send;
             }
         }
-        else if((m_range_meters > 55000.) && (m_radar_range < 50000.))
+        else if((m_range_meters > 60000.) && (m_radar_range < 50000.))
         {
-            m_range_to_send = 55000./1.5;
+            m_range_to_send = 60000./1.5;
             emit signal_reqRangeChange((int)m_range_to_send);
-            qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 55000.) && (m_radar_range < 50000.)"<<m_range_to_send;
+            qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 60000.) && (m_radar_range < 50000.)"<<m_range_to_send;
         }
     }
 //    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters<<"m_range_meters"<<m_radar_range;
@@ -300,7 +286,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     {
         if(!adsb_list.contains(icao))
         {
-//            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;
+            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;
             adsb_list.insert(icao);
             scene->reqNewADSB(adsb->getADSB().getTarget(icao),adsb_settings.show_track);
         }
@@ -314,7 +300,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         */
     }
 //    if(km<60.)
-    emit signal_adsb_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
+    emit signal_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
 
     /*
     qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<QString::number((qint32)icao,16);
@@ -360,10 +346,10 @@ void MainWindow::trigger_rangeChange()
     calculateRadarScale();
     if(state_radar == RADAR_TRANSMIT)
     {
-        if(m_range_meters < 55000.)
+        if(m_range_meters < 60000.)
         {
             double cur_radar_scale = m_radar_range/m_range_meters;
-            qDebug()<<Q_FUNC_INFO<<"m_range_meters < 55000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
+            qDebug()<<Q_FUNC_INFO<<"m_range_meters < 60000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
 
             if(fabs(m_range_meters-m_radar_range) > 10)
             {
@@ -373,22 +359,22 @@ void MainWindow::trigger_rangeChange()
                 qDebug()<<Q_FUNC_INFO<<"beda range detek"<<m_range_to_send;
             }
         }
-        else if((m_range_meters > 55000.) && (m_radar_range < 50000.))
+        else if((m_range_meters > 60000.) && (m_radar_range < 50000.))
         {
-            m_range_to_send = 55000./1.5;
+            m_range_to_send = 60000./1.5;
             emit signal_reqRangeChange((int)m_range_to_send);
-            qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 55000.) && (m_radar_range < 50000.)"<<m_range_to_send;
+            qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 60000.) && (m_radar_range < 50000.)"<<m_range_to_send;
         }
 
-        m_range_to_send = m_range_meters > 55000. ? 55000 : m_range_meters;
+        m_range_to_send = m_range_meters > 60000. ? 60000 : m_range_meters;
         m_range_to_send /= 1.5;
         emit signal_reqRangeChange((int)m_range_to_send);
     }
     //tes
-    if(m_range_meters < 55000.)
+    if(m_range_meters < 60000.)
     {
         double cur_radar_scale = m_radar_range/m_range_meters;
-        qDebug()<<Q_FUNC_INFO<<"m_range_meters < 55000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
+        qDebug()<<Q_FUNC_INFO<<"m_range_meters < 60000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
 
         if(fabs(m_range_meters-m_radar_range) > 10)
         {
@@ -397,10 +383,10 @@ void MainWindow::trigger_rangeChange()
             qDebug()<<Q_FUNC_INFO<<"beda range detek"<<m_range_to_send;
         }
     }
-    else if((m_range_meters > 55000.) && (m_radar_range < 50000.))
+    else if((m_range_meters > 60000.) && (m_radar_range < 50000.))
     {
-        m_range_to_send = 55000./1.5;
-        qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 55000.) && (m_radar_range < 50000.)"<<m_range_to_send;
+        m_range_to_send = 60000./1.5;
+        qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 60000.) && (m_radar_range < 50000.)"<<m_range_to_send;
     }
 
 
@@ -427,7 +413,7 @@ void MainWindow::calculateRadarScale()
             map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
 
             double cur_m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-            if(cur_m_range_meters < 55000.)
+            if(cur_m_range_meters < 60000.)
                 break;
         }
         cur_zoom_lvl--;
@@ -443,7 +429,7 @@ void MainWindow::calculateRadarScale()
         m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
         m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
         ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
-        ui->frameLeft->setRangeText(55.,true);
+        ui->frameLeft->setRangeText(60.,true);
     }
     else
     {

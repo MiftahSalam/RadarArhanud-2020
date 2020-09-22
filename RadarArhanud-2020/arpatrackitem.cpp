@@ -17,20 +17,21 @@ ArpaTrackItem::ArpaTrackItem(RadarEngineARND::ARPATarget *ATarget):
 QRectF ArpaTrackItem::boundingRect() const
 {
 //    return QRectF( -10, -10, 20, 20);
-    return QRectF( -10, -10, 32, 20);
+    return QRectF( -20, -20, 42, 30);
 }
 
 QPainterPath ArpaTrackItem::shape() const
 {
     QPainterPath path;
-    path.addRect(-10, -10, 20, 20);
-    path.addRect(12, -10, 10, 5);
+    path.addRect(-20, -20, 30, 30);
+    path.addRect(22, -20, 20, 15);
     return path;
 }
 
 void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     QPen pen;
+    pen.setWidth(3);
 
     pen.setColor(Qt::yellow);
     if(map_settings.show && map_settings.mode == 0)
@@ -42,23 +43,26 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     {
         pen.setStyle(Qt::DashLine);
         painter->setPen(pen);
-        painter->drawRect(-10,-10,20,20);
+        painter->drawRect(-20,-20,30,30);
     }
     else if(m_arpa_target->getStatus() > 4)
     {
         painter->setPen(pen);
+//        painter->drawRect(-20,-20,30,30);
 
-        painter->drawLine(QPoint(-10,-5),QPoint(-10,-10));
-        painter->drawLine(QPoint(-10,-10),QPoint(-5,-10));
+        /*
+        */
+        painter->drawLine(QPoint(-20,-15),QPoint(-20,-20));
+        painter->drawLine(QPoint(-20,-20),QPoint(-15,-20));
 
-        painter->drawLine(QPoint(5,-10),QPoint(10,-10));
-        painter->drawLine(QPoint(10,-10),QPoint(10,-5));
+        painter->drawLine(QPoint(15,-20),QPoint(20,-20));
+        painter->drawLine(QPoint(20,-20),QPoint(20,-15));
 
-        painter->drawLine(QPoint(10,5),QPoint(10,10));
-        painter->drawLine(QPoint(10,10),QPoint(5,10));
+        painter->drawLine(QPoint(20,15),QPoint(20,20));
+        painter->drawLine(QPoint(20,20),QPoint(15,20));
 
-        painter->drawLine(QPoint(-5,10),QPoint(-10,10));
-        painter->drawLine(QPoint(-10,10),QPoint(-10,5));
+        painter->drawLine(QPoint(-15,20),QPoint(-20,20));
+        painter->drawLine(QPoint(-20,20),QPoint(-20,15));
 
         /*
         qreal pixel_line_velocity = PIXEL_PER_KNOT*m_arpa_target->m_speed_kn;
