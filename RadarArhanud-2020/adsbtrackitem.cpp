@@ -51,13 +51,11 @@ void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         painter->drawText(22,25,"Spd: "+QString::number(m_adsb_target->speed,'f',1)+" kts");
         painter->drawText(22,40,"Alt: "+QString::number(m_adsb_target->alt/1000.,'f',1)+" Km");
     }
-    painter->rotate(m_adsb_target->course);
+//    painter->rotate(m_adsb_target->course);
 //    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
 //    painter->drawLine(0,20,0,pixel_line_velocity);
-    painter->rotate(-45.);
-    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane.png"));
-//    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane1.png"));
-
-
+//    painter->rotate(-45.);
+//    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane.png"));
+    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/1.png"));
 }
 

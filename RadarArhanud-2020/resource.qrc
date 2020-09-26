@@ -9,5 +9,55 @@
         <file>airplane1.png</file>
         <file>airplane.png</file>
         <file>icon_radar.png</file>
+        <file>DATA_SIMBOL_SASARAN/FRIEND/1.png</file>
+        <file>DATA_SIMBOL_SASARAN/FRIEND/2.png</file>
+        <file>DATA_SIMBOL_SASARAN/FRIEND/3.png</file>
+        <file>DATA_SIMBOL_SASARAN/FRIEND/4.png</file>
+        <file>DATA_SIMBOL_SASARAN/FRIEND/5.png</file>
+        <file>DATA_SIMBOL_SASARAN/HOSTILE/1.png</file>
+        <file>DATA_SIMBOL_SASARAN/HOSTILE/2.png</file>
+        <file>DATA_SIMBOL_SASARAN/HOSTILE/3.png</file>
+        <file>DATA_SIMBOL_SASARAN/HOSTILE/4.png</file>
+        <file>DATA_SIMBOL_SASARAN/HOSTILE/5.png</file>
+        <file>DATA_SIMBOL_SASARAN/UNKNOWN/1.png</file>
+        <file>DATA_SIMBOL_SASARAN/UNKNOWN/2.png</file>
+        <file>DATA_SIMBOL_SASARAN/UNKNOWN/3.png</file>
+        <file>DATA_SIMBOL_SASARAN/UNKNOWN/4.png</file>
+        <file>DATA_SIMBOL_SASARAN/UNKNOWN/5.png</file>
+        <file>adsbtrackitem.cpp</file>
+        <file>adsbtrackitem.h</file>
+        <file>arpatrackitem.cpp</file>
+        <file>arpatrackitem.h</file>
+        <file>dialogadsb.cpp</file>
+        <file>dialogadsb.h</file>
+        <file>dialogiff.cpp</file>
+        <file>dialogiff.h</file>
+        <file>dialoglogdetail.cpp</file>
+        <file>dialoglogdetail.h</file>
+        <file>dialoglogging.cpp</file>
+        <file>dialoglogging.h</file>
+        <file>dialogopenloghistory.cpp</file>
+        <file>dialogopenloghistory.h</file>
+        <file>dialogradar.cpp</file>
+        <file>dialogradar.h</file>
+        <file>framebottom.cpp</file>
+        <file>framebottom.h</file>
+        <file>frameleft.cpp</file>
+        <file>frameleft.h</file>
+        <file>ifftrackitem.cpp</file>
+        <file>ifftrackitem.h</file>
+        <file>main.cpp</file>
+        <file>mainwindow.cpp</file>
+        <file>mainwindow.h</file>
+        <file>qtmosq.cpp</file>
+        <file>qtmosq.h</file>
+        <file>radargraphicview.cpp</file>
+        <file>radargraphicview.h</file>
+        <file>radarscene.cpp</file>
+        <file>radarscene.h</file>
+        <file>radarsceneitems.cpp</file>
+        <file>radarsceneitems.h</file>
+        <file>traildialog.cpp</file>
+        <file>traildialog.h</file>
     </qresource>
 </RCC>

@@ -51,7 +51,6 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 //        painter->drawRect(-20,-20,30,30);
 
         /*
-        */
         painter->drawLine(QPoint(-20,-15),QPoint(-20,-20));
         painter->drawLine(QPoint(-20,-20),QPoint(-15,-20));
 
@@ -63,6 +62,8 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 
         painter->drawLine(QPoint(-15,20),QPoint(-20,20));
         painter->drawLine(QPoint(-20,20),QPoint(-20,15));
+        */
+        painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/1.png"));
 
         /*
         qreal pixel_line_velocity = PIXEL_PER_KNOT*m_arpa_target->m_speed_kn;
