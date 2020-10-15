@@ -81,6 +81,32 @@ void FrameLeft::setNavStatus(int status)
 
 }
 
+void FrameLeft::updateRadarStatus()
+{
+    switch (state_radar)
+    {
+    case RADAR_TRANSMIT:
+        ui->labelRadarStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelRadarStatus->setText("Trasmitting");
+        break;
+    case RADAR_OFF:
+        ui->labelRadarStatus->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelRadarStatus->setText("No Radar");
+        break;
+    case RADAR_STANDBY:
+        ui->labelRadarStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelRadarStatus->setText("Standby");
+        break;
+    case RADAR_WAKING_UP:
+        ui->labelRadarStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelRadarStatus->setText("Warming up");
+        break;
+    default:
+        break;
+    }
+
+}
+
 void FrameLeft::setAdsbStatus(int status)
 {
     dADSB->setStatus(status);

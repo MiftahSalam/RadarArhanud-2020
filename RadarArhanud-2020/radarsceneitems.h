@@ -5,7 +5,8 @@
 
 #include <radarengine.h>
 
-#define PIXEL_PER_KNOT .25
+#define PIXEL_PER_KNOT 0.
+//#define PIXEL_PER_KNOT .25
 
 class RadarSceneItems : public QGraphicsItem
 {
@@ -21,12 +22,14 @@ public:
 
     RadarItemsType getRadarItemType() { return itemType; }
     void setShow(bool shown);
+    void setItemSelected(bool selected) { item_selected = selected; }
+    bool getItemSelected() const { return item_selected; }
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
     RadarItemsType itemType;
-//    bool show;
+    bool item_selected;
 };
 
 #endif // RADARSCENEITEMS_H

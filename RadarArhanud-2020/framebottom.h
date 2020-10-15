@@ -27,9 +27,22 @@ public:
 signals:
     void signal_request_del_track(int);
     void signal_request_del_adsb_track(quint32);
+    void signal_update_track_num(int id,int number);
+    void signal_target_select_update(
+            QString id,
+            QString tn,
+            QString rng,
+            QString brn,
+            QString lat,
+            QString lon,
+            QString spd,
+            QString crs,
+            QString alt
+            );
 
 private slots:
     void timeoutUpdate();
+    void trigger_target_selected(int tn,bool selected);
     void trigger_target_update(quint32 icao,
                                   double rng,
                                   double brn,
@@ -39,7 +52,7 @@ private slots:
                                   double crs,
                                   double alt,
                                   QString call_sign,
-                                  QString country);
+                                  QString country, bool selected);
     void trigger_OSD_received(QString msg);
     void trigger_OSD_connected();
     void trigger_OSD_disconnected();
@@ -61,6 +74,7 @@ private:
     QTimer timer;
     qtmosq *m_mqtt;
     QString append_data_osd;
+    QString cur_selected_track;
 
     int dataCount_mqtt_track;
     quint8 no_osd_count;

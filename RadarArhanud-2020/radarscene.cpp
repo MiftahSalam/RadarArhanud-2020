@@ -126,9 +126,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     painter->translate(width/2,height/2);
 
-    //compass ring text
     pen.setWidth(3);
-
     pen.setColor(Qt::yellow);
 
     if(map_settings.show && map_settings.mode == 0)
@@ -138,6 +136,16 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     painter->setPen(pen);
 
+    QPainterPath triangle;
+    QPointF triangle_ref(20+(-width/2),30+(-height/2));
+    triangle.moveTo(triangle_ref);
+    triangle.lineTo(triangle_ref.x()+10.,triangle_ref.y()+50.);
+    triangle.lineTo(triangle_ref.x()-10.,triangle_ref.y()+50.);
+    painter->fillPath(triangle,QBrush(Qt::yellow,Qt::SolidPattern));
+    painter->drawText(triangle_ref+QPointF(-5.,-10),"N");
+
+
+    //compass ring text
     if(radar_settings.show_compass)
     {
         QString text;
@@ -191,8 +199,10 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         {
             int ring_margin = ringPix;
             int bufRng = ring_margin;
-            while(bufRng < side)
+            int counter = 0;
+            while((bufRng < side_min) && (counter < 5))
             {
+                counter++;
                 painter->drawEllipse(-bufRng,-bufRng,bufRng*2,bufRng*2);
                 bufRng += ring_margin;
             }
@@ -279,7 +289,6 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     /*
       Radar status
-*/
     if(state_radar != RADAR_TRANSMIT)
     {
         QString text;
@@ -320,6 +329,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
         painter->drawText(-rect.width()/2,5,rect.width(), rect.height(),Qt::AlignCenter | Qt::TextWordWrap, text);
     }
+*/
 
     restoreGLState();
     painter->endNativePainting();

@@ -73,12 +73,15 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
                           pixel_line_velocity*qSin(deg2rad(m_arpa_target->m_course-90.0))
                           );
         */
-        painter->drawText(22,-20,"ID: "+QString::number(m_arpa_target->m_target_id));
+        painter->drawText(22,-20,"TN: "+QString::number(m_arpa_target->m_target_number));
+//        painter->drawText(22,-20,"ID: "+QString::number(m_arpa_target->m_target_id));
         if(arpa_settings.show_attr)
         {
             painter->drawText(22,-5,"Rng: "+QString::number(m_arpa_target->m_position.rng,'f',1)+" Km");
             painter->drawText(22,10,"Brn: "+QString::number(m_arpa_target->m_position.brn,'f',1)+176);
             painter->drawText(22,25,"Spd: "+QString::number(m_arpa_target->m_position.speed_kn,'f',1)+" kts");
         }
+        if(item_selected)
+            painter->drawRect(boundingRect());
     }
 }

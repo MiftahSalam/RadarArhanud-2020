@@ -149,6 +149,7 @@ int main(int argc, char *argv[])
         adsb_settings.show_attr = true;
         arpa_settings.show_attr = true;
     }
+    track_counter = 0;
 
     int ret;
 

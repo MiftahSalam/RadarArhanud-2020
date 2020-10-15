@@ -21,16 +21,17 @@ FrameBottom::FrameBottom(QWidget *parent) :
     target_time_tag_list.clear();
 
     QStandardItem *item1 = new QStandardItem("ID");
-    QStandardItem *item2 = new QStandardItem("Range (Km)");
-    QStandardItem *item3 = new QStandardItem("Bearing (deg)");
-    QStandardItem *item4 = new QStandardItem("Altitude (m)");
+    QStandardItem *item2 = new QStandardItem("Number");
+    QStandardItem *item3 = new QStandardItem("Range (Km)");
+    QStandardItem *item4 = new QStandardItem("Bearing (deg)");
     QStandardItem *item5 = new QStandardItem("Latitude (deg)");
     QStandardItem *item6 = new QStandardItem("Longitude (deg)");
-    QStandardItem *item7 = new QStandardItem("Speed (kts)");
-    QStandardItem *item8 = new QStandardItem("Course (deg)");
+    QStandardItem *item7 = new QStandardItem("Altitude (m)");
+    QStandardItem *item8 = new QStandardItem("Speed (kts)");
+    QStandardItem *item9 = new QStandardItem("Course (deg)");
 
     trackModel = new QStandardItemModel(this);
-    trackModel->setColumnCount(6);
+    trackModel->setColumnCount(7);
     trackModel->setHorizontalHeaderItem(0,item1);
     trackModel->setHorizontalHeaderItem(1,item2);
     trackModel->setHorizontalHeaderItem(2,item3);
@@ -39,6 +40,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     trackModel->setHorizontalHeaderItem(5,item6);
     trackModel->setHorizontalHeaderItem(6,item7);
     trackModel->setHorizontalHeaderItem(7,item8);
+    trackModel->setHorizontalHeaderItem(8,item9);
 
     ui->tableViewTrack->setModel(trackModel);
 
@@ -65,6 +67,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
     dataCount_mqtt_track = 0;
     no_osd_count = 40;
     osd_col_normal = true;
+    cur_selected_track = "-1";
 
     if(m_mqtt->isConnected())
         qInfo()<<"Connected to nav data server";
@@ -175,6 +178,75 @@ void FrameBottom::trigger_OSD_received(QString msg)
     }
 }
 
+void FrameBottom::trigger_target_selected(int tn, bool selected)
+{
+    QString str_tn = QString::number(tn);
+    QList<QStandardItem *> listTarget;
+
+    if(cur_selected_track != str_tn)
+    {
+        listTarget = trackModel->findItems(cur_selected_track,Qt::MatchExactly,1);
+
+        if(listTarget.size() > 0)
+        {
+            int row = listTarget.at(0)->row();
+
+            if(row >= 0)
+            {
+                trackModel->item(row,0)->setBackground(Qt::NoBrush);
+                trackModel->item(row,1)->setBackground(Qt::NoBrush);
+                trackModel->item(row,2)->setBackground(Qt::NoBrush);
+                trackModel->item(row,3)->setBackground(Qt::NoBrush);
+                trackModel->item(row,4)->setBackground(Qt::NoBrush);
+                trackModel->item(row,5)->setBackground(Qt::NoBrush);
+                trackModel->item(row,6)->setBackground(Qt::NoBrush);
+                trackModel->item(row,7)->setBackground(Qt::NoBrush);
+                trackModel->item(row,8)->setBackground(Qt::NoBrush);
+            }
+        }
+    }
+
+
+    listTarget = trackModel->findItems(str_tn,Qt::MatchExactly,1);
+
+    if(listTarget.size() > 0)
+    {
+        int row = listTarget.at(0)->row();
+
+        if(row >= 0)
+        {
+            if(selected)
+            {
+                cur_selected_track = str_tn;
+
+                trackModel->item(row,0)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,1)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,2)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,3)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,4)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,5)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,6)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,7)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+                trackModel->item(row,8)->setBackground(QBrush(Qt::red,Qt::SolidPattern));
+            }
+            else
+            {
+                cur_selected_track = "-1";
+
+                trackModel->item(row,0)->setBackground(Qt::NoBrush);
+                trackModel->item(row,1)->setBackground(Qt::NoBrush);
+                trackModel->item(row,2)->setBackground(Qt::NoBrush);
+                trackModel->item(row,3)->setBackground(Qt::NoBrush);
+                trackModel->item(row,4)->setBackground(Qt::NoBrush);
+                trackModel->item(row,5)->setBackground(Qt::NoBrush);
+                trackModel->item(row,6)->setBackground(Qt::NoBrush);
+                trackModel->item(row,7)->setBackground(Qt::NoBrush);
+                trackModel->item(row,8)->setBackground(Qt::NoBrush);
+            }
+        }
+    }
+}
+
 void FrameBottom::trigger_target_update(
         quint32 icao,
         double rng,
@@ -185,7 +257,8 @@ void FrameBottom::trigger_target_update(
         double crs,
         double alt,
         QString call_sign,
-        QString country)
+        QString country,
+        bool selected)
 {
     /*
     qDebug()<<"trigger_adsb_target_update"<<"curTarget icao"<<QString::number((qint32)icao,16);
@@ -223,27 +296,20 @@ void FrameBottom::trigger_target_update(
         const float MAX_FLOAT = std::numeric_limits<float>::max();
         int row = listTarget.at(0)->row();
 
-        trackModel->setData(trackModel->index(row,0,QModelIndex()),
-                            id_track);
+        trackModel->setData(trackModel->index(row,0,QModelIndex()),id_track);
 
         if(rng == NAN || rng == INFINITY)
         {
-            trackModel->setData(trackModel->index(row,1,QModelIndex()),"-");
             trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
         }
         else
         {
-            trackModel->setData(trackModel->index(row,1,QModelIndex()),
-                                QString::number(rng,'f',1));
             trackModel->setData(trackModel->index(row,2,QModelIndex()),
+                                QString::number(rng,'f',1));
+            trackModel->setData(trackModel->index(row,3,QModelIndex()),
                                 QString::number(brn,'f',1));
         }
-
-        if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-            trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
-        else
-            trackModel->setData(trackModel->index(row,3,QModelIndex()),
-                                QString::number(alt,'f',1));
 
         if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
         {
@@ -258,16 +324,22 @@ void FrameBottom::trigger_target_update(
                                 QString::number(lon,'f',6));
         }
 
+        if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
+        else
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),
+                                QString::number(alt,'f',1));
+
         if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
         {
-            trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
             trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,8,QModelIndex()),"-");
         }
         else
         {
-            trackModel->setData(trackModel->index(row,6,QModelIndex()),
-                                QString::number(spd,'f',1));
             trackModel->setData(trackModel->index(row,7,QModelIndex()),
+                                QString::number(spd,'f',1));
+            trackModel->setData(trackModel->index(row,8,QModelIndex()),
                                 QString::number(crs,'f',1));
         }
 
@@ -297,6 +369,7 @@ void FrameBottom::insertTrackList(
     /*
     */
     trackModel->insertRow(trackModel->rowCount(),QModelIndex());
+    track_counter++;
 
     const float MAX_FLOAT = std::numeric_limits<float>::max();
     int row = trackModel->rowCount()-1;
@@ -308,25 +381,21 @@ void FrameBottom::insertTrackList(
         trackModel->setData(trackModel->index(row,0,QModelIndex()),
                             QString::number(icao));
 
+    trackModel->setData(trackModel->index(row,1,QModelIndex()),
+                        QString::number(track_counter));
 
     if(rng == NAN || rng == INFINITY)
     {
-        trackModel->setData(trackModel->index(row,1,QModelIndex()),"-");
         trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
     }
     else
     {
-        trackModel->setData(trackModel->index(row,1,QModelIndex()),
-                           QString::number(rng,'f',1));
         trackModel->setData(trackModel->index(row,2,QModelIndex()),
+                           QString::number(rng,'f',1));
+        trackModel->setData(trackModel->index(row,3,QModelIndex()),
                            QString::number(brn,'f',1));
     }
-
-    if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-        trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
-    else
-        trackModel->setData(trackModel->index(row,3,QModelIndex()),
-                           QString::number(alt,'f',1));
 
     if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
     {
@@ -341,16 +410,22 @@ void FrameBottom::insertTrackList(
                            QString::number(lon,'f',5));
     }
 
+    if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
+    else
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),
+                           QString::number(alt,'f',1));
+
     if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
     {
-        trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
         trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,8,QModelIndex()),"-");
     }
     else
     {
-        trackModel->setData(trackModel->index(row,6,QModelIndex()),
-                           QString::number(spd,'f',1));
         trackModel->setData(trackModel->index(row,7,QModelIndex()),
+                           QString::number(spd,'f',1));
+        trackModel->setData(trackModel->index(row,8,QModelIndex()),
                            QString::number(crs,'f',1));
     }
 
@@ -365,9 +440,10 @@ void FrameBottom::insertTrackList(
     trackModel->item(row,5)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     trackModel->item(row,6)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     trackModel->item(row,7)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    trackModel->item(row,8)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 //    trackModel->item(row,8)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 //    trackModel->item(row,9)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-
+    emit signal_update_track_num(icao,track_counter);
 }
 
 void FrameBottom::timeoutUpdate()
@@ -376,6 +452,16 @@ void FrameBottom::timeoutUpdate()
     QList<quint32> target_to_delete;
     quint64 now = QDateTime::currentSecsSinceEpoch();
     quint64 delta;
+
+//    state_radar = RADAR_TRANSMIT; //tes
+    if(state_radar != RADAR_TRANSMIT)
+    {
+        target_time_tag_list.clear();
+        dataCount_mqtt_track = 0;
+
+        if(trackModel->rowCount()>0)
+            trackModel->removeRows(0,trackModel->rowCount());
+    }
 
     target_to_delete.clear();
     while(i.hasNext())
@@ -418,27 +504,29 @@ void FrameBottom::timeoutUpdate()
     {
         if(trackModel->rowCount()>0 && trackModel->rowCount()>dataCount_mqtt_track)
         {
-            QString id,rng,brn,alt,lat,lon,spd,crs,mq_data;
+            QString id,num,rng,brn,alt,lat,lon,spd,crs,mq_data;
             QModelIndex index = trackModel->index(dataCount_mqtt_track,0);
             QByteArray mq_databyte;
 
             id = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,1);
-            rng = trackModel->data(index).toString();
+            num = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,2);
-            brn = trackModel->data(index).toString();
+            rng = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,3);
-            lat = trackModel->data(index).toString();
+            brn = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,4);
-            lon = trackModel->data(index).toString();
+            lat = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,5);
-            alt = trackModel->data(index).toString();
+            lon = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,6);
-            spd = trackModel->data(index).toString();
+            alt = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,7);
+            spd = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,8);
             crs = trackModel->data(index).toString();
 
-            mq_data = id+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs;
+            mq_data = id+"#"+num+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs;
             mq_databyte = mq_data.toUtf8();
             m_mqtt->publish(m_mqtt->getMID(), "track", mq_databyte.size(), mq_databyte.data(), 2, false);
 
@@ -455,6 +543,42 @@ void FrameBottom::timeoutUpdate()
         dataCount_mqtt_track = trackModel->rowCount() - 1;
         if(dataCount_mqtt_track<1)
             dataCount_mqtt_track = 0;
+    }
+
+    if(cur_selected_track != "-1")
+    {
+        QList<QStandardItem *> listTarget = trackModel->findItems(cur_selected_track,Qt::MatchExactly,1);
+
+        if(listTarget.size() > 0)
+        {
+            int row = listTarget.at(0)->row();
+
+            if(row >= 0)
+            {
+                QString id,num,rng,brn,alt,lat,lon,spd,crs;
+                QModelIndex index = trackModel->index(row,0);
+
+                id = trackModel->data(index).toString();
+                index = trackModel->index(row,1);
+                num = trackModel->data(index).toString();
+                index = trackModel->index(row,2);
+                rng = trackModel->data(index).toString();
+                index = trackModel->index(row,3);
+                brn = trackModel->data(index).toString();
+                index = trackModel->index(row,4);
+                lat = trackModel->data(index).toString();
+                index = trackModel->index(row,5);
+                lon = trackModel->data(index).toString();
+                index = trackModel->index(row,6);
+                alt = trackModel->data(index).toString();
+                index = trackModel->index(row,7);
+                spd = trackModel->data(index).toString();
+                index = trackModel->index(row,8);
+                crs = trackModel->data(index).toString();
+
+                emit signal_target_select_update(id,cur_selected_track,rng,brn,lat,lon,spd,crs,alt);
+            }
+        }
     }
 
     ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));

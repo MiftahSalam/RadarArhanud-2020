@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     adsb_list.clear();
 
     cur_arpa_id_count = 0;
+    curState = state_radar;
 
     QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
     glw->makeCurrent();
@@ -33,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
     scene = new RadarScene(this,m_ri);
 
     ui->setupUi(this);
+
+    trackDialog = new DialogSelectedTrack(this);
+    trackDialog->hide();
 
     ui->gridLayout->removeWidget(ui->graphicsView);
     ui->gridLayout->removeWidget(ui->frameBottom);
@@ -79,6 +83,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(trigger_ReqDelTrack(int)));
     connect(ui->frameBottom,SIGNAL(signal_request_del_adsb_track(quint32)),
             this,SLOT(trigger_ReqDelAdsb(quint32)));
+    connect(ui->frameBottom,&FrameBottom::signal_update_track_num,this,&MainWindow::trigger_updateTrackNumber);
+    connect(ui->frameBottom,&FrameBottom::signal_target_select_update,
+            trackDialog,&DialogSelectedTrack::trigger_target_select_update);
+
 
     connect(ui->graphicsView,SIGNAL(signal_reqCreateArpa(QPointF)),
             this,SLOT(trigger_reqCreateArpa(QPointF)));
@@ -87,6 +95,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->graphicsView,SIGNAL(signal_cursorPosition(qreal,qreal,qreal,qreal)),
             scene,SLOT(trigger_cursorPosition(qreal,qreal,qreal,qreal)));
     connect(ui->graphicsView,&RadarGraphicView::signal_positionChange,this,&MainWindow::trigger_positionChange);
+    connect(ui->graphicsView,SIGNAL(signal_selectedChange(int,bool)),
+            ui->frameBottom,SLOT(trigger_target_selected(int,bool)));
 
     connect(m_ri,SIGNAL(signal_range_change(int)),
             this,SLOT(trigger_radarFeedbackRangeChange(int)));
@@ -97,8 +107,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
     connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
-    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString)),
-            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString)));
+    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
+            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
     connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
     connect(timer,SIGNAL(timeout()),ui->frameLeft,SLOT(trigger_stateChange()));
@@ -120,6 +130,24 @@ void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 //    qDebug()<<Q_FUNC_INFO;
     scene->DrawSpoke(angle,data,len);
     m_ri->radarArpa->RefreshArpaTargets();
+}
+
+void MainWindow::trigger_updateTrackNumber(int id, int number)
+{
+    if(id <= 100)
+    {
+        for(int i=0;i<m_ri->radarArpa->m_number_of_targets;i++)
+        {
+            if(m_ri->radarArpa->m_target[i]->m_target_id == (int)id)
+            {
+                m_ri->radarArpa->m_target[i]->m_target_number = number;
+            }
+        }
+    }
+    else
+    {
+        adsb->getADSB().setTargetNumber(id,number);
+    }
 }
 
 /*
@@ -162,7 +190,7 @@ void MainWindow::timeOut()
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_speed_kn,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course,
-                                              0,"-","-"
+                                              0,"-","-",m_ri->radarArpa->m_target[cur_arpa_id_count]->selected
                                               );
             }
             cur_arpa_id_count++;
@@ -198,9 +226,29 @@ void MainWindow::timeOut()
 
     ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
     ui->frameLeft->setNavStatus(ui->frameBottom->getNavStatus());
+    ui->frameLeft->updateRadarStatus();
 
     if(adsb)
+    {
         adsb->setLatLon(currentOwnShipLat,currentOwnShipLon);
+
+        if(curState != state_radar)
+        {
+            if(state_radar != RADAR_TRANSMIT)
+            {
+//                adsb_list.clear();
+                ui->graphicsView->showAdsb(false);
+                disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
+            }
+            else if(state_radar == RADAR_TRANSMIT)
+            {
+                ui->graphicsView->showAdsb(adsb_settings.show_track);
+                connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
+                        this,SLOT(trigger_reqUpdateADSB(QByteArray)),Qt::UniqueConnection);
+            }
+            curState = state_radar;
+        }
+    }
 }
 
 void MainWindow::initADSB()
@@ -216,10 +264,25 @@ void MainWindow::initADSB()
     else
         adsb = new AdsbArhnd::ADSBStream(0,adsbSettingIn);
 
+    /*
     if(adsb_settings.show_track)
         connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
     else
         disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
+    */
+
+    if(state_radar != RADAR_TRANSMIT)
+    {
+        adsb_list.clear();
+        ui->graphicsView->showAdsb(false);
+        disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
+    }
+    else if(state_radar == RADAR_TRANSMIT)
+    {
+        ui->graphicsView->showAdsb(adsb_settings.show_track);
+        connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
+                this,SLOT(trigger_reqUpdateADSB(QByteArray)),Qt::UniqueConnection);
+    }
 
     ui->graphicsView->showAdsb(adsb_settings.show_track);
 }
@@ -251,6 +314,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     char chr_callsign[10],chr_country[10];
     int call_sign_index_sep = 0;
     int country_index_sep = 0;
+    bool selected;
 
     stream_in>>icao;
     stream_in.readRawData(chr_callsign,10);
@@ -260,6 +324,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in>>sog;
     stream_in>>cog;
     stream_in.readRawData(chr_country,10);
+    stream_in>>selected;
 
     str_call_sign = QString::fromLocal8Bit((const char*)&chr_callsign,10);
     str_country = QString::fromLocal8Bit((const char*)&chr_country,10);
@@ -300,7 +365,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         */
     }
 //    if(km<60.)
-    emit signal_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country);
+    emit signal_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country,selected);
 
     /*
     qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<QString::number((qint32)icao,16);
@@ -314,8 +379,8 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     qDebug()<<Q_FUNC_INFO<<"curTarget->COG"<<cog;
     qDebug()<<Q_FUNC_INFO<<"curTarget->SOG"<<sog;
     qDebug()<<Q_FUNC_INFO<<"curTarget->contry chr"<<chr_country;
-    qDebug()<<Q_FUNC_INFO<<"curTarget->contry str"<<str_country;
     */
+    qDebug()<<Q_FUNC_INFO<<"curTarget->selected"<<selected;
 }
 
 
@@ -504,7 +569,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<ui->graphicsView->size().width()<<ui->graphicsView->size().height();
-    m_range_pixel = qMax(ui->graphicsView->width(),ui->graphicsView->height());
+    m_range_pixel = qMin(ui->graphicsView->width(),ui->graphicsView->height());
+//    m_range_pixel = qMax(ui->graphicsView->width(),ui->graphicsView->height());
     calculateRadarScale();
     if(radar_settings.op_mode)
         ui->frameLeft->setRangeRings(10.);

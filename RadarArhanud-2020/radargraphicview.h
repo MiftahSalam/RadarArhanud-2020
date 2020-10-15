@@ -39,6 +39,7 @@ signals:
     void signal_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
     void signal_reqCreateArpa(QPointF position);
     void signal_positionChange();
+    void signal_selectedChange(int tn,bool selected);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

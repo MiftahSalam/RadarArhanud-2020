@@ -26,6 +26,7 @@ public:
     void setRangeText(double range, bool match);
     void setAdsbStatus(int status);
     void setNavStatus(int status);
+    void updateRadarStatus();
     void trigger_changeAntene();
 
 signals:

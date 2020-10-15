@@ -3,7 +3,8 @@
 
 RadarSceneItems::RadarSceneItems()
 {
-    setFlag(ItemIsSelectable);
+//    setFlag(ItemIsSelectable);
+    item_selected = false;
 }
 
 void RadarSceneItems::setShow(bool shown)

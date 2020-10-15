@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     qtmosq.cpp \
     dialoglogging.cpp \
     dialoglogdetail.cpp \
-    dialogopenloghistory.cpp
+    dialogopenloghistory.cpp \
+    dialogselectedtrack.cpp
 
 HEADERS  += mainwindow.h \
     frameleft.h \
@@ -48,7 +49,8 @@ HEADERS  += mainwindow.h \
     qtmosq.h \
     dialoglogging.h \
     dialoglogdetail.h \
-    dialogopenloghistory.h
+    dialogopenloghistory.h \
+    dialogselectedtrack.h
 
 FORMS    += mainwindow.ui \
     frameleft.ui \
@@ -59,7 +61,8 @@ FORMS    += mainwindow.ui \
     dialogadsb.ui \
     dialoglogging.ui \
     dialoglogdetail.ui \
-    dialogopenloghistory.ui
+    dialogopenloghistory.ui \
+    dialogselectedtrack.ui
 
 DISTFILES += \
     HMI_Syle.css \

@@ -132,7 +132,9 @@ void RadarGraphicView::updateSceneItems()
 
                 if(arpa_item->m_arpa_target->getStatus() < 0)
                     scene()->removeItem(arpa_item);
+
                 qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->getStatus();
+                qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"selected"<<arpa_item->getItemSelected();
 
                 displayToImage = mc->layer("MapLayerView")->mapadapter()
                         ->coordinateToDisplay(arpa_item->m_arpa_target->blobPixelPosition());
@@ -162,6 +164,7 @@ void RadarGraphicView::updateSceneItems()
                     qDebug()<<Q_FUNC_INFO<<"remove adsb track"<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
                     scene()->removeItem(adsb_item);
                 }
+                qDebug()<<Q_FUNC_INFO<<"adsb_item"<<adsb_item<<"selected"<<adsb_item->getItemSelected();
 
 //                qDebug()<<Q_FUNC_INFO<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
 
@@ -226,7 +229,7 @@ qreal RadarGraphicView::calculateRangeRing() const
 {
     QPoint screen_middle(width()/2,height()/2);
     QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
-    QPoint ref = (width() >= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
+    QPoint ref = (width() <= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
     QPoint displayToImage = QPoint(ref.x()+map_middle.x(),ref.y()+map_middle.y());
     QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
 
@@ -262,20 +265,48 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
 {
     qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
 
-    QGraphicsItem *item = itemAt(event->pos());
+    RadarSceneItems *item = dynamic_cast<RadarSceneItems *>(itemAt(event->pos()));
     bool create_arpa = true;
 
     if (item)
     {
+        bool item_selected = !item->getItemSelected();
+        item->setItemSelected(item_selected);
+        qDebug()<<Q_FUNC_INFO<<"item select"<<item_selected<<item;
+
+        foreach (QGraphicsItem *item_i, items())
+        {
+            RadarSceneItems *radar_item_i = dynamic_cast<RadarSceneItems *>(item_i);
+            if(radar_item_i != item)
+                radar_item_i->setItemSelected(false);
+        }
+
         RadarSceneItems *itemType = dynamic_cast<RadarSceneItems *>(item);
+        int tn = -1;
 
         if(itemType->getRadarItemType() == RadarSceneItems::ARPA)
+        {
+            ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(itemType);
             create_arpa = false;
+            tn = arpa_item->m_arpa_target->m_target_number;
+            arpa_item->m_arpa_target->selected = item_selected;
+        }
+        else if(itemType->getRadarItemType() == RadarSceneItems::ADSB)
+        {
+            AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(itemType);
+            tn = adsb_item->m_adsb_target->number;
+            adsb_item->m_adsb_target->selected = item_selected;
+        }
+
+        if(tn > 0)
+            emit signal_selectedChange(tn,item_selected);
     }
+    else
+        qDebug("You didn't click on an item.");
 
     if(create_arpa)
     {
-        qDebug("You didn't click on an item.");
+        qDebug("create_arpa");
 
         QPoint screen_middle(width()/2,height()/2);
         QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);

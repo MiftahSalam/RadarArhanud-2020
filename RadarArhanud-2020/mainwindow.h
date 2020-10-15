@@ -8,6 +8,7 @@
 
 #include "radarscene.h"
 #include "adsb/adsbstream.h"
+#include "dialogselectedtrack.h"
 
 namespace Ui {
 class MainWindow;
@@ -29,15 +30,17 @@ signals:
     void signal_reqRangeChange(int range);
     void signal_trueLog(QString msg);
     void signal_target_param(quint32 id,
-                                  double rng,
-                                  double brn,
-                                  double lat,
-                                  double lon,
-                                  double spd,
-                                  double crs,
-                                  double alt,
-                                  QString call_sign,
-                                  QString country);
+                             double rng,
+                             double brn,
+                             double lat,
+                             double lon,
+                             double spd,
+                             double crs,
+                             double alt,
+                             QString call_sign,
+                             QString country,
+                             bool selected
+                             );
 
 private slots:
     void trigger_positionChange();
@@ -47,6 +50,7 @@ private slots:
     void trigger_reqCreateArpa(QPointF position);
     void trigger_reqUpdateADSB(QByteArray data);
     void trigger_ReqDelAdsb(quint32 icao);
+    void trigger_updateTrackNumber(int id, int number);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
     void trigger_forceExit();
     void trigger_logEvent(QString msg);
@@ -57,6 +61,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QTimer *timer;
+    DialogSelectedTrack *trackDialog;
 
     RadarEngineARND::RadarEngine *m_ri;
     AdsbArhnd::ADSBStream *adsb;
@@ -66,6 +71,7 @@ private:
 
     Log4Qt::SignalAppender *logEvent;
 
+    RadarState curState;
     double m_range_meters,m_radar_range,m_range_to_send;
     int m_range_pixel;
     int cur_arpa_id_count;
