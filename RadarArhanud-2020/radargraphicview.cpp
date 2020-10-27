@@ -244,7 +244,7 @@ qreal RadarGraphicView::calculateRangeRing() const
 //    km /= 1.852; //NM
     qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
-    return km/5.0;
+    return km*2./5.0;
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)

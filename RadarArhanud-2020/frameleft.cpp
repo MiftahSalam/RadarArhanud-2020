@@ -296,6 +296,7 @@ void FrameLeft::on_pushButtonZoomIn_clicked()
 
 void FrameLeft::setRangeText(double range,bool match)
 {
+    qDebug()<<Q_FUNC_INFO<<"range"<<range<<"match"<<match;
     if(range > 1)
         ui->labelRange->setText(QString::number((int)range)+" Km");
     else

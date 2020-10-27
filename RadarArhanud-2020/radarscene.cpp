@@ -69,7 +69,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     int width = painter->device()->width();
     int height = painter->device()->height();
     int side = qMax(width,height);
-    int side_min = qMin(width,height)/2;
+    int side_min = qMin(width,height);
 
     glViewport(0,0,width,height);
 
@@ -105,7 +105,12 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-        glViewport((width - side) / 2,(height - side) / 2,side,side);
+
+        if(radar_settings.op_mode)
+            glViewport((width - side_min) / 2,(height - side_min) / 2,side_min,side_min);
+        else
+            glViewport((width - side) / 2,(height - side) / 2,side,side);
+
         glLoadIdentity();
 //        curScale = 1.0f; //temporary
         glScaled(curScale, curScale, 1.);
@@ -136,6 +141,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     painter->setPen(pen);
 
+    //North finder
     QPainterPath triangle;
     QPointF triangle_ref(20+(-width/2),30+(-height/2));
     triangle.moveTo(triangle_ref);
@@ -158,8 +164,8 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
             int marginY = 5;
             int marginX = 15;
-            QRect rect1((side_min-20)*cos((j*30)*M_PI/180)-marginX,
-                        ((side_min-20)*sin((j*30)*M_PI/180)-marginY),
+            QRect rect1(((side_min/2)-20)*cos((j*30)*M_PI/180)-marginX,
+                        (((side_min/2)-20)*sin((j*30)*M_PI/180)-marginY),
                         30,
                         15);
             QTextOption opt;
@@ -179,9 +185,9 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
             int marginSmall = 5;
 
             if(j%15==0)
-                painter->drawLine(0,side_min,0,side_min-marginBig);
+                painter->drawLine(0,side_min/2,0,(side_min/2)-marginBig);
             else
-                painter->drawLine(0,side_min,0,side_min-marginSmall);
+                painter->drawLine(0,side_min/2,0,(side_min/2)-marginSmall);
 
             painter->rotate(2);
         }
@@ -200,7 +206,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
             int ring_margin = ringPix;
             int bufRng = ring_margin;
             int counter = 0;
-            while((bufRng < side_min) && (counter < 5))
+            while((bufRng < side_min/2) && (counter < 5))
             {
                 counter++;
                 painter->drawEllipse(-bufRng,-bufRng,bufRng*2,bufRng*2);

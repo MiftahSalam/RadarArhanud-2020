@@ -202,6 +202,9 @@ void MainWindow::timeOut()
 
     if(state_radar == RADAR_TRANSMIT)
     {
+        qDebug()<<Q_FUNC_INFO<<"state_radar == RADAR_TRANSMIT"
+               <<"m_range_meters"<<m_range_meters<<"m_radar_range"<<m_radar_range
+              <<"60000./1.5"<<60000./1.5;
         if(m_range_meters < 60000.)
         {
             double cur_radar_scale = m_radar_range/m_range_meters;
@@ -436,6 +439,7 @@ void MainWindow::trigger_rangeChange()
         emit signal_reqRangeChange((int)m_range_to_send);
     }
     //tes
+    /*
     if(m_range_meters < 60000.)
     {
         double cur_radar_scale = m_radar_range/m_range_meters;
@@ -453,7 +457,7 @@ void MainWindow::trigger_rangeChange()
         m_range_to_send = 60000./1.5;
         qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 60000.) && (m_radar_range < 50000.)"<<m_range_to_send;
     }
-
+    */
 
     if(radar_settings.op_mode)
         ui->frameLeft->setRangeRings(10.);
