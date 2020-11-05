@@ -63,7 +63,10 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         painter->drawLine(QPoint(-15,20),QPoint(-20,20));
         painter->drawLine(QPoint(-20,20),QPoint(-20,15));
         */
-        painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/1.png"));
+        painter->rotate(m_arpa_target->m_course);
+        painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/2.png"));
+        painter->drawLine(0,20,0,30);
+        painter->rotate(-m_arpa_target->m_course);
 
         /*
         qreal pixel_line_velocity = PIXEL_PER_KNOT*m_arpa_target->m_speed_kn;
@@ -80,6 +83,10 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
             painter->drawText(22,-5,"Rng: "+QString::number(m_arpa_target->m_position.rng,'f',1)+" Km");
             painter->drawText(22,10,"Brn: "+QString::number(m_arpa_target->m_position.brn,'f',1)+176);
             painter->drawText(22,25,"Spd: "+QString::number(m_arpa_target->m_position.speed_kn,'f',1)+" kts");
+
+            float hight = m_arpa_target->m_position.alt/1000.;
+            painter->drawText(22,40,"Alt: "+QString::number(hight,'f',1)+" Km");
+
         }
         if(item_selected)
             painter->drawRect(boundingRect());

@@ -737,6 +737,9 @@ background-color: rgb(0, 255, 0);</string>
           <property name="text">
            <string>Online</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
        </layout>
@@ -757,10 +760,13 @@ background-color: rgb(0, 255, 0);</string>
          <widget class="QLabel" name="labelIFFStatus">
           <property name="styleSheet">
            <string notr="true">color: rgb(255, 255, 255);
-background-color: rgb(255, 0, 0);</string>
+background-color: rgb(78, 154, 6);</string>
           </property>
           <property name="text">
-           <string>Offline</string>
+           <string>Online</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -787,6 +793,9 @@ background-color: rgb(255, 0, 0);</string>
           <property name="text">
            <string>Offline</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
        </layout>
@@ -811,6 +820,9 @@ background-color: rgb(255, 0, 0);</string>
           </property>
           <property name="text">
            <string>No Radar</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>

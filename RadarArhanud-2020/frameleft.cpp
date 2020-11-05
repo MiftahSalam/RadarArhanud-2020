@@ -7,6 +7,8 @@
 #include <QAction>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <QProcess>
+#include <QSettings>
 
 FrameLeft::FrameLeft(QWidget *parent) :
     QFrame(parent),
@@ -47,7 +49,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dLog->setModal(true);
 
     cur_zoom_lvl = 10;
-    cur_antene = 1;
+    antena_switch = 1;
     first_switch = 0;
 
     if(radar_settings.op_mode)
@@ -61,17 +63,27 @@ FrameLeft::FrameLeft(QWidget *parent) :
     connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
 //    state_radar = RADAR_STANDBY; //temporary for test
 //    trigger_stateChange(); //temporary for test
+
+    QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
+
+    qDebug()<<Q_FUNC_INFO<<QProcess::startDetached("killall \"/usr/bin/python3\"");
+    qDebug()<<Q_FUNC_INFO<<QProcess::startDetached(config.value("nav_sensor/cmd","python3 /home/miftah/serial2mqtt.py").toString());
+
 }
 
 void FrameLeft::setNavStatus(int status)
 {
+    qDebug()<<Q_FUNC_INFO<<status;
+
     switch (status)
     {
-    case 0:
+//    case 0:
+    case 1:
         ui->labelNavStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
         ui->labelNavStatus->setText("Online");
         break;
-    case 1:
+//    case 1:
+    case 0:
         ui->labelNavStatus->setStyleSheet("background-color: rgb(164,0,0);");
         ui->labelNavStatus->setText("Offline");
         break;
@@ -144,6 +156,25 @@ void FrameLeft::contextMenuEvent(QContextMenuEvent *event)
 {
     Q_UNUSED(event);
     qDebug()<<Q_FUNC_INFO;
+
+    QMenu menu;
+    QAction act("Fix Range Mode",this);
+    act.setCheckable(true);
+    act.setChecked(radar_settings.op_mode);
+    connect(&act,SIGNAL(triggered(bool)),this,SLOT(trigger_changeOpMode(bool)));
+
+    menu.addAction(&act);
+    menu.exec(event->pos());
+}
+
+void FrameLeft::trigger_changeOpMode(bool checked)
+{
+    qDebug()<<Q_FUNC_INFO<<checked;
+
+    ui->pushButtonZoomOut->setEnabled(!checked);
+    ui->pushButtonZoomIn->setEnabled(!checked);
+
+    emit signal_changeOpMode(checked);
 }
 
 FrameLeft::~FrameLeft()
@@ -226,7 +257,7 @@ void FrameLeft::trigger_stateChange()
 //    state_radar = RADAR_STANDBY; //faking
     if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
     {
-        cur_antene = 1;
+        antena_switch = 1;
         first_switch = 0;
         ui->pushButtonTxStnb->setText("Tx/Stby");
         ui->pushButtonGain->setEnabled(false);
@@ -237,7 +268,7 @@ void FrameLeft::trigger_stateChange()
     }
     else if(state_radar == RADAR_STANDBY)
     {
-        cur_antene = 1;
+        antena_switch = 1;
         first_switch = 0;
         ui->pushButtonTxStnb->setText("Transmit");
         ui->pushButtonGain->setEnabled(true);
@@ -264,15 +295,15 @@ void FrameLeft::trigger_changeAntene()
 {
     if(first_switch)
     {
-        cur_antene++;
-        if(cur_antene>2)
-            cur_antene = 0;
-        socket.write(QString::number(cur_antene+1).toUtf8());
+        antena_switch++;
+        if(antena_switch>2)
+            antena_switch = 0;
+        socket.write(QString::number(antena_switch+1).toUtf8());
     }
     else
         first_switch = 1;
 
-    qDebug()<<Q_FUNC_INFO<<cur_antene<<first_switch;
+    qDebug()<<Q_FUNC_INFO<<antena_switch<<first_switch;
 
 }
 
@@ -383,17 +414,23 @@ void FrameLeft::resizeEvent(QResizeEvent *event)
     qDebug()<<Q_FUNC_INFO<<event->size()<<qApp->desktop()->size();
 }
 
-#include <QSettings>
-
 void FrameLeft::on_pushButtonARPA_clicked()
 {
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
+    qDebug()<<Q_FUNC_INFO<<QProcess::startDetached(config.value("tilting/path","/home/arhanud/aktuator").toString());
 
-    system(config.value("tilting/path","/home/arhanud/aktuator").toString().toUtf8()); //path to tilt application
+//    system(config.value("tilting/path","/home/arhanud/aktuator").toString().toUtf8()); //path to tilt application
 }
 
 void FrameLeft::on_pushButtonShutdown_clicked()
 {
+    if(state_radar == RADAR_TRANSMIT)
+    {
+        QMessageBox::information(this,"Information","Radar is transmitting.\nPlease switch to standby mode first before quitting",
+                                 QMessageBox::Ok);
+        return;
+    }
+
     if(QMessageBox::information(this,"Information","Really quit application?",
                                 QMessageBox::Ok,
                                 QMessageBox::No) == QMessageBox::Ok)

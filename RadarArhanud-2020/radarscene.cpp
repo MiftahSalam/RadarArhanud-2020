@@ -106,10 +106,10 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-        if(radar_settings.op_mode)
+//        if(radar_settings.op_mode)
             glViewport((width - side_min) / 2,(height - side_min) / 2,side_min,side_min);
-        else
-            glViewport((width - side) / 2,(height - side) / 2,side,side);
+//        else
+//            glViewport((width - side) / 2,(height - side) / 2,side,side);
 
         glLoadIdentity();
 //        curScale = 1.0f; //temporary
@@ -128,6 +128,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     QFont font;
     QPen pen;
+    QColor cur_col;
 
     painter->translate(width/2,height/2);
 
@@ -138,6 +139,8 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         pen.setColor(Qt::yellow);
     else if(map_settings.show && map_settings.mode == 1)
         pen.setColor(Qt::black);
+
+//    pen.setColor(cur_col);
 
     painter->setPen(pen);
 
@@ -215,9 +218,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         }
         else
         {
-            int ring_margin = qCeil(side/5);
+            int ring_margin = qCeil(side_min/5);
+//            int ring_margin = qCeil(side/5);
             int bufRng = ring_margin;
-            while(bufRng < side)
+            while(bufRng < side_min)
+//                while(bufRng < side)
             {
                 painter->drawEllipse(-bufRng/2,-bufRng/2,bufRng,bufRng);
                 bufRng += ring_margin;
@@ -292,50 +297,6 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         painter->drawLine(0,0,0,-side);
         painter->rotate(-currentHeading);
     }
-
-    /*
-      Radar status
-    if(state_radar != RADAR_TRANSMIT)
-    {
-        QString text;
-        QTextOption opt;
-        opt.setAlignment(Qt::AlignHCenter);
-        QFont font;
-
-        font.setPixelSize(32);
-        painter->setFont(font);
-
-        if(map_settings.show && map_settings.mode == 0)
-            pen.setColor(Qt::yellow);
-        else if(map_settings.show && map_settings.mode == 1)
-            pen.setColor(Qt::black);
-
-        switch (state_radar)
-        {
-        case RADAR_OFF:
-            text = "No Radar";
-            break;
-        case RADAR_WAKING_UP:
-            text = "Waking Up";
-            break;
-        case RADAR_STANDBY:
-            text = "Standby";
-            break;
-        case RADAR_NO_SPOKE:
-            text = "Warming Up";
-            break;
-        default:
-            break;
-        }
-
-
-        QFontMetrics metric = QFontMetrics(font);
-        QRect rect = metric.boundingRect(0,0,side, int(side*0.125),
-                                          Qt::AlignCenter | Qt::TextWordWrap, text);
-
-        painter->drawText(-rect.width()/2,5,rect.width(), rect.height(),Qt::AlignCenter | Qt::TextWordWrap, text);
-    }
-*/
 
     restoreGLState();
     painter->endNativePainting();

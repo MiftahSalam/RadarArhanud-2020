@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(this,SIGNAL(signal_trueLog(QString)),ui->frameLeft,SLOT(trigger_newLog(QString)));
     connect(ui->frameLeft,SIGNAL(signal_exit()),this,SLOT(close()));
+    connect(ui->frameLeft,SIGNAL(signal_changeOpMode(bool)),this,SLOT(trigger_opModeChange(bool)));
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));
     connect(ui->frameLeft,SIGNAL(signal_Standby()),m_ri,SIGNAL(signal_sendStby()));
@@ -115,6 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     trigger_rangeChange();
     timer->start(1000);
+
 }
 
 void MainWindow::trigger_positionChange()
@@ -169,6 +171,7 @@ void MainWindow::trigger_ReqDelTrack(int id)
     else
         m_ri->radarArpa->DeleteAllTargets();
 }
+
 /**/
 void MainWindow::timeOut()
 {
@@ -190,7 +193,8 @@ void MainWindow::timeOut()
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_speed_kn,
                                               m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course,
-                                              0,"-","-",m_ri->radarArpa->m_target[cur_arpa_id_count]->selected
+                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.alt,
+                                              "-","-",m_ri->radarArpa->m_target[cur_arpa_id_count]->selected
                                               );
             }
             cur_arpa_id_count++;
@@ -368,7 +372,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
         */
     }
 //    if(km<60.)
-    emit signal_target_param(icao,km,bearing,lat,lon,sog,cog,alt,str_call_sign,str_country,selected);
+    emit signal_target_param(icao,km+0.2,bearing+1.1,lat,lon,sog+1.3,cog+1.3,alt+(150.*0.3048),str_call_sign,str_country,selected);
 
     /*
     qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<QString::number((qint32)icao,16);
@@ -494,20 +498,16 @@ void MainWindow::calculateRadarScale()
         cur_map_scale = distanceList.at(cur_zoom_lvl);
         line_per_cur_scale = cur_map_scale / pow(2.0, 18-cur_zoom_lvl ) / 0.597164;
         map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
+    }
 
-        m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-        m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
-        ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+    m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
+    m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
+    ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+
+    if(radar_settings.op_mode)
         ui->frameLeft->setRangeText(60.,true);
-    }
     else
-    {
-        m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-        m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
-        ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
-
         ui->frameLeft->setRangeText(m_radar_range/1000.,fabs(m_radar_range-m_range_meters) < 10);
-    }
 
     cur_radar_scale = m_radar_range/m_range_meters;
     scene->setRadarScale(cur_radar_scale);
@@ -525,6 +525,13 @@ void MainWindow::calculateRadarScale()
     qDebug()<<Q_FUNC_INFO<<"cur_map_scale"<<cur_map_scale;
     qDebug()<<Q_FUNC_INFO<<"line_per_cur_scale"<<line_per_cur_scale;
     qDebug()<<Q_FUNC_INFO<<"map_meter_per_pixel"<<map_meter_per_pixel;
+}
+
+void MainWindow::trigger_opModeChange(bool checked)
+{
+    qDebug()<<Q_FUNC_INFO<<"checked"<<checked;
+    radar_settings.op_mode = checked;
+    trigger_rangeChange();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

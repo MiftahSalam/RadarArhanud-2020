@@ -43,6 +43,7 @@ signals:
                              );
 
 private slots:
+    void trigger_opModeChange(bool checked);
     void trigger_positionChange();
     void trigger_ReqDelTrack(int id);
     void trigger_rangeChange();

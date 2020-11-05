@@ -159,7 +159,7 @@ void RadarGraphicView::updateSceneItems()
                 QDateTime time = QDateTime::currentDateTime();
                 AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(item);
 
-                if( (time.toTime_t() - adsb_item->m_adsb_target->time_stamp) > (ADSB_TARGET_EXPIRED-5) )
+                if( (time.toTime_t() - adsb_item->m_adsb_target->time_stamp) > (ADSB_TARGET_EXPIRED-15) )
                 {
                     qDebug()<<Q_FUNC_INFO<<"remove adsb track"<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
                     scene()->removeItem(adsb_item);
@@ -244,7 +244,7 @@ qreal RadarGraphicView::calculateRangeRing() const
 //    km /= 1.852; //NM
     qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
-    return km*2./5.0;
+    return km/5.0;
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)

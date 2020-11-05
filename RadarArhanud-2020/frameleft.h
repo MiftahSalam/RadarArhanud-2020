@@ -31,6 +31,7 @@ public:
 
 signals:
     void signal_exit();
+    void signal_changeOpMode(bool);
     void signal_mapChange(quint8 id, quint8 val);
     void signal_Standby();
     void signal_Tx();
@@ -44,6 +45,7 @@ private slots:
     void trigger_newLog(QString msg);
     void trigger_stateChange();
     void trigger_reportChange();
+    void trigger_changeOpMode(bool checked);
 
     void on_checkBoxShowRing_clicked(bool checked);
 
@@ -107,7 +109,7 @@ private:
     DialogLogging *dLog;
     QTcpSocket socket;
 
-    int cur_antene;
+//    int cur_antene;
     int first_switch;
 };
 

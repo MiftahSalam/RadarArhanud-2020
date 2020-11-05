@@ -16,6 +16,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
         setMaximumHeight(280);
     }
 
+    ui->groupBoxSubRoomStatus->hide();
+
     connect(&timer,SIGNAL(timeout()),this,SLOT(timeoutUpdate()));
 
     target_time_tag_list.clear();
@@ -104,6 +106,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
     {
         ui->lineEditLat->setReadOnly(true);
         ui->lineEditLon->setReadOnly(true);
+        ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);");
+        ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);");
 
         if(m_mqtt->isConnected())
         {
@@ -116,6 +120,8 @@ FrameBottom::FrameBottom(QWidget *parent) :
     {
        ui->lineEditLat->setReadOnly(false);
        ui->lineEditLon->setReadOnly(false);
+       ui->lineEditLat->setStyleSheet("color: rgb(255,255,255);");
+       ui->lineEditLon->setStyleSheet("color: rgb(255,255,255);");
 
        qDebug()<<"unsubscribe from nav source";
         if(m_mqtt->isConnected())
@@ -468,7 +474,7 @@ void FrameBottom::timeoutUpdate()
     {
         i.next();
         if(i.key() > 100)
-            delta = 20;
+            delta = 10;
         else
             delta = 1;
 
@@ -581,7 +587,7 @@ void FrameBottom::timeoutUpdate()
         }
     }
 
-    ui->lineEditGMT->setText(QDateTime::currentDateTimeUtc().time().toString("hh:mm:ss"));
+    ui->lineEditGMT->setText(QDateTime::currentDateTime().time().toString("hh:mm:ss"));
     if(hdg_auto && gps_auto)
     {
         bool osd_col_normal_buf;
@@ -594,7 +600,7 @@ void FrameBottom::timeoutUpdate()
         else
             osd_col_normal_buf = true;
 
-        if(osd_col_normal_buf^osd_col_normal)
+        if(osd_col_normal_buf != osd_col_normal)
         {
             osd_col_normal = osd_col_normal_buf;
             if(osd_col_normal)
@@ -802,19 +808,18 @@ void FrameBottom::trigger_OSD_connected()
 
     if(gps_auto)
     {
-        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
-        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);");
+        ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);");
 
         ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
         if(ret_val != 0)
-            qWarning()<<"GPS source not available";
+            qWarning()<<"GPS source available";
 
     }
 
     if(hdg_auto)
     {
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);");
 
         ret_val = m_mqtt->subscribe(m_mqtt->getMID(), "gps",2);
         if(ret_val != 0)
@@ -836,7 +841,6 @@ void FrameBottom::trigger_OSD_disconnected()
     if(hdg_auto)
     {
         ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
     }
 
     qWarning()<<"Disconnect from nav data server";
@@ -844,5 +848,6 @@ void FrameBottom::trigger_OSD_disconnected()
 
 int FrameBottom::getNavStatus() const
 {
-    return (no_osd_count < 20) ? 0 : 1;
+    return mqtt->isConnected();
+//    return (no_osd_count < 20) ? 0 : 1;
 }
