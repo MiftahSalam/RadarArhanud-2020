@@ -16,7 +16,7 @@ FrameBottom::FrameBottom(QWidget *parent) :
         setMaximumHeight(280);
     }
 
-    ui->groupBoxSubRoomStatus->hide();
+//    ui->groupBoxSubRoomStatus->hide();
 
     connect(&timer,SIGNAL(timeout()),this,SLOT(timeoutUpdate()));
 

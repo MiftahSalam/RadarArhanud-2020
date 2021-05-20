@@ -43,7 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->removeWidget(ui->frameLeft);
 
     ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
-    ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
+//    ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
+    ui->gridLayout->addWidget(ui->frameBottom,6,1,2,10);
     ui->gridLayout->addWidget(ui->frameLeft,0,0,7,1);
     /*
     ui->gridLayout->addWidget(ui->graphicsView,0,1,4,10);

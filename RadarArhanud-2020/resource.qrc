@@ -3,11 +3,6 @@
         <file>HMI_Syle.css</file>
     </qresource>
     <qresource prefix="/images">
-        <file>airplane_militer.jpeg</file>
-        <file>airplane.jpeg</file>
-        <file>airplane_militer1.png</file>
-        <file>airplane1.png</file>
-        <file>airplane.png</file>
         <file>icon_radar.png</file>
         <file>DATA_SIMBOL_SASARAN/FRIEND/1.png</file>
         <file>DATA_SIMBOL_SASARAN/FRIEND/2.png</file>

@@ -3,6 +3,8 @@
 #include <radarengine_global.h>
 #include <adsb-arhnd/stream/streamdevice.h>
 
+#include <QIntValidator>
+
 DialogADSB::DialogADSB(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogADSB)

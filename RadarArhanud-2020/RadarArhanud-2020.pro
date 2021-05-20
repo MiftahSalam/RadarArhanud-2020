@@ -8,7 +8,7 @@ QT       += core gui opengl network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = RadarArhanud-2020
+TARGET = RadarArhanud-2021
 TEMPLATE = app
 
 DEFINES += UBUNTU16
@@ -76,6 +76,11 @@ unix:!macx: LIBS += -L/usr/lib/ -llog4qt
 INCLUDEPATH += /include
 DEPENDPATH += /include
 
+#unix:!macx: LIBS += -L/usr/lib/Crypto/ -lCrypto
+
+#INCLUDEPATH += /usr/include/Crypto
+#DEPENDPATH += /usr/include/Crypto
+
 unix:!macx: LIBS += -L/usr/lib/RMAP/ -lqmapcontrol
 
 INCLUDEPATH += /usr/include/RMAP/
@@ -92,14 +97,14 @@ unix:!macx: LIBS += -L/usr/lib/ -ladsb-arhnd
 INCLUDEPATH += /usr/include/adsb-arhnd
 DEPENDPATH += /usr/include/adsb-arhnd
 
-unix:!macx: LIBS += -L/usr/lib/Crypto/ -lCrypto
-
-INCLUDEPATH += /usr/include/Crypto
-DEPENDPATH += /usr/include/Crypto
-
 unix:!macx: LIBS += -L/usr/lib/ -lRadarEngine-arnd
 
 INCLUDEPATH += /usr/include/RadarEngine
 DEPENDPATH += /usr/include/RadarEngine
 
 unix:!macx: PRE_TARGETDEPS += /usr/lib/libRadarEngine-arnd.a
+
+unix:!macx: LIBS += -L$$PWD/../../../../../../../../../../usr/lib/Crypto/ -lCrypto
+
+INCLUDEPATH += $$PWD/../../../../../../../../../../usr/include/Crypto
+DEPENDPATH += $$PWD/../../../../../../../../../../usr/include/Crypto

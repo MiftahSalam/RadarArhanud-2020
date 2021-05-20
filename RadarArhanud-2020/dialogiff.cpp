@@ -2,6 +2,8 @@
 #include "ui_dialogiff.h"
 #include <radarengine_global.h>
 
+#include <QIntValidator>
+
 DialogIFF::DialogIFF(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogIFF)

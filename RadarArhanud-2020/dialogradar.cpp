@@ -2,6 +2,8 @@
 #include "ui_dialogradar.h"
 #include <RadarEngine/radarengine_global.h>
 
+#include <QIntValidator>
+
 DialogRadar::DialogRadar(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogRadar)
