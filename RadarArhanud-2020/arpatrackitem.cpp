@@ -78,7 +78,7 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         */
         painter->drawText(22,-20,"TN: "+QString::number(m_arpa_target->m_target_number));
 //        painter->drawText(22,-20,"ID: "+QString::number(m_arpa_target->m_target_id));
-        if(arpa_settings.show_attr)
+        if(arpa_settings[0].show_attr) //semetara
         {
             painter->drawText(22,-5,"Rng: "+QString::number(m_arpa_target->m_position.rng,'f',1)+" Km");
             painter->drawText(22,10,"Brn: "+QString::number(m_arpa_target->m_position.brn,'f',1)+176);

@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(logEvent,SIGNAL(appended(QString)),this,SLOT(trigger_logEvent(QString)));
     Log4Qt::Logger::rootLogger()->addAppender(logEvent);
 
-    m_ri = new RadarEngineARND::RadarEngine(this);
+    m_ri = new RadarEngineARND::RadarEngine(this,0);
+    m_ri1 = new RadarEngineARND::RadarEngine(this,1);
     timer = new QTimer(this);
     adsb = NULL;
     adsb_list.clear();
@@ -31,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
     glw->makeCurrent();
 
-    scene = new RadarScene(this,m_ri);
+    scene = new RadarScene(this,m_ri,m_ri1);
 
     ui->setupUi(this);
 
@@ -42,15 +43,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->removeWidget(ui->frameBottom);
     ui->gridLayout->removeWidget(ui->frameLeft);
 
-    ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
-//    ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
-    ui->gridLayout->addWidget(ui->frameBottom,6,1,2,10);
-    ui->gridLayout->addWidget(ui->frameLeft,0,0,7,1);
     /*
-    ui->gridLayout->addWidget(ui->graphicsView,0,1,4,10);
-    ui->gridLayout->addWidget(ui->frameBottom,4,1,1,10);
-    ui->gridLayout->addWidget(ui->frameLeft,0,0,5,1);
+    ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
+    ui->gridLayout->addWidget(ui->frameBottom,6,1,2,10);
+    ui->gridLayout->addWidget(ui->frameLeft,0,0,8,1);
     */
+    ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
+    ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
+    ui->gridLayout->addWidget(ui->frameLeft,0,0,7,1);
 
     ui->graphicsView->setViewport(glw);
     ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -70,15 +70,22 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameLeft,SIGNAL(signal_mapChange(quint8,quint8)),
             ui->graphicsView,SLOT(trigger_mapChange(quint8,quint8)));
     connect(ui->frameLeft,SIGNAL(signal_Standby()),m_ri,SIGNAL(signal_sendStby()));
+    connect(ui->frameLeft,SIGNAL(signal_Standby()),m_ri1,SIGNAL(signal_sendStby()));
     connect(ui->frameLeft,SIGNAL(signal_Tx()),m_ri,SIGNAL(signal_sendTx()));
+    connect(ui->frameLeft,SIGNAL(signal_Tx()),m_ri1,SIGNAL(signal_sendTx()));
     connect(ui->frameLeft,SIGNAL(signal_radarSettingChange()),
             m_ri,SLOT(trigger_ReqRadarSetting()));
+    connect(ui->frameLeft,SIGNAL(signal_radarSettingChange()),
+            m_ri1,SLOT(trigger_ReqRadarSetting()));
     connect(ui->frameLeft,SIGNAL(signal_adsbSettingChange()),
             this,SLOT(initADSB()));
     connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
             m_ri,SLOT(trigger_ReqControlChange(int,int)));
+    connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
+            m_ri1,SLOT(trigger_ReqControlChange(int,int)));
     connect(ui->frameLeft,SIGNAL(signal_req_range()),this,SLOT(trigger_rangeChange()));
     connect(ui->frameLeft,SIGNAL(signal_clearTrail()),m_ri,SLOT(trigger_clearTrail()));
+    connect(ui->frameLeft,SIGNAL(signal_clearTrail()),m_ri1,SLOT(trigger_clearTrail()));
     connect(scene,&RadarScene::signal_zero_detect,ui->frameLeft,&FrameLeft::trigger_changeAntene);
 
     connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
@@ -104,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(trigger_radarFeedbackRangeChange(int)));
     connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
             this,SLOT(trigger_DrawSpoke(int,u_int8_t*,size_t)));
+    connect(m_ri1,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
+            this,SLOT(trigger_DrawSpoke1(int,u_int8_t*,size_t)));
     connect(m_ri,SIGNAL(signal_forceExit()),
             this,SLOT(trigger_forceExit()));
     connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
@@ -112,6 +121,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
             ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
     connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
+    connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri1,SLOT(trigger_ReqRangeChange(int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
     connect(timer,SIGNAL(timeout()),ui->frameLeft,SLOT(trigger_stateChange()));
 
@@ -133,6 +143,13 @@ void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 //    qDebug()<<Q_FUNC_INFO;
     scene->DrawSpoke(angle,data,len);
     m_ri->radarArpa->RefreshArpaTargets();
+}
+
+void MainWindow::trigger_DrawSpoke1(int angle, u_int8_t *data, size_t len)
+{
+//    qDebug()<<Q_FUNC_INFO;
+    scene->DrawSpoke1(angle,data,len);
+    m_ri1->radarArpa->RefreshArpaTargets();
 }
 
 void MainWindow::trigger_updateTrackNumber(int id, int number)
@@ -179,6 +196,7 @@ void MainWindow::timeOut()
 //    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
 
     m_ri->radarArpa->RefreshArpaTargets();
+    m_ri1->radarArpa->RefreshArpaTargets();
 
     if(m_ri->radarArpa->m_number_of_targets > 0)
     {
@@ -550,6 +568,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     config.setValue("radar/port_command",radar_settings.port_command);
     config.setValue("radar/port_report",radar_settings.port_report);
     config.setValue("radar/port_data",radar_settings.port_data);
+    config.setValue("radar/ip_data1",radar_settings.ip_data1);
+    config.setValue("radar/ip_report1",radar_settings.ip_report1);
+    config.setValue("radar/ip_command1",radar_settings.ip_command1);
+    config.setValue("radar/port_command1",radar_settings.port_command1);
+    config.setValue("radar/port_report1",radar_settings.port_report1);
+    config.setValue("radar/port_data1",radar_settings.port_data1);
 
     config.setValue("trail/enable",trail_settings.enable);
     config.setValue("trail/mode",trail_settings.trail);

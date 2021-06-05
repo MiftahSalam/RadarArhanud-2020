@@ -96,19 +96,30 @@ int main(int argc, char *argv[])
         radar_settings.show_rings = config.value("radar/show_ring",true).toBool();
         radar_settings.show_heading_marker = config.value("radar/show_heading_marker",true).toBool();
         radar_settings.show_compass = config.value("radar/show_compass",true).toBool();
+        radar_settings.enable = true;
         radar_settings.ip_data = config.value("radar/ip_data","127.0.0.1").toString();
         radar_settings.ip_report = config.value("radar/ip_report","127.0.0.1").toString();
         radar_settings.ip_command = config.value("radar/ip_command","236.6.7.104").toString();
         radar_settings.port_command = config.value("radar/port_command",6136).toUInt();
         radar_settings.port_report = config.value("radar/port_report",6137).toUInt();
         radar_settings.port_data = config.value("radar/port_data",6135).toUInt();
+        radar_settings.enable1 = true;
+        radar_settings.ip_data1 = config.value("radar/ip_data1","127.0.0.1").toString();
+        radar_settings.ip_report1 = config.value("radar/ip_report1","127.0.0.1").toString();
+        radar_settings.ip_command1 = config.value("radar/ip_command1","236.6.7.99").toString();
+        radar_settings.port_command1 = config.value("radar/port_command1",6636).toUInt();
+        radar_settings.port_report1 = config.value("radar/port_report1",6637).toUInt();
+        radar_settings.port_data1 = config.value("radar/port_data1",6635).toUInt();
 
-        arpa_settings.create_arpa_by_click = config.value("arpa/create_arpa_by_click",true).toBool();
-        arpa_settings.show_track = config.value("arpa/show",true).toBool();
-        arpa_settings.min_contour_length = config.value("arpa/min_contour_len",3).toInt();
-        arpa_settings.search_radius1 = config.value("arpa/search_radius1",10).toInt();
-        arpa_settings.search_radius2 = config.value("arpa/search_radius2",20).toInt();
-        arpa_settings.max_target_size = config.value("arpa/max_target_size",50).toInt();
+        for (int var = 0; var < 2; ++var) {
+            arpa_settings[var].create_arpa_by_click = config.value(QString("arpa%1/create_arpa_by_click").arg(var),true).toBool();
+            arpa_settings[var].show_track = config.value(QString("arpa%1/show").arg(var),true).toBool();
+            arpa_settings[var].min_contour_length = config.value(QString("arpa%1/min_contour_len").arg(var),3).toInt();
+            arpa_settings[var].search_radius1 = config.value(QString("arpa%1/search_radius1").arg(var),10).toInt();
+            arpa_settings[var].search_radius2 = config.value(QString("arpa%1/search_radius2").arg(var),20).toInt();
+            arpa_settings[var].max_target_size = config.value(QString("arpa%1/max_target_size").arg(var),50).toInt();
+            arpa_settings[var].show_attr = true;
+        }
 
         trail_settings.enable = config.value("trail/enable",true).toBool();
         trail_settings.trail = config.value("trail/mode",0).toInt();
@@ -147,7 +158,6 @@ int main(int argc, char *argv[])
         hdg_auto = config.value("nav_sensor/hdg_auto",true).toBool();
 
         adsb_settings.show_attr = true;
-        arpa_settings.show_attr = true;
     }
     track_counter = 0;
 

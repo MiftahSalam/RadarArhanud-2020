@@ -42,11 +42,11 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dTrail = new TrailDialog(this);
     dLog = new DialogLogging(this);
 
-    dRadar->setModal(true);
-    dIFF->setModal(true);
-    dADSB->setModal(true);
-    dTrail->setModal(true);
-    dLog->setModal(true);
+//    dRadar->setModal(true);
+//    dIFF->setModal(true);
+//    dADSB->setModal(true);
+//    dTrail->setModal(true);
+//    dLog->setModal(true);
 
     cur_zoom_lvl = 10;
     antena_switch = 1;
@@ -173,6 +173,10 @@ void FrameLeft::trigger_changeOpMode(bool checked)
 
     ui->pushButtonZoomOut->setEnabled(!checked);
     ui->pushButtonZoomIn->setEnabled(!checked);
+    dRadar->trigger_fixRangeMode(checked);
+
+    if(checked) dRadar->resize(dRadar->width(),dRadar->height()/2);
+    else dRadar->resize(dRadar->width(),dRadar->height());
 
     emit signal_changeOpMode(checked);
 }

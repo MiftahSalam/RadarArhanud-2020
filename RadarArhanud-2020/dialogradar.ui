@@ -6,239 +6,506 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>259</width>
-    <height>312</height>
+    <width>270</width>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Radar Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QCheckBox" name="checkBoxShowTrackData">
-     <property name="text">
-      <string>Show Track Data</string>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Radar</string>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QCheckBox" name="checkBoxShowTrackData">
+          <property name="text">
+           <string>Show Track Data</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxShowEnable">
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP Data :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPData">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port Data :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortData">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_9">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP Report :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPReport">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port Report :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortReport">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP CMD :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPcmd">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QLabel" name="label_10">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port CMD :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortcmd">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonApply">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>IP Data :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditIPData">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="inputMask">
-        <string>000.000.000.000</string>
-       </property>
-       <property name="text">
-        <string>127.123.343.123</string>
-       </property>
-       <property name="maxLength">
-        <number>15</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_7">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>Port Data :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditPortData">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>66666</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_9">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>IP Report :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditIPReport">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="inputMask">
-        <string>000.000.000.000</string>
-       </property>
-       <property name="text">
-        <string>127.123.343.123</string>
-       </property>
-       <property name="maxLength">
-        <number>15</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QLabel" name="label_8">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>Port Report :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditPortReport">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>66666</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <widget class="QLabel" name="label_11">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>IP CMD :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditIPcmd">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="inputMask">
-        <string>000.000.000.000</string>
-       </property>
-       <property name="text">
-        <string>127.123.343.123</string>
-       </property>
-       <property name="maxLength">
-        <number>15</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
-     <item>
-      <widget class="QLabel" name="label_10">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 0);</string>
-       </property>
-       <property name="text">
-        <string>Port CMD :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEditPortcmd">
-       <property name="maximumSize">
-        <size>
-         <width>120</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>66666</string>
-       </property>
-       <property name="maxLength">
-        <number>5</number>
-       </property>
-       <property name="frame">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButtonApply">
-     <property name="enabled">
-      <bool>true</bool>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Radar 1</string>
      </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>Apply</string>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QCheckBox" name="checkBoxShowTrackData_2">
+          <property name="text">
+           <string>Show Track Data</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxShowEnable_2">
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QLabel" name="label_12">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP Data :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPData_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
+        <item>
+         <widget class="QLabel" name="label_13">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port Data :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortData_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <item>
+         <widget class="QLabel" name="label_14">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP Report :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPReport_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_12">
+        <item>
+         <widget class="QLabel" name="label_15">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port Report :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortReport_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_13">
+        <item>
+         <widget class="QLabel" name="label_16">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>IP CMD :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditIPcmd_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="inputMask">
+           <string>000.000.000.000</string>
+          </property>
+          <property name="text">
+           <string>127.123.343.123</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_14">
+        <item>
+         <widget class="QLabel" name="label_17">
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 255, 0);</string>
+          </property>
+          <property name="text">
+           <string>Port CMD :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditPortcmd_2">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>66666</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
+          </property>
+          <property name="frame">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonApply_2">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

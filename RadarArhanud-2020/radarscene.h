@@ -15,10 +15,11 @@ class RadarScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    explicit RadarScene(QObject *parent = 0, RadarEngine *ri_ptr=0);
+    explicit RadarScene(QObject *parent = 0, RadarEngine *ri_ptr=0, RadarEngine *ri_ptr1=0);
     ~RadarScene();
 
     void DrawSpoke(int, u_int8_t*, size_t);
+    void DrawSpoke1(int, u_int8_t*, size_t);
     void reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr);
     void reqNewADSB(AdsbArhnd::ADSBTargetData *target,bool show);
     void setRadarScale(float scale);
@@ -38,7 +39,7 @@ private slots:
     void trigger_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
 
 private:
-    RadarEngine *m_ri;
+    RadarEngine *m_ri,*m_ri1;
     QTimer *m_timer;
 
     struct Cursor
@@ -57,7 +58,7 @@ private:
     GLTextureCube *m_text;
     QVector<GLfloat> vertData;
 
-    float curScale,curAngle;
+    float curScale,curAngle, curAngle1;
     int ringPix;
 
     QImage mapImage;

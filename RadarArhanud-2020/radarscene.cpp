@@ -25,8 +25,8 @@ const char vShader [] =
         "}\n"
         ;
 
-RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr) :
-    QGraphicsScene(parent),m_ri(ri_ptr),curScale(1.0f),curAngle(0.)
+RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr, RadarEngine *ri_ptr1) :
+    QGraphicsScene(parent),m_ri(ri_ptr),m_ri1(ri_ptr1),curScale(1.0f),curAngle(0.)
 {
     initGL();
 
@@ -46,6 +46,16 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 
     curAngle = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
+    update();
+}
+
+void RadarScene::DrawSpoke1(int angle, u_int8_t *data, size_t len)
+{
+    if(angle == 2046)
+        emit signal_zero_detect();
+
+    curAngle1 = SCALE_RAW_TO_DEGREES2048(angle);
+    m_ri1->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
 }
 
@@ -119,10 +129,34 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         glDisable(GL_BLEND);
 
         glBegin(GL_LINES);
-        glColor3f(0,1,0);
+        glColor3f(0,0.6,0);
         glVertex2f(0,0);
         glVertex2f(sin(static_cast<float>(deg2rad(curAngle))),
                    cos(static_cast<float>(deg2rad(curAngle))));
+        glEnd();
+    }
+    if(state_radar1 == RADAR_TRANSMIT)
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+//        if(radar_settings.op_mode)
+            glViewport((width - side_min) / 2,(height - side_min) / 2,side_min,side_min);
+//        else
+//            glViewport((width - side) / 2,(height - side) / 2,side,side);
+
+        glLoadIdentity();
+//        curScale = 1.0f; //temporary
+        glScaled(curScale, curScale, 1.);
+
+        m_ri1->radarDraw->DrawRadarImage();
+        glDisable(GL_BLEND);
+
+        glBegin(GL_LINES);
+        glColor3f(0,1,0);
+        glVertex2f(0,0);
+        glVertex2f(sin(static_cast<float>(deg2rad(curAngle1))),
+                   cos(static_cast<float>(deg2rad(curAngle1))));
         glEnd();
     }
 

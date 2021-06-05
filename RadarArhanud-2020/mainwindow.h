@@ -53,6 +53,7 @@ private slots:
     void trigger_ReqDelAdsb(quint32 icao);
     void trigger_updateTrackNumber(int id, int number);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
+    void trigger_DrawSpoke1(int, u_int8_t*, size_t);
     void trigger_forceExit();
     void trigger_logEvent(QString msg);
     void timeOut();
@@ -64,7 +65,7 @@ private:
     QTimer *timer;
     DialogSelectedTrack *trackDialog;
 
-    RadarEngineARND::RadarEngine *m_ri;
+    RadarEngineARND::RadarEngine *m_ri,*m_ri1;
     AdsbArhnd::ADSBStream *adsb;
     QSet<quint32> adsb_list;
 
