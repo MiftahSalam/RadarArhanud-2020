@@ -9,6 +9,7 @@
 #include "radarscene.h"
 #include "adsb/adsbstream.h"
 #include "dialogselectedtrack.h"
+#include "trackmanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -21,6 +22,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    RadarEngineARND::RadarEngine *m_ri,*m_ri1;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -65,7 +68,7 @@ private:
     QTimer *timer;
     DialogSelectedTrack *trackDialog;
 
-    RadarEngineARND::RadarEngine *m_ri,*m_ri1;
+    TrackManager *m_tm;
     AdsbArhnd::ADSBStream *adsb;
     QSet<quint32> adsb_list;
 

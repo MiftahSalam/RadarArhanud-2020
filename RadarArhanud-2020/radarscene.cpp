@@ -51,8 +51,8 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 
 void RadarScene::DrawSpoke1(int angle, u_int8_t *data, size_t len)
 {
-    if(angle == 2046)
-        emit signal_zero_detect();
+//    if(angle == 2046)
+//        emit signal_zero_detect();
 
     curAngle1 = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri1->radarDraw->ProcessRadarSpoke(angle,data,len);
@@ -435,14 +435,43 @@ void RadarScene::mouseReleaseEvent(QMouseEvent *event)
     qDebug()<<Q_FUNC_INFO;
 }
 
-void RadarScene::reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr)
+void RadarScene::reqDelArpa(TracksCluster *arpa_cluster_ptr)
 {
-    qDebug()<<Q_FUNC_INFO<<create<<arpa_ptr;
+    QList<QGraphicsItem*> item_list = items();
+    RadarSceneItems *item;
+
+    qDebug()<<Q_FUNC_INFO<<item_list.size();
+
+    for(int i=0; i<item_list.size(); i++)
+    {
+        item = dynamic_cast<RadarSceneItems *>(item_list.at(i));
+
+        if(item->getRadarItemType() == RadarSceneItems::ARPA)
+        {
+            ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(item);
+
+            if(arpa_item->m_cluster_track == arpa_cluster_ptr)
+            {
+//                qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"status"<<arpa_item->m_arpa_target->getStatus();
+                removeItem(arpa_item);
+                break;
+            }
+        }
+    }
+    invalidate();
+}
+
+void RadarScene::reqNewArpa(bool create, bool show, TracksCluster *arpa_cluster_ptr)
+//void RadarScene::reqNewArpa(bool create, bool show, ARPATarget *arpa_ptr)
+{
+    qDebug()<<Q_FUNC_INFO<<create<<arpa_cluster_ptr;
+//    qDebug()<<Q_FUNC_INFO<<create<<arpa_ptr;
     qDebug()<<Q_FUNC_INFO<<items().size();
 
     if(create)
     {
-        ArpaTrackItem *newArpaTrack = new ArpaTrackItem(arpa_ptr);
+        ArpaTrackItem *newArpaTrack = new ArpaTrackItem(arpa_cluster_ptr);
+//        ArpaTrackItem *newArpaTrack = new ArpaTrackItem(arpa_ptr);
         newArpaTrack->setShow(show);
         addItem(newArpaTrack);
     }

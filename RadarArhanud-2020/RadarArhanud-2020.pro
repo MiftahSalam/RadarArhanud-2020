@@ -24,6 +24,7 @@ SOURCES += main.cpp\
     radarsceneitems.cpp \
     adsbtrackitem.cpp \
     dialogradar.cpp \
+    trackmanager.cpp \
     traildialog.cpp \
     dialogiff.cpp \
     dialogadsb.cpp \
@@ -43,6 +44,7 @@ HEADERS  += mainwindow.h \
     radarsceneitems.h \
     adsbtrackitem.h \
     dialogradar.h \
+    trackmanager.h \
     traildialog.h \
     dialogiff.h \
     dialogadsb.h \

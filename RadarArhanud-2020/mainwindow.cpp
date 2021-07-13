@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     glw->makeCurrent();
 
     scene = new RadarScene(this,m_ri,m_ri1);
+    m_tm = new TrackManager(m_ri, m_ri1, scene);
 
     ui->setupUi(this);
 
@@ -118,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
     connect(m_ri,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
+    connect(m_tm,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
+            this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
     connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
             ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
     connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
@@ -142,27 +145,37 @@ void MainWindow::trigger_DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
 //    qDebug()<<Q_FUNC_INFO;
     scene->DrawSpoke(angle,data,len);
-    m_ri->radarArpa->RefreshArpaTargets();
+    m_tm->refreshTarget();
+//    for (int i = 0; i < ANTENE_COUNT; ++i) {
+//        m_ri->radarArpa[i]->RefreshArpaTargets();
+//    }
 }
 
 void MainWindow::trigger_DrawSpoke1(int angle, u_int8_t *data, size_t len)
 {
 //    qDebug()<<Q_FUNC_INFO;
     scene->DrawSpoke1(angle,data,len);
-    m_ri1->radarArpa->RefreshArpaTargets();
+    m_tm->refreshTarget1();
+//    for (int i = 0; i < ANTENE_COUNT; ++i) {
+//        m_ri1->radarArpa[i]->RefreshArpaTargets();
+//    }
 }
 
 void MainWindow::trigger_updateTrackNumber(int id, int number)
 {
     if(id <= 100)
     {
-        for(int i=0;i<m_ri->radarArpa->m_number_of_targets;i++)
-        {
-            if(m_ri->radarArpa->m_target[i]->m_target_id == (int)id)
-            {
-                m_ri->radarArpa->m_target[i]->m_target_number = number;
-            }
-        }
+//        m_tm->updateTrackNumber(id,number);
+//        for (int h = 0; h < ANTENE_COUNT; ++h)
+//        {
+//            for(int i=0;i<m_ri->radarArpa[h]->m_number_of_targets;i++)
+//            {
+//                if(m_ri->radarArpa[h]->m_target[i]->m_target_id == (int)id)
+//                {
+//                    m_ri->radarArpa[h]->m_target[i]->m_target_number = number;
+//                }
+//            }
+//        }
     }
     else
     {
@@ -175,19 +188,27 @@ void MainWindow::trigger_updateTrackNumber(int id, int number)
 void MainWindow::trigger_ReqDelTrack(int id)
 {
     qDebug()<<Q_FUNC_INFO<<(int)id;
-    if(id>-10)
-    {
-        for(int i=0;i<m_ri->radarArpa->m_number_of_targets;i++)
-        {
-            if(m_ri->radarArpa->m_target[i]->m_target_id == (int)id)
-            {
-                m_ri->radarArpa->m_target[i]->SetStatusLost();
-                qDebug()<<Q_FUNC_INFO<<m_ri->radarArpa->m_target[i]->m_target_id<<(int)id;
-            }
-        }
-    }
-    else
-        m_ri->radarArpa->DeleteAllTargets();
+    m_tm->reqDelTrack(id);
+//    if(id>-10)
+//    {
+//        for (int h = 0; h < ANTENE_COUNT; ++h)
+//        {
+//            for(int i=0;i<m_ri->radarArpa[h]->m_number_of_targets;i++)
+//            {
+//                if(m_ri->radarArpa[h]->m_target[i]->m_target_id == (int)id)
+//                {
+//                    m_ri->radarArpa[h]->m_target[i]->SetStatusLost();
+//                    qDebug()<<Q_FUNC_INFO<<m_ri->radarArpa[h]->m_target[i]->m_target_id<<(int)id;
+//                }
+//            }
+//        }
+//    }
+//    else
+//    {
+//        for (int i = 0; i < ANTENE_COUNT; ++i) {
+//            m_ri->radarArpa[i]->DeleteAllTargets();
+//        }
+//    }
 }
 
 /**/
@@ -195,33 +216,37 @@ void MainWindow::timeOut()
 {
 //    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
 
-    m_ri->radarArpa->RefreshArpaTargets();
-    m_ri1->radarArpa->RefreshArpaTargets();
+    m_tm->updateTracks();
+//    for (int h = 0; h < ANTENE_COUNT; ++h)
+//    {
+//        m_ri->radarArpa[h]->RefreshArpaTargets();
+//        m_ri1->radarArpa[h]->RefreshArpaTargets();
 
-    if(m_ri->radarArpa->m_number_of_targets > 0)
-    {
-        int num_limit = 5;
-        while ((cur_arpa_id_count < m_ri->radarArpa->m_number_of_targets) && num_limit > 0)
-        {
-            if(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id > 0)
-            {                
-                emit signal_target_param(m_ri->radarArpa->m_target[cur_arpa_id_count]->m_target_id,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.rng,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.brn,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lat,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.lon,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_speed_kn,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_course,
-                                              m_ri->radarArpa->m_target[cur_arpa_id_count]->m_position.alt,
-                                              "-","-",m_ri->radarArpa->m_target[cur_arpa_id_count]->selected
-                                              );
-            }
-            cur_arpa_id_count++;
-            num_limit--;
-        }
-        if(cur_arpa_id_count >= m_ri->radarArpa->m_number_of_targets)
-            cur_arpa_id_count = 0;
-    }
+//        if(m_ri->radarArpa[h]->m_number_of_targets > 0)
+//        {
+//            int num_limit = 5;
+//            while ((cur_arpa_id_count < m_ri->radarArpa[h]->m_number_of_targets) && num_limit > 0)
+//            {
+//                if(m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_target_id > 0)
+//                {
+//                    emit signal_target_param(m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_target_id,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_position.rng,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_position.brn,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_position.lat,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_position.lon,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_speed_kn,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_course,
+//                                                  m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->m_position.alt,
+//                                                  "-","-",m_ri->radarArpa[h]->m_target[cur_arpa_id_count]->selected
+//                                                  );
+//                }
+//                cur_arpa_id_count++;
+//                num_limit--;
+//            }
+//            if(cur_arpa_id_count >= m_ri->radarArpa[h]->m_number_of_targets)
+//                cur_arpa_id_count = 0;
+//        }
+//    }
 
     if(state_radar == RADAR_TRANSMIT)
     {
@@ -414,13 +439,15 @@ void MainWindow::trigger_reqCreateArpa(QPointF position)
 {
     //    qDebug()<<Q_FUNC_INFO<<position;
 
-    Position arpa_pos;
-    arpa_pos.lat = position.y();
-    arpa_pos.lon = position.x();
+    m_tm->reqCreateArpa(position);
+//    Position arpa_pos;
+//    arpa_pos.lat = position.y();
+//    arpa_pos.lon = position.x();
 
-    m_ri->radarArpa->AcquireNewMARPATarget(arpa_pos);
-
-    scene->reqNewArpa(true,true,m_ri->radarArpa->m_target[m_ri->radarArpa->m_number_of_targets-1]);
+//    for (int i = 0; i < ANTENE_COUNT; ++i) {
+//        m_ri->radarArpa[i]->AcquireNewMARPATarget(arpa_pos);
+//        scene->reqNewArpa(true,true,m_ri->radarArpa[i]->m_target[m_ri->radarArpa[i]->m_number_of_targets-1]);
+//    }
 }
 
 void MainWindow::trigger_radarFeedbackRangeChange(int rng)
@@ -520,8 +547,12 @@ void MainWindow::calculateRadarScale()
     }
 
     m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-    m_ri->radarArpa->range_meters = (int)(m_radar_range/1.5);
     ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+
+    m_tm->setTrackRangeMeter((int)(m_radar_range/1.5));
+//    for (int i = 0; i < ANTENE_COUNT; ++i) {
+//        m_ri->radarArpa[i]->range_meters = (int)(m_radar_range/1.5);
+//    }
 
     if(radar_settings.op_mode)
         ui->frameLeft->setRangeText(60.,true);

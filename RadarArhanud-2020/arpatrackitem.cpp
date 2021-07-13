@@ -5,11 +5,14 @@
 #include <QDebug>
 #include <qmath.h>
 
-ArpaTrackItem::ArpaTrackItem(RadarEngineARND::ARPATarget *ATarget):
-    m_arpa_target(ATarget)
+ArpaTrackItem::ArpaTrackItem(TracksCluster *ATarget):
+    m_cluster_track(ATarget)
+//    ArpaTrackItem::ArpaTrackItem(RadarEngineARND::ARPATarget *ATarget):
+//    m_arpa_target(ATarget)
 {
     itemType = RadarItemsType::ARPA;
-
+    m_arpa_target = m_cluster_track->getARPATargetClustered();
+    qDebug()<<Q_FUNC_INFO<<m_arpa_target;
     qDebug()<<Q_FUNC_INFO<<m_arpa_target->m_target_id;
     setZValue(1);
 }
@@ -39,13 +42,19 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     else if(map_settings.show && map_settings.mode == 1)
         pen.setColor(Qt::black);
 
-    if(m_arpa_target->getStatus() < 5 && m_arpa_target->getStatus() > 0)
+    m_arpa_target = m_cluster_track->getARPATargetClustered();
+    if(m_arpa_target == nullptr)
+        return;
+
+    if(m_cluster_track->getClusterTrackStatus() < 5 && m_cluster_track->getClusterTrackStatus() > 0)
+//        if(m_arpa_target->getStatus() < 5 && m_arpa_target->getStatus() > 0)
     {
         pen.setStyle(Qt::DashLine);
         painter->setPen(pen);
         painter->drawRect(-20,-20,30,30);
     }
-    else if(m_arpa_target->getStatus() > 4)
+    else if(m_cluster_track->getClusterTrackStatus() > 4)
+//        else if(m_arpa_target->getStatus() > 4)
     {
         painter->setPen(pen);
 //        painter->drawRect(-20,-20,30,30);
@@ -76,7 +85,12 @@ void ArpaTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
                           pixel_line_velocity*qSin(deg2rad(m_arpa_target->m_course-90.0))
                           );
         */
-        painter->drawText(22,-20,"TN: "+QString::number(m_arpa_target->m_target_number));
+        painter->drawText(
+                    22,
+                    -20,
+                    "TN: "+QString::number(m_arpa_target->m_target_number)+
+                    ", anId: "+QString::number(m_cluster_track->getClusterAntheneId()) //debug
+                    );
 //        painter->drawText(22,-20,"ID: "+QString::number(m_arpa_target->m_target_id));
         if(arpa_settings[0].show_attr) //semetara
         {

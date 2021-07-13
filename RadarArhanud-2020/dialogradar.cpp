@@ -105,5 +105,7 @@ void DialogRadar::on_pushButtonApply_2_clicked()
     radar_settings.port_command1 = ui->lineEditPortcmd_2->text().toUInt();
     arpa_settings[1].show_attr = ui->checkBoxShowTrackData_2->isChecked();
 
+    state_radar1 = RADAR_STANDBY;
+
     emit signal_settingChange();
 }

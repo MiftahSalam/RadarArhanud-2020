@@ -11,7 +11,7 @@ DialogADSB::DialogADSB(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
+//    ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
     ui->lineEditPortData->setValidator(new QIntValidator(3000,65536,ui->lineEditPortData));
     ui->checkBoxShowTrack->setChecked(adsb_settings.show_track);
     ui->checkBoxShowTrackData->setChecked(adsb_settings.show_attr);

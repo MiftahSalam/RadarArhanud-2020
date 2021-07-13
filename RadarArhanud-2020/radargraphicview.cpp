@@ -130,10 +130,13 @@ void RadarGraphicView::updateSceneItems()
             {
                 ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(item);
 
-                if(arpa_item->m_arpa_target->getStatus() < 0)
+                if(arpa_item->m_cluster_track->getClusterTrackStatus() < 0)
+//                    if(arpa_item->m_arpa_target->getStatus() < 0)
                     scene()->removeItem(arpa_item);
+                if(arpa_item->m_arpa_target == nullptr)
+                    continue;
 
-                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->getStatus();
+                qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"status"<<arpa_item->m_arpa_target->getStatus();
                 qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"selected"<<arpa_item->getItemSelected();
 
                 displayToImage = mc->layer("MapLayerView")->mapadapter()

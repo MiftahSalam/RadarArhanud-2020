@@ -375,20 +375,28 @@ void FrameBottom::insertTrackList(
     /*
     */
     trackModel->insertRow(trackModel->rowCount(),QModelIndex());
-    track_counter++;
+//    track_counter++;
+    if(icao > 100)
+        track_counter++;
 
     const float MAX_FLOAT = std::numeric_limits<float>::max();
     int row = trackModel->rowCount()-1;
 
     if(icao > 100)
+    {
         trackModel->setData(trackModel->index(row,0,QModelIndex()),
                             QString::number(icao,16).toUpper());
+        trackModel->setData(trackModel->index(row,1,QModelIndex()),
+                            QString::number(track_counter));
+    }
     else
+    {
         trackModel->setData(trackModel->index(row,0,QModelIndex()),
                             QString::number(icao));
+        trackModel->setData(trackModel->index(row,1,QModelIndex()),
+                            QString::number(icao));
+    }
 
-    trackModel->setData(trackModel->index(row,1,QModelIndex()),
-                        QString::number(track_counter));
 
     if(rng == NAN || rng == INFINITY)
     {
@@ -459,9 +467,13 @@ void FrameBottom::timeoutUpdate()
     quint64 now = QDateTime::currentSecsSinceEpoch();
     quint64 delta;
 
+    target_to_delete.clear();
+
 //    state_radar = RADAR_TRANSMIT; //tes
     if(state_radar != RADAR_TRANSMIT)
     {
+        qDebug()<<Q_FUNC_INFO<<"state_radar trasmit"<<(state_radar != RADAR_TRANSMIT);
+        target_to_delete = target_time_tag_list.keys();
         target_time_tag_list.clear();
         dataCount_mqtt_track = 0;
 
@@ -469,20 +481,24 @@ void FrameBottom::timeoutUpdate()
             trackModel->removeRows(0,trackModel->rowCount());
     }
 
-    target_to_delete.clear();
     while(i.hasNext())
     {
         i.next();
         if(i.key() > 100)
             delta = 10;
         else
-            delta = 1;
+            delta = 10;
 
         if(now-i.value()>delta)
+        {
+            qDebug()<<Q_FUNC_INFO<<"stale track. delta"<<delta<<"id"<<i.key();
             target_to_delete.append(i.key());
+        }
     }
 
     QString id_track;
+    qDebug()<<Q_FUNC_INFO<<"target_time_tag_list size"<<target_time_tag_list.size();
+    qDebug()<<Q_FUNC_INFO<<"target_to_delete size"<<target_to_delete.size();
     for(int i=0;i<target_to_delete.size();i++)
     {
         target_time_tag_list.remove(target_to_delete.at(i));
@@ -502,8 +518,11 @@ void FrameBottom::timeoutUpdate()
             row = listTarget.at(0)->row();
 
         trackModel->removeRow(row);
+        qDebug()<<Q_FUNC_INFO<<"target_to_delete at"<<i<<"id"<<target_to_delete.at(i);
         if(target_to_delete.at(i) > 100)
             emit signal_request_del_adsb_track(target_to_delete.at(i));
+        else
+            emit signal_request_del_track(target_to_delete.at(i));
     }
 
     if(m_mqtt->isConnected())
