@@ -178,9 +178,9 @@ void FrameBottom::trigger_OSD_received(QString msg)
                     append_data_osd.remove(0,index_hdr);
                 }
             }
-//            qDebug()<<Q_FUNC_INFO<<index_end;
+            qDebug()<<Q_FUNC_INFO<<index_end;
         }
-//        qDebug()<<Q_FUNC_INFO<<index_hdr;
+        qDebug()<<Q_FUNC_INFO<<index_hdr;
     }
 }
 
