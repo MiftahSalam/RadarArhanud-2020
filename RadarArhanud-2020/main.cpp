@@ -150,6 +150,8 @@ int main(int argc, char *argv[])
 
         antene_switch_settings.ip = config.value("antene_switch/ip","192.168.1.100").toString();
         antene_switch_settings.port = config.value("antene_switch/port",80).toUInt();
+        antene_switch_settings.ip2 = config.value("antene_switch/ip","192.168.1.101").toString();
+        antene_switch_settings.port2 = config.value("antene_switch/port",80).toUInt();
 
         currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
         currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();
