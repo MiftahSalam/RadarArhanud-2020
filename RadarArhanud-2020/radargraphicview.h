@@ -38,7 +38,7 @@ signals:
     void signal_mapChange(QImage img);
     void signal_cursorPosition(qreal lat, qreal lon, qreal rng, qreal brn);
     void signal_reqCreateArpa(QPointF position);
-    void signal_positionChange();
+//    void signal_positionChange();
     void signal_selectedChange(int tn,bool selected);
 
 protected:
