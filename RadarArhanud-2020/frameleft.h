@@ -107,10 +107,14 @@ private:
     DialogIFF *dIFF;
     DialogADSB *dADSB;
     DialogLogging *dLog;
-    QTcpSocket socket;
+    QTcpSocket socket,socket2;
 
 //    int cur_antene;
     int first_switch;
+
+    void radarOffMode();
+    void radarTxMode();
+    void radarStbyMode();
 };
 
 #endif // FRAMELEFT_H

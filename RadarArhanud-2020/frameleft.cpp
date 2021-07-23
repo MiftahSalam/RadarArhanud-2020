@@ -1,6 +1,7 @@
 #include "frameleft.h"
 #include "ui_frameleft.h"
 #include <radarengine.h>
+#include <radarengine_global.h>
 
 #include <QMenu>
 #include <QContextMenuEvent>
@@ -77,12 +78,10 @@ void FrameLeft::setNavStatus(int status)
 
     switch (status)
     {
-//    case 0:
     case 1:
         ui->labelNavStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
         ui->labelNavStatus->setText("Online");
         break;
-//    case 1:
     case 0:
         ui->labelNavStatus->setStyleSheet("background-color: rgb(164,0,0);");
         ui->labelNavStatus->setText("Offline");
@@ -95,7 +94,9 @@ void FrameLeft::setNavStatus(int status)
 
 void FrameLeft::updateRadarStatus()
 {
-    switch (state_radar)
+    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+
+    switch (cur_radar_state)
     {
     case RADAR_TRANSMIT:
         ui->labelRadarStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
@@ -254,45 +255,112 @@ void FrameLeft::on_pushButtonTxStnb_clicked()
         emit signal_Standby();
 }
 
+void FrameLeft::radarOffMode()
+{
+    qDebug()<<Q_FUNC_INFO;
+
+    ui->pushButtonTxStnb->setText("Tx/Stby");
+    ui->pushButtonGain->setEnabled(false);
+    ui->pushButtonRain->setEnabled(false);
+    ui->horizontalSliderRain->setEnabled(false);
+    ui->horizontalSliderGain->setEnabled(false);
+    ui->pushButtonTxStnb->setEnabled(false);
+}
+
+void FrameLeft::radarStbyMode()
+{
+    qDebug()<<Q_FUNC_INFO;
+
+    ui->pushButtonTxStnb->setText("Transmit");
+    ui->pushButtonGain->setEnabled(true);
+    ui->pushButtonRain->setEnabled(true);
+    ui->horizontalSliderRain->setEnabled(true);
+    ui->horizontalSliderGain->setEnabled(true);
+    ui->pushButtonTxStnb->setEnabled(true);
+}
+
+void FrameLeft::radarTxMode()
+{
+    qDebug()<<Q_FUNC_INFO;
+
+    ui->pushButtonTxStnb->setText("Standby");
+    ui->pushButtonGain->setEnabled(true);
+    ui->pushButtonRain->setEnabled(true);
+    ui->horizontalSliderRain->setEnabled(true);
+    ui->horizontalSliderGain->setEnabled(true);
+    ui->pushButtonTxStnb->setEnabled(true);
+}
+
 void FrameLeft::trigger_stateChange()
 {
-    qDebug()<<Q_FUNC_INFO<<(int)state_radar;
+    qDebug()<<Q_FUNC_INFO<<(int)state_radar<<(int)state_radar1;
+
+    if((state_radar == RADAR_OFF || state_radar == RADAR_WAKING_UP) &&
+            (state_radar1 == RADAR_OFF || state_radar1 == RADAR_WAKING_UP))
+    {
+        antena_switch = 1;
+        first_switch = 0;
+        radarOffMode();
+    }
+    else if(state_radar == RADAR_STANDBY && state_radar1 == RADAR_STANDBY)
+    {
+        antena_switch = 1;
+        first_switch = 0;
+        radarStbyMode();
+    }
+    else if(state_radar == RADAR_STANDBY || state_radar1 == RADAR_STANDBY)
+    {
+        antena_switch = 1;
+        first_switch = 0;
+        radarStbyMode();
+    }
+    else if(state_radar == RADAR_TRANSMIT && state_radar1 == RADAR_TRANSMIT)
+    {
+        radarTxMode();
+    }
+    else if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
+    {
+        radarTxMode();
+    }
+
 
 //    state_radar = RADAR_STANDBY; //faking
-    if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
-    {
-        antena_switch = 1;
-        first_switch = 0;
-        ui->pushButtonTxStnb->setText("Tx/Stby");
-        ui->pushButtonGain->setEnabled(false);
-        ui->pushButtonRain->setEnabled(false);
-        ui->horizontalSliderRain->setEnabled(false);
-        ui->horizontalSliderGain->setEnabled(false);
-        ui->pushButtonTxStnb->setEnabled(false);
-    }
-    else if(state_radar == RADAR_STANDBY)
-    {
-        antena_switch = 1;
-        first_switch = 0;
-        ui->pushButtonTxStnb->setText("Transmit");
-        ui->pushButtonGain->setEnabled(true);
-        ui->pushButtonRain->setEnabled(true);
-        ui->horizontalSliderRain->setEnabled(true);
-        ui->horizontalSliderGain->setEnabled(true);
-        ui->pushButtonTxStnb->setEnabled(true);
-    }
-    else if(state_radar == RADAR_TRANSMIT|| (state_radar == RADAR_NO_SPOKE))
-    {
-        ui->pushButtonTxStnb->setText("Standby");
-        ui->pushButtonGain->setEnabled(true);
-        ui->pushButtonRain->setEnabled(true);
-        ui->horizontalSliderRain->setEnabled(true);
-        ui->horizontalSliderGain->setEnabled(true);
-        ui->pushButtonTxStnb->setEnabled(true);
-    }
+//    if((state_radar == RADAR_OFF) || (state_radar == RADAR_WAKING_UP))
+//    {
+//        antena_switch = 1;
+//        first_switch = 0;
+//        ui->pushButtonTxStnb->setText("Tx/Stby");
+//        ui->pushButtonGain->setEnabled(false);
+//        ui->pushButtonRain->setEnabled(false);
+//        ui->horizontalSliderRain->setEnabled(false);
+//        ui->horizontalSliderGain->setEnabled(false);
+//        ui->pushButtonTxStnb->setEnabled(false);
+//    }
+//    else if(state_radar == RADAR_STANDBY)
+//    {
+//        antena_switch = 1;
+//        first_switch = 0;
+//        ui->pushButtonTxStnb->setText("Transmit");
+//        ui->pushButtonGain->setEnabled(true);
+//        ui->pushButtonRain->setEnabled(true);
+//        ui->horizontalSliderRain->setEnabled(true);
+//        ui->horizontalSliderGain->setEnabled(true);
+//        ui->pushButtonTxStnb->setEnabled(true);
+//    }
+//    else if(state_radar == RADAR_TRANSMIT || (state_radar == RADAR_NO_SPOKE) )
+//    {
+//        ui->pushButtonTxStnb->setText("Standby");
+//        ui->pushButtonGain->setEnabled(true);
+//        ui->pushButtonRain->setEnabled(true);
+//        ui->horizontalSliderRain->setEnabled(true);
+//        ui->horizontalSliderGain->setEnabled(true);
+//        ui->pushButtonTxStnb->setEnabled(true);
+//    }
 
     if(socket.state() != QAbstractSocket::ConnectedState)
         socket.connectToHost(antene_switch_settings.ip,antene_switch_settings.port);
+    if(socket2.state() != QAbstractSocket::ConnectedState)
+        socket2.connectToHost(antene_switch_settings.ip2,antene_switch_settings.port);
 }
 
 void FrameLeft::trigger_changeAntene()
@@ -303,6 +371,7 @@ void FrameLeft::trigger_changeAntene()
         if(antena_switch>2)
             antena_switch = 0;
         socket.write(QString::number(antena_switch+1).toUtf8());
+        socket2.write(QString::number(antena_switch+1).toUtf8());
     }
     else
         first_switch = 1;
@@ -422,8 +491,6 @@ void FrameLeft::on_pushButtonARPA_clicked()
 {
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
     qDebug()<<Q_FUNC_INFO<<QProcess::startDetached(config.value("tilting/path","/home/arhanud/aktuator").toString());
-
-//    system(config.value("tilting/path","/home/arhanud/aktuator").toString().toUtf8()); //path to tilt application
 }
 
 void FrameLeft::on_pushButtonShutdown_clicked()
