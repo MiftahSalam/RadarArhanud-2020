@@ -47,7 +47,7 @@ signals:
 
 private slots:
     void trigger_opModeChange(bool checked);
-    void trigger_positionChange();
+//    void trigger_positionChange();
     void trigger_ReqDelTrack(int id);
     void trigger_rangeChange();
     void trigger_radarFeedbackRangeChange(int);
@@ -83,6 +83,7 @@ private:
     bool first;
 
     void calculateRadarScale();
+    void adjustRadarRange();
 };
 
 #endif // MAINWINDOW_H
