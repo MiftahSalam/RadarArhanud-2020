@@ -51,8 +51,8 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 
 void RadarScene::DrawSpoke1(int angle, u_int8_t *data, size_t len)
 {
-//    if(angle == 2046)
-//        emit signal_zero_detect();
+    if(angle == 2046 && state_radar != RADAR_TRANSMIT)
+        emit signal_zero_detect();
 
     curAngle1 = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri1->radarDraw->ProcessRadarSpoke(angle,data,len);
@@ -111,7 +111,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     }
 
 
-    if(state_radar == RADAR_TRANSMIT)
+    if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -135,7 +135,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
                    cos(static_cast<float>(deg2rad(curAngle))));
         glEnd();
     }
-    if(state_radar1 == RADAR_TRANSMIT)
+
+    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+
+    if(cur_radar_state == RADAR_TRANSMIT)
+//        if(state_radar1 == RADAR_TRANSMIT)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -162,7 +166,6 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
     QFont font;
     QPen pen;
-    QColor cur_col;
 
     painter->translate(width/2,height/2);
 
@@ -173,8 +176,6 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         pen.setColor(Qt::yellow);
     else if(map_settings.show && map_settings.mode == 1)
         pen.setColor(Qt::black);
-
-//    pen.setColor(cur_col);
 
     painter->setPen(pen);
 
