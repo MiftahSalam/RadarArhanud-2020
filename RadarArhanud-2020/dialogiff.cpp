@@ -17,6 +17,16 @@ DialogIFF::DialogIFF(QWidget *parent) :
     ui->lineEditIPData->setText(iff_settings.ip);
     ui->lineEditPortData->setText(QString::number(iff_settings.port));
 
+    //test
+    StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
+    iffSettingIn.config = "127.0.0.1;8090";
+    iffSettingIn.mode = StreamArhnd::In;
+    iffSettingIn.type = (StreamArhnd::StreamType)2; //udp
+    iffSettingOut.config = "127.0.0.1;8070";
+    iffSettingOut.mode = StreamArhnd::Out;
+    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+
+    iff = new IFFArhnd::IFFService(this, iffSettingIn, iffSettingOut);
 }
 
 DialogIFF::~DialogIFF()

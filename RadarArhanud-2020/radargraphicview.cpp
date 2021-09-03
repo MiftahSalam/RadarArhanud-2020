@@ -247,7 +247,7 @@ qreal RadarGraphicView::calculateRangeRing() const
 //    km /= 1.852; //NM
     qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
-    return km/5.0;
+    return km/10.0;
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)
@@ -326,6 +326,102 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+RadarGraphicView::PosGps RadarGraphicView::pixToGps(const int x, const int y)
+{
+    QPoint screen_middle(0,0);
+    QPointF event_pos_scaled(x,y);
+    QLineF line(screen_middle, event_pos_scaled);
+    Polar pol;
+    Position own_pos;
+    Position pos;
+    double angle = line.angle()+90.;
+    const int MAX_PIX = qMin(width()/2,height()/2);
+
+    while (angle >=360. || angle < 0. ) {
+        if(angle >= 360.)
+            angle -= 360.;
+        if(angle < 0.)
+            angle += 360.;
+    }
+
+    own_pos.lat = currentOwnShipLat;
+    own_pos.lon = currentOwnShipLon;
+    pol.angle = SCALE_DEGREES_TO_RAW2048(angle);
+    pol.r = static_cast<int>(line.length());
+    pos.lat = own_pos.lat +
+            (double)pol.r / (double)MAX_PIX * currentRange * cos(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) / 60. / 1852.;
+    pos.lon = own_pos.lon +
+            (double)pol.r / (double)MAX_PIX * currentRange * sin(deg2rad(SCALE_RAW_TO_DEGREES2048(pol.angle))) /
+            cos(deg2rad(own_pos.lat)) / 60. / 1852.;
+
+//    qDebug()<<Q_FUNC_INFO<<"line"<<line.length()<<angle<<line;
+//    qDebug()<<Q_FUNC_INFO<<"pol"<<pol.r<<pol.angle;
+//    qDebug()<<Q_FUNC_INFO<<"pos"<<pos.lat<<pos.lon<<currentRange;
+
+
+    PosGps pos_to_convert;
+//    pos.lon = currentOwnShipLon+(static_cast<double>(x)/(currentRange*cos(deg2rad(currentOwnShipLat))));
+//    pos.lat = currentOwnShipLat+(static_cast<double>(y)/currentRange);
+
+    pos_to_convert.lat = pos.lat;
+    pos_to_convert.lon = pos.lon;
+
+    return pos_to_convert;
+}
+
+RadarGraphicView::PosPixel RadarGraphicView::gpsToPix(const double lat, const double lon)
+{
+    QPoint screen_middle(width()/2,height()/2);
+    QPointF event_pos_scaled(1,1);
+    QLineF line(screen_middle,event_pos_scaled);
+    Polar pol;
+    Position own_pos;
+    Position pos;
+    double angle;
+    double dif_lat = lat;
+    double dif_lon;
+    const int MAX_PIX = qMin(width()/2,height()/2);
+
+    own_pos.lat = currentOwnShipLat;
+    own_pos.lon = currentOwnShipLon;
+    pos.lat = lat;
+    pos.lon = lon;
+    dif_lat -= own_pos.lat;
+    dif_lon = (lon - own_pos.lon) * cos(deg2rad(own_pos.lat));
+    pol.r = (int)(sqrt(dif_lat * dif_lat + dif_lon * dif_lon) * 60. * 1852. * (double)MAX_PIX / (double)currentRange + 1);
+    pol.angle = (int)((atan2(dif_lon, dif_lat)) * (double)LINES_PER_ROTATION / (2. * M_PI) + 1);  // + 1 to minimize rounding errors
+    if (pol.angle < 0) pol.angle += LINES_PER_ROTATION;
+
+    angle = SCALE_RAW_TO_DEGREES2048(pol.angle)-90.;
+
+    while (angle >=360. || angle < 0. ) {
+        if(angle >= 360.)
+            angle -= 360.;
+        if(angle < 0.)
+            angle += 360.;
+    }
+
+    line.setAngle(angle);
+    line.setLength(pol.r);
+
+    qDebug()<<Q_FUNC_INFO<<"line"<<line.length()<<angle<<line;
+    qDebug()<<Q_FUNC_INFO<<"pol"<<pol.r<<pol.angle;
+    qDebug()<<Q_FUNC_INFO<<"pos"<<pos.lat<<pos.lon<<currentRange;
+
+
+    PosPixel pos_to_convert;
+//    double dif_lat = (lat - currentOwnShipLat) * currentRange;
+//    double dif_lon = (lon - currentOwnShipLon) * cos(deg2rad(currentOwnShipLat)) * currentRange;
+//    pos.x = static_cast<int>(dif_lon);
+//    pos.y = static_cast<int>(dif_lat);
+
+    return pos_to_convert;
+}
+
+void RadarGraphicView::setCurretRange(int range)
+{
+    currentRange = static_cast<double>(range);
+}
 void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
 {
 //    qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
@@ -357,6 +453,29 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
 
     emit signal_cursorPosition(latitude,longitude,km,bearing);
 //    qDebug()<<Q_FUNC_INFO<<displayToImage<<screen_middle<<map_middle<<displayToCoordinat<<km<<bearing;
+    qDebug()<<Q_FUNC_INFO<<"map control"<<latitude<<longitude<<km<<bearing;
+
+    PosGps gps = pixToGps(event->pos().x()-screen_middle.x(), -event->pos().y()+screen_middle.y());
+//    PosPixel pix = gpsToPix(latitude,longitude);
+
+    dif_lat = deg2rad(gps.lat);
+    dif_lon = (deg2rad(gps.lon) - deg2rad(mapCenter.x()))
+            * cos(deg2rad((mapCenter.y()+gps.lat)/2.));
+    dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
+
+    km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    bearing = atan2(dif_lon,dif_lat)*180./M_PI;
+
+    while(bearing < 0.0)
+    {
+        bearing += 360.0;
+    }
+
+//    emit signal_cursorPosition(gps.lat,gps.lon,km,bearing);
+
+    qDebug()<<Q_FUNC_INFO<<"create own"<<gps.lat<<gps.lon<<km<<bearing<<currentRange;
+//    qDebug()<<Q_FUNC_INFO<<"gpsToPix x"<<pix.x<<"y"<<pix.y;
+//    qDebug()<<Q_FUNC_INFO<<"pixToGps lat"<<gps.lat<<"lon"<<gps.lon;
 }
 
 void RadarGraphicView::tesCreateItem()

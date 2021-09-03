@@ -45,10 +45,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->removeWidget(ui->frameLeft);
 
     /*
-    ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
-    ui->gridLayout->addWidget(ui->frameBottom,6,1,2,10);
+    ui->gridLayout->addWidget(ui->graphicsView,0,1,8,10);
     ui->gridLayout->addWidget(ui->frameLeft,0,0,8,1);
+    ui->frameBottom->hide();
     */
+
     ui->gridLayout->addWidget(ui->graphicsView,0,1,6,10);
     ui->gridLayout->addWidget(ui->frameBottom,6,1,1,10);
     ui->gridLayout->addWidget(ui->frameLeft,0,0,7,1);
@@ -108,10 +109,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->graphicsView,SIGNAL(signal_selectedChange(int,bool)),
             ui->frameBottom,SLOT(trigger_target_selected(int,bool)));
 
-    connect(m_ri,SIGNAL(signal_range_change(int)),
-            this,SLOT(trigger_radarFeedbackRangeChange(int)));
-    connect(m_ri1,SIGNAL(signal_range_change(int)),
-            this,SLOT(trigger_radarFeedbackRangeChange(int)));
+    connect(m_ri,SIGNAL(signal_range_change(int,int)),
+            this,SLOT(trigger_radarFeedbackRangeChange(int,int)));
+    connect(m_ri1,SIGNAL(signal_range_change(int,int)),
+            this,SLOT(trigger_radarFeedbackRangeChange(int,int)));
     connect(m_ri,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
             this,SLOT(trigger_DrawSpoke(int,u_int8_t*,size_t)));
     connect(m_ri1,SIGNAL(signal_plotRadarSpoke(int,u_int8_t*,size_t)),
@@ -126,8 +127,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
     connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
             ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
-    connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri,SLOT(trigger_ReqRangeChange(int)));
-    connect(this,SIGNAL(signal_reqRangeChange(int)),m_ri1,SLOT(trigger_ReqRangeChange(int)));
+    connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri,SLOT(trigger_ReqRangeChange(int,int)));
+    connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri1,SLOT(trigger_ReqRangeChange(int,int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
     connect(timer,SIGNAL(timeout()),ui->frameLeft,SLOT(trigger_stateChange()));
 
@@ -219,6 +220,8 @@ void MainWindow::timeOut()
 {
 //    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
 
+//    filter.wakingup_time++; //tes
+
     m_tm->updateTracks();
 //    for (int h = 0; h < ANTENE_COUNT; ++h)
 //    {
@@ -251,10 +254,10 @@ void MainWindow::timeOut()
 //        }
 //    }
 
-    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+//    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
 
-    if(cur_radar_state == RADAR_TRANSMIT)
-//    if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
+//    if(cur_radar_state == RADAR_TRANSMIT)
+    if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
     {
         adjustRadarRange();
     }
@@ -268,24 +271,24 @@ void MainWindow::timeOut()
     {
         adsb->setLatLon(currentOwnShipLat,currentOwnShipLon);
 
-        if(curState != cur_radar_state)
-//            if(curState != state_radar)
+//        if(curState != cur_radar_state)
+        if(curState != state_radar)
         {
-//            if(state_radar != RADAR_TRANSMIT)
-            if(cur_radar_state != RADAR_TRANSMIT)
+            if(state_radar != RADAR_TRANSMIT)
+//            if(cur_radar_state != RADAR_TRANSMIT)
             {
                 ui->graphicsView->showAdsb(false);
                 disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
             }
-//            else if(state_radar == RADAR_TRANSMIT)
-            else if(cur_radar_state == RADAR_TRANSMIT)
+            else if(state_radar == RADAR_TRANSMIT)
+//            else if(cur_radar_state == RADAR_TRANSMIT)
             {
                 ui->graphicsView->showAdsb(adsb_settings.show_track);
                 connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
                         this,SLOT(trigger_reqUpdateADSB(QByteArray)),Qt::UniqueConnection);
             }
-//            curState = state_radar;
-            curState = cur_radar_state;
+            curState = state_radar;
+//            curState = cur_radar_state;
         }
     }
 }
@@ -294,26 +297,29 @@ void MainWindow::adjustRadarRange()
 {
     qDebug()<<Q_FUNC_INFO<<"state_radar == RADAR_TRANSMIT"
            <<"m_range_meters"<<m_range_meters<<"m_radar_range"<<m_radar_range
-          <<"60000./1.5"<<60000./1.5;
-    if(m_range_meters < 60000.)
+          <<"100000./1.5"<<100000./1.5;
+    if(m_range_meters < 100000.)
     {
         double cur_radar_scale = m_radar_range/m_range_meters;
-        qDebug()<<Q_FUNC_INFO<<"m_range_meters < 60000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
+        qDebug()<<Q_FUNC_INFO<<"m_range_meters < 100000."<<cur_radar_scale<<m_radar_range<<m_range_meters;
 
         if(fabs(m_range_meters-m_radar_range) > 10)
         {
             m_range_to_send =  m_radar_range/cur_radar_scale;
             m_range_to_send /= 1.5;
-            emit signal_reqRangeChange((int)m_range_to_send);
+            emit signal_reqRangeChange(0,(int)m_range_to_send);
             qDebug()<<Q_FUNC_INFO<<"beda range detek"<<m_range_to_send;
         }
     }
-    else if((m_range_meters > 60000.) && (m_radar_range < 50000.))
+    else if((m_range_meters > 100000.) && (m_radar_range < 80000.))
     {
-        m_range_to_send = 60000./1.5;
-        emit signal_reqRangeChange((int)m_range_to_send);
-        qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 60000.) && (m_radar_range < 50000.)"<<m_range_to_send;
+        m_range_to_send = 100000./1.5;
+        emit signal_reqRangeChange(0,(int)m_range_to_send);
+        qDebug()<<Q_FUNC_INFO<<"(m_range_meters > 100000.) && (m_radar_range < 80000.)"<<m_range_to_send;
     }
+
+    if(fabs(m_radar_range1-m_radar_range) > 10) emit signal_reqRangeChange(1,(int)m_range_to_send);
+
 }
 
 void MainWindow::initADSB()
@@ -336,17 +342,17 @@ void MainWindow::initADSB()
         disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
     */
 
-    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+//    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
 
-    if(cur_radar_state != RADAR_TRANSMIT)
-//        if(state_radar != RADAR_TRANSMIT)
+//    if(cur_radar_state != RADAR_TRANSMIT)
+        if(state_radar != RADAR_TRANSMIT)
     {
         adsb_list.clear();
         ui->graphicsView->showAdsb(false);
         disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
     }
-    else if(cur_radar_state == RADAR_TRANSMIT)
-//        else if(state_radar == RADAR_TRANSMIT)
+//    else if(cur_radar_state == RADAR_TRANSMIT)
+        else if(state_radar == RADAR_TRANSMIT)
     {
         ui->graphicsView->showAdsb(adsb_settings.show_track);
         connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
@@ -468,11 +474,14 @@ void MainWindow::trigger_reqCreateArpa(QPointF position)
 //    }
 }
 
-void MainWindow::trigger_radarFeedbackRangeChange(int rng) //test again later
+void MainWindow::trigger_radarFeedbackRangeChange(int rId, int rng) //test again later
 {
-    qDebug()<<Q_FUNC_INFO<<rng;
-    m_radar_range = 1.5*(double)rng;
-    calculateRadarScale();
+    qDebug()<<Q_FUNC_INFO<<"rId"<<rId<<"rng"<<rng;
+    if(!rId)
+    {
+        m_radar_range = 1.5*(double)rng;
+        calculateRadarScale();
+    }
 }
 
 void MainWindow::trigger_rangeChange()
@@ -484,9 +493,10 @@ void MainWindow::trigger_rangeChange()
     {
         adjustRadarRange();
 
-        m_range_to_send = m_range_meters > 60000. ? 60000 : m_range_meters;
+        m_range_to_send = m_range_meters > 100000. ? 100000 : m_range_meters;
         m_range_to_send /= 1.5;
-        emit signal_reqRangeChange((int)m_range_to_send);
+        emit signal_reqRangeChange(0,(int)m_range_to_send);
+        emit signal_reqRangeChange(1,(int)m_range_to_send);
     }
 
     if(radar_settings.op_mode)
@@ -512,7 +522,7 @@ void MainWindow::calculateRadarScale()
             map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
 
             double cur_m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
-            if(cur_m_range_meters < 60000.)
+            if(cur_m_range_meters < 100000.)
                 break;
         }
         cur_zoom_lvl--;
@@ -528,6 +538,7 @@ void MainWindow::calculateRadarScale()
 
     m_range_meters = (double)m_range_pixel*map_meter_per_pixel/2.;
     ui->graphicsView->setMapZoomLevel(cur_zoom_lvl);
+    ui->graphicsView->setCurretRange(m_range_meters);
 
     m_tm->setTrackRangeMeter((int)(m_radar_range/1.5));
 //    for (int i = 0; i < ANTENE_COUNT; ++i) {
@@ -535,7 +546,7 @@ void MainWindow::calculateRadarScale()
 //    }
 
     if(radar_settings.op_mode)
-        ui->frameLeft->setRangeText(60.,true);
+        ui->frameLeft->setRangeText(100.,true);
     else
         ui->frameLeft->setRangeText(m_radar_range/1000.,fabs(m_radar_range-m_range_meters) < 10);
 

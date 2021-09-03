@@ -51,8 +51,8 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 
 void RadarScene::DrawSpoke1(int angle, u_int8_t *data, size_t len)
 {
-    if(angle == 2046 && state_radar != RADAR_TRANSMIT)
-        emit signal_zero_detect();
+//    if(angle == 2046 && state_radar != RADAR_TRANSMIT)
+//        emit signal_zero_detect();
 
     curAngle1 = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri1->radarDraw->ProcessRadarSpoke(angle,data,len);
@@ -111,7 +111,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     }
 
 
-    if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
+    if(state_radar == RADAR_TRANSMIT)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -136,10 +136,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         glEnd();
     }
 
-    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+//    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+//    qDebug()<<Q_FUNC_INFO<<"cur_radar_state"<<cur_radar_state;
 
-    if(cur_radar_state == RADAR_TRANSMIT)
-//        if(state_radar1 == RADAR_TRANSMIT)
+//    if(cur_radar_state == RADAR_TRANSMIT)
+    if(state_radar1 == RADAR_TRANSMIT)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -244,7 +245,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
             int ring_margin = ringPix;
             int bufRng = ring_margin;
             int counter = 0;
-            while((bufRng < side_min/2) && (counter < 5))
+            while((bufRng < side_min/2) && (counter < 10))
             {
                 counter++;
                 painter->drawEllipse(-bufRng,-bufRng,bufRng*2,bufRng*2);
@@ -253,7 +254,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         }
         else
         {
-            int ring_margin = qCeil(side_min/5);
+            int ring_margin = qCeil(side_min/10);
 //            int ring_margin = qCeil(side/5);
             int bufRng = ring_margin;
             while(bufRng < side_min)

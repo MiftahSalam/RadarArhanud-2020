@@ -31,6 +31,7 @@ public:
     qreal calculateRangeRing() const;
     int calculateRangePixel() const;
     void setMapZoomLevel(int index);
+    void setCurretRange(int range);
     void showAdsb(bool show);
     void tesCreateItem(); //temporary
 
@@ -58,8 +59,20 @@ private:
     QImage mapImage;
     QTimer *timer;
     int curLoadingMapSize;
+    double currentRange;
+
+    struct PosPixel
+    {
+        int x, y;
+    };
+    struct PosGps
+    {
+        double lat, lon;
+    };
 
     void updateSceneItems();
+    PosGps pixToGps(const int x, const int y);
+    PosPixel gpsToPix(const double lat, const double lon);
 };
 
 #endif // RADARGRAPHICVIEW_H

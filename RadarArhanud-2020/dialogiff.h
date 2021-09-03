@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "iff-arhnd/iff/iff.h"
+
 namespace Ui {
 class DialogIFF;
 }
@@ -23,6 +25,8 @@ private slots:
 
 private:
     Ui::DialogIFF *ui;
+
+    IFFArhnd::IFFService *iff;
 };
 
 #endif // DIALOGIFF_H

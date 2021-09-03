@@ -110,3 +110,12 @@ unix:!macx: LIBS += -L$$PWD/../../../../../../../../../../usr/lib/Crypto/ -lCryp
 
 INCLUDEPATH += $$PWD/../../../../../../../../../../usr/include/Crypto
 DEPENDPATH += $$PWD/../../../../../../../../../../usr/include/Crypto
+
+
+unix:!macx: LIBS += -L/usr/lib/ -liff-arhnd
+
+INCLUDEPATH += /usr/include/iff-arhnd
+DEPENDPATH += /usr/include/iff-arhnd
+
+INCLUDEPATH += /usr/include/stream-arhnd
+DEPENDPATH += /usr/include/stream-arhnd

@@ -92,9 +92,35 @@ void FrameLeft::setNavStatus(int status)
 
 }
 
+QString FrameLeft::tickToTime(quint8 tick)
+{
+    qDebug()<<Q_FUNC_INFO<<"tick"<<tick;
+
+    QString sec, min;
+    if(tick<60)
+    {
+        sec = QString::number(tick);
+        if(sec.size() < 2) sec.prepend("0");
+        min = "00";
+    }
+    else
+    {
+        int sec_int = tick % 60;
+        int min_int = tick / 60;
+
+        sec = QString::number(sec_int);
+        min = QString::number(min_int);
+
+        if(sec.size() < 2) sec.prepend("0");
+        if(min.size() < 2) min.prepend("0");
+    }
+
+    return min+":"+sec;
+}
 void FrameLeft::updateRadarStatus()
 {
-    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
+    RadarState cur_radar_state = state_radar;
+//    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
 
     switch (cur_radar_state)
     {
@@ -112,7 +138,7 @@ void FrameLeft::updateRadarStatus()
         break;
     case RADAR_WAKING_UP:
         ui->labelRadarStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
-        ui->labelRadarStatus->setText("Warming up");
+        ui->labelRadarStatus->setText("Warming up\n"+tickToTime(filter.wakingup_time));
         break;
     default:
         break;
@@ -294,31 +320,25 @@ void FrameLeft::radarTxMode()
 void FrameLeft::trigger_stateChange()
 {
     qDebug()<<Q_FUNC_INFO<<(int)state_radar<<(int)state_radar1;
+    qDebug()<<Q_FUNC_INFO<<&state_radar<<&state_radar1;
 
-    if((state_radar == RADAR_OFF || state_radar == RADAR_WAKING_UP) &&
-            (state_radar1 == RADAR_OFF || state_radar1 == RADAR_WAKING_UP))
+    if((state_radar == RADAR_OFF || state_radar == RADAR_WAKING_UP))
     {
         antena_switch = 1;
         first_switch = 0;
         radarOffMode();
     }
-    else if(state_radar == RADAR_STANDBY && state_radar1 == RADAR_STANDBY)
+    else if(state_radar == RADAR_STANDBY)
     {
         antena_switch = 1;
         first_switch = 0;
         radarStbyMode();
     }
-    else if(state_radar == RADAR_STANDBY || state_radar1 == RADAR_STANDBY)
-    {
-        antena_switch = 1;
-        first_switch = 0;
-        radarStbyMode();
-    }
-    else if(state_radar == RADAR_TRANSMIT && state_radar1 == RADAR_TRANSMIT)
+    else if(state_radar == RADAR_TRANSMIT)
     {
         radarTxMode();
     }
-    else if(state_radar == RADAR_TRANSMIT || state_radar1 == RADAR_TRANSMIT)
+    else if(state_radar == RADAR_TRANSMIT || state_radar == RADAR_NO_SPOKE)
     {
         radarTxMode();
     }
@@ -359,8 +379,6 @@ void FrameLeft::trigger_stateChange()
 
     if(socket.state() != QAbstractSocket::ConnectedState)
         socket.connectToHost(antene_switch_settings.ip,antene_switch_settings.port);
-    if(socket2.state() != QAbstractSocket::ConnectedState)
-        socket2.connectToHost(antene_switch_settings.ip2,antene_switch_settings.port);
 }
 
 void FrameLeft::trigger_changeAntene()
@@ -371,7 +389,6 @@ void FrameLeft::trigger_changeAntene()
         if(antena_switch>2)
             antena_switch = 0;
         socket.write(QString::number(antena_switch+1).toUtf8());
-        socket2.write(QString::number(antena_switch+1).toUtf8());
     }
     else
         first_switch = 1;

@@ -1,7 +1,7 @@
 #include "dialogadsb.h"
 #include "ui_dialogadsb.h"
 #include <radarengine_global.h>
-#include <adsb-arhnd/stream/streamdevice.h>
+#include <stream-arhnd/stream/streamdevice.h>
 
 #include <QIntValidator>
 
@@ -70,7 +70,7 @@ void DialogADSB::on_pushButtonApply_clicked()
 
     conf_list<<ui->lineEditIPData->text().remove(" ")<<ui->lineEditPortData->text();
     adsb_settings.config = conf_list.join(";");
-    adsb_settings.type = AdsbArhnd::HTTP;
+    adsb_settings.type = StreamArhnd::HTTP;
 
     emit signal_settingChange();
 }
@@ -78,7 +78,7 @@ void DialogADSB::on_pushButtonApply_clicked()
 void DialogADSB::on_checkBoxShowTrack_clicked(bool checked)
 {
     adsb_settings.show_track = checked;
-    adsb_settings.type = AdsbArhnd::HTTP;
+    adsb_settings.type = StreamArhnd::HTTP;
 
     emit signal_settingChange();
 }
@@ -86,7 +86,7 @@ void DialogADSB::on_checkBoxShowTrack_clicked(bool checked)
 void DialogADSB::on_checkBoxShowTrackData_clicked(bool checked)
 {
     adsb_settings.show_attr = checked;
-    adsb_settings.type = AdsbArhnd::HTTP;
+    adsb_settings.type = StreamArhnd::HTTP;
 
     emit signal_settingChange();
 }

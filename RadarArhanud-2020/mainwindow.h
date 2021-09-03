@@ -30,7 +30,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 signals:
-    void signal_reqRangeChange(int range);
+    void signal_reqRangeChange(int rId, int range);
     void signal_trueLog(QString msg);
     void signal_target_param(quint32 id,
                              double rng,
@@ -50,7 +50,7 @@ private slots:
 //    void trigger_positionChange();
     void trigger_ReqDelTrack(int id);
     void trigger_rangeChange();
-    void trigger_radarFeedbackRangeChange(int);
+    void trigger_radarFeedbackRangeChange(int,int);
     void trigger_reqCreateArpa(QPointF position);
     void trigger_reqUpdateADSB(QByteArray data);
     void trigger_ReqDelAdsb(quint32 icao);
@@ -77,7 +77,7 @@ private:
     Log4Qt::SignalAppender *logEvent;
 
     RadarState curState;
-    double m_range_meters,m_radar_range,m_range_to_send;
+    double m_range_meters,m_radar_range,m_range_to_send,m_radar_range1;
     int m_range_pixel;
     int cur_arpa_id_count;
     bool first;
