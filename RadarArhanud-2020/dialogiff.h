@@ -23,6 +23,12 @@ signals:
 private slots:
     void on_pushButtonApply_clicked();
 
+    void on_pushButtonApplyFlightID_clicked();
+
+    void on_pushButtonApplyOperating_clicked();
+
+    void on_pushButtonApplyTrgReqSend_clicked();
+
 private:
     Ui::DialogIFF *ui;
 

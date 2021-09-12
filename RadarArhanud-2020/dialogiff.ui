@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>502</width>
-    <height>641</height>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -242,8 +242,8 @@
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>380</y>
+     <x>20</x>
+     <y>450</y>
      <width>124</width>
      <height>67</height>
     </rect>
@@ -415,7 +415,7 @@
    <property name="geometry">
     <rect>
      <x>220</x>
-     <y>160</y>
+     <y>180</y>
      <width>291</width>
      <height>181</height>
     </rect>
@@ -593,6 +593,616 @@
     <property name="frame">
      <bool>false</bool>
     </property>
+   </widget>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>400</y>
+     <width>241</width>
+     <height>261</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>3</number>
+   </property>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>Installation</string>
+    </attribute>
+    <widget class="QLineEdit" name="lineEdit">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>20</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_35">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>70</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ICAO:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_36">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>130</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>COM0 baudrate:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>130</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>7</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>0</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>3</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>5</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>6</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>7</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="comboBox_2">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>160</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>7</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>0</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>3</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>4</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>5</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>6</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>7</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_37">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>160</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>COM0 baudrate:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_2">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>50</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_38">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>IP:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_3">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>80</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_39">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>net mask:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_4">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>100</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_40">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>100</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>port</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonApply_6">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>190</y>
+       <width>111</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Send</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>Flight ID</string>
+    </attribute>
+    <widget class="QPushButton" name="pushButtonApplyFlightID">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>100</y>
+       <width>111</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Send</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_41">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ICAO:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditFlightIDICAO">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>20</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_3">
+    <attribute name="title">
+     <string>Operating</string>
+    </attribute>
+    <widget class="QPushButton" name="pushButtonApplyOperating">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>180</y>
+       <width>111</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Send</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxOpMode">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>40</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>Standby</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>On</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Alt</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_45">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>40</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mode</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_47">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>10</y>
+       <width>70</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>squawk</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditOpSquawk">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>10</y>
+       <width>113</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxOpEnableES">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>70</y>
+       <width>92</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enable ES</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>Target req</string>
+    </attribute>
+    <widget class="QLabel" name="label_46">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mode:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBoxTrgReqMode">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>10</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>Auto output on</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Summary</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Target ID</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Turn off all</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="comboBoxTrgReqTxPort">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>40</y>
+       <width>86</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>Default</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Com0</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Com1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ETH</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_48">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Transmit:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_49">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>70</y>
+       <width>67</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Participans:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxTrgReqParticipans">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>70</y>
+       <width>48</width>
+       <height>26</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxTrgReqPosSend">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>100</y>
+       <width>92</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Position</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBoxTrgReqOwnPosSend">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>120</y>
+       <width>92</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Own position</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonApplyTrgReqSend">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>170</y>
+       <width>111</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Send</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
