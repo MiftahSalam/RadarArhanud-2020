@@ -44,6 +44,12 @@ void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         pen.setColor(Qt::black);
 
 
+//    qDebug()<<Q_FUNC_INFO<<"adsb_item ptr"<<m_adsb_target;
+//    qDebug()<<Q_FUNC_INFO<<"adsb_item rng"<<m_adsb_target->rng;
+//    qDebug()<<Q_FUNC_INFO<<"adsb_item brn"<<m_adsb_target->brn;
+//    qDebug()<<Q_FUNC_INFO<<"adsb_item speed"<<m_adsb_target->speed;
+//    qDebug()<<Q_FUNC_INFO<<"adsb_item alt"<<m_adsb_target->alt;
+
     painter->setPen(pen);
     painter->drawText(22,-20,"TN: "+QString::number(m_adsb_target->number));
 //    painter->drawText(22,-20,"ID: "+QString::number(m_adsb_target->icao,16).toUpper());
@@ -59,9 +65,20 @@ void AdsbTrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         painter->drawRect(boundingRect());
     painter->rotate(m_adsb_target->course);
 //    qreal pixel_line_velocity = PIXEL_PER_KNOT*m_adsb_target->speed;
-    painter->drawLine(0,20,0,30);
 //    painter->drawLine(0,20,0,pixel_line_velocity);
 //    painter->rotate(-45.);
 //    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/airplane.png"));
-    painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/2.png"));
+    if(m_adsb_target->identity == 0)
+    {
+        painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/UNKNOWN/2.png"));
+        pen.setColor(Qt::yellow);
+    }
+    else if(m_adsb_target->identity == 1)
+    {
+        painter->drawPixmap(-20,-20,40,40,QPixmap(":/images/DATA_SIMBOL_SASARAN/FRIEND/2.png"));
+        pen.setColor(QColor(8, 250, 249));
+    }
+
+    painter->setPen(pen);
+    painter->drawLine(0,20,0,30);
 }

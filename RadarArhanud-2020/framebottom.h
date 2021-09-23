@@ -52,7 +52,7 @@ private slots:
                                   double crs,
                                   double alt,
                                   QString call_sign,
-                                  QString country, bool selected);
+                                  QString country, bool selected, quint8 identity);
     void trigger_OSD_received(QString msg);
     void trigger_OSD_connected();
     void trigger_OSD_disconnected();

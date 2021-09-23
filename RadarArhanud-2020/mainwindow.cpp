@@ -26,6 +26,22 @@ MainWindow::MainWindow(QWidget *parent) :
     adsb = NULL;
     adsb_list.clear();
 
+    //test
+    StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
+    iffSettingIn.config = "127.0.0.1;8090";
+    iffSettingIn.mode = StreamArhnd::In;
+    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+    iffSettingOut.config = "192.168.1.7;23000";
+    iffSettingOut.mode = StreamArhnd::InOut;
+    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+//    iffSettingOut.config = "127.0.0.1;8070";
+//    iffSettingOut.mode = StreamArhnd::InOut;
+//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+//    iffSettingOut.config = "/dev/ttyUSB0;38400";
+//    iffSettingOut.mode = StreamArhnd::InOut;
+//    iffSettingOut.type = (StreamArhnd::StreamType)0; //serial
+    iff = IFFArhnd::IFFService::getIntance(iffSettingIn, iffSettingOut);
+
     cur_arpa_id_count = 0;
     curState = state_radar;
 
@@ -98,6 +114,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameBottom,&FrameBottom::signal_target_select_update,
             trackDialog,&DialogSelectedTrack::trigger_target_select_update);
 
+    connect(iff,&IFFArhnd::IFFService::signal_update_target_data,this,&MainWindow::trigger_reqUpdateIff);
+    connect(iff,&IFFArhnd::IFFService::signal_ModeAResponse,this,&MainWindow::trigger_reqUpdateTrackIdentity);
 
     connect(ui->graphicsView,SIGNAL(signal_reqCreateArpa(QPointF)),
             this,SLOT(trigger_reqCreateArpa(QPointF)));
@@ -123,10 +141,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri1,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
 //    connect(m_ri1,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
-    connect(m_tm,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
-            this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
-    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool)),
-            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool)));
+    connect(m_tm,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)),
+            this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)));
+    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)),
+            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)));
     connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri,SLOT(trigger_ReqRangeChange(int,int)));
     connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri1,SLOT(trigger_ReqRangeChange(int,int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
@@ -264,6 +282,7 @@ void MainWindow::timeOut()
 //    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters<<"m_range_meters"<<m_radar_range;
 
     ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
+    ui->frameLeft->updateIffStatus();
     ui->frameLeft->setNavStatus(ui->frameBottom->getNavStatus());
     ui->frameLeft->updateRadarStatus();
 
@@ -271,6 +290,7 @@ void MainWindow::timeOut()
     {
         adsb->setLatLon(currentOwnShipLat,currentOwnShipLon);
 
+//        state_radar = RADAR_TRANSMIT; //tes
 //        if(curState != cur_radar_state)
         if(curState != state_radar)
         {
@@ -370,7 +390,72 @@ void MainWindow::trigger_forceExit()
     close();
 }
 
+void MainWindow::trigger_reqUpdateTrackIdentity(QString data)
+{
+    QStringList squawk_list = data.split(",",QString::SkipEmptyParts);
 
+    foreach (QString squawk, squawk_list) {
+        if(adsb) adsb->setTargetIdentityFromIFF(squawk,1); //friend
+    }
+
+}
+void MainWindow::trigger_reqUpdateIff(IFFArhnd::IFFTargetData track)
+{
+    /*
+    qDebug()<<Q_FUNC_INFO<<"icao"<<track.icao;
+    qDebug()<<Q_FUNC_INFO<<"latitude"<<track.lat;
+    qDebug()<<Q_FUNC_INFO<<"longitude"<<track.lon;
+    qDebug()<<Q_FUNC_INFO<<"altitude"<<track.alt;
+    qDebug()<<Q_FUNC_INFO<<"speed"<<track.speed;
+    qDebug()<<Q_FUNC_INFO<<"course"<<track.course;
+    qDebug()<<Q_FUNC_INFO<<"rng"<<track.rng;
+    qDebug()<<Q_FUNC_INFO<<"brn"<<track.brn;
+    qDebug()<<Q_FUNC_INFO<<"vertical_rate"<<track.vertical_rate;
+    qDebug()<<Q_FUNC_INFO<<"time_stamp"<<track.time_stamp;
+    qDebug()<<Q_FUNC_INFO<<"lat_valid"<<track.lat_valid;
+    qDebug()<<Q_FUNC_INFO<<"lon_valid"<<track.lon_valid;
+    qDebug()<<Q_FUNC_INFO<<"alt_valid"<<track.alt_valid;
+    qDebug()<<Q_FUNC_INFO<<"speed_valid"<<track.speed_valid;
+    qDebug()<<Q_FUNC_INFO<<"course_valid"<<track.course_valid;
+    qDebug()<<Q_FUNC_INFO<<"vertical_rate_valid"<<track.vertical_rate_valid;
+    */
+    qDebug()<<Q_FUNC_INFO<<"identity"<<track.identity;
+
+    AdsbArhnd::ADSBTargetData target;
+
+    target.icao = track.icao;
+    target.lat = track.lat;
+    target.lon = track.lon;
+    target.rng = track.rng;
+    target.brn = track.brn;
+    target.alt = track.alt;
+    target.speed = track.speed;
+    target.course = track.course;
+    target.vertical_rate = track.vertical_rate;
+    target.lat_valid = track.lat_valid;
+    target.lon_valid = track.lon_valid;
+    target.alt_valid = track.alt_valid;
+    target.speed_valid = track.speed_valid;
+    target.course_valid = track.course_valid;
+    target.vertical_rate_valid = track.vertical_rate_valid;
+    target.selected = track.selected;
+    target.ground = track.ground;
+    target.identity = track.identity;
+    target.time_stamp = track.time_stamp;
+
+    if(adsb) adsb->setTargetFromIFF(target);
+//    if(adsb_list.contains(track.icao))
+//    {
+//        if(adsb) adsb->getADSB().getTarget(track.icao)->identity = track.identity;
+//    }
+//    else
+//    {
+//        qDebug()<<Q_FUNC_INFO<<"new iff target. icao"<<icao;
+//        adsb_list.insert(icao);
+//        scene->reqNewADSB(adsb->getADSB().getTarget(icao),adsb_settings.show_track);
+//    }
+
+}
 void MainWindow::trigger_ReqDelAdsb(quint32 icao)
 {
     qDebug()<<Q_FUNC_INFO<<"icao"<<icao;
@@ -385,6 +470,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in.setFloatingPointPrecision(QDataStream::SinglePrecision);
     float lat,lon,alt,cog,sog;
     quint32 icao;
+    quint8 identity;
     QString str_call_sign,str_country;
     char chr_callsign[10],chr_country[10];
     int call_sign_index_sep = 0;
@@ -400,6 +486,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in>>cog;
     stream_in.readRawData(chr_country,10);
     stream_in>>selected;
+    stream_in>>identity;
 
     str_call_sign = QString::fromLocal8Bit((const char*)&chr_callsign,10);
     str_country = QString::fromLocal8Bit((const char*)&chr_country,10);
@@ -426,7 +513,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     {
         if(!adsb_list.contains(icao))
         {
-            qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<icao;
+            qDebug()<<Q_FUNC_INFO<<"new curTarget icao"<<icao;
             adsb_list.insert(icao);
             scene->reqNewADSB(adsb->getADSB().getTarget(icao),adsb_settings.show_track);
         }
@@ -438,12 +525,18 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
             qDebug()<<Q_FUNC_INFO<<"curTarget"<<cur_icao<<adsb->getADSB().getTarget(cur_icao);
         }
         */
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  ptr"<<QString::number((qint32)icao,16)<<adsb->getADSB().getTarget(icao);
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  rng"<<adsb->getADSB().getTarget(icao)->rng;
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  brn"<<adsb->getADSB().getTarget(icao)->brn;
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  alt"<<adsb->getADSB().getTarget(icao)->alt;
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  speed"<<adsb->getADSB().getTarget(icao)->speed;
+//        qDebug()<<Q_FUNC_INFO<<"curTarget  course"<<adsb->getADSB().getTarget(icao)->course;
     }
 //    if(km<60.)
-    emit signal_target_param(icao,km+0.2,bearing+1.1,lat,lon,sog+1.3,cog+1.3,alt+(150.*0.3048),str_call_sign,str_country,selected);
+    emit signal_target_param(icao,km+0.2,bearing+1.1,lat,lon,sog+1.3,cog+1.3,alt+(150.*0.3048),str_call_sign,str_country,selected,identity);
 
-    /*
-    qDebug()<<Q_FUNC_INFO<<"curTarget icao"<<QString::number((qint32)icao,16);
+
+        /*
     qDebug()<<Q_FUNC_INFO<<"curTarget->CallSign chr"<<chr_callsign;
     qDebug()<<Q_FUNC_INFO<<"curTarget->CallSign str"<<str_call_sign;
     qDebug()<<Q_FUNC_INFO<<"curTarget->Lat"<<lat;
@@ -454,8 +547,8 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     qDebug()<<Q_FUNC_INFO<<"curTarget->COG"<<cog;
     qDebug()<<Q_FUNC_INFO<<"curTarget->SOG"<<sog;
     qDebug()<<Q_FUNC_INFO<<"curTarget->contry chr"<<chr_country;
-    */
     qDebug()<<Q_FUNC_INFO<<"curTarget->selected"<<selected;
+    */
 }
 
 
@@ -577,7 +670,7 @@ void MainWindow::trigger_opModeChange(bool checked)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO;
+    Log4Qt::Logger::rootLogger()->debug()<<Q_FUNC_INFO;
 
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
 
@@ -619,6 +712,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     config.setValue("mti/enable",mti_settings.enable);
     config.setValue("mti/threshold",mti_settings.threshold);
+
+    QStringList friendListCodeString = friendListCode.toList();
+    config.setValue("friend_list",friendListCodeString);
 
     event->accept();
 }

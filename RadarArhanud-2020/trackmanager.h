@@ -84,7 +84,8 @@ signals:
                              double alt,
                              QString call_sign,
                              QString country,
-                             bool selected
+                             bool selected,
+                             quint8 identity
                              );
 
 private:

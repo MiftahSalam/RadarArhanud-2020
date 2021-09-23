@@ -264,7 +264,9 @@ void FrameBottom::trigger_target_update(
         double alt,
         QString call_sign,
         QString country,
-        bool selected)
+        bool selected,
+        quint8 identity
+        )
 {
     /*
     qDebug()<<"trigger_adsb_target_update"<<"curTarget icao"<<QString::number((qint32)icao,16);

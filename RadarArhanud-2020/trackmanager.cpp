@@ -292,7 +292,8 @@ void TrackManager::updateTracks()
                                      target->m_speed_kn,
                                      target->m_course,
                                      target->m_position.alt,
-                                     "-","-",target->selected
+                                     "-","-",target->selected,
+                                     0 //unknown
                                      );
         }
         cur_arpa_id_count++;

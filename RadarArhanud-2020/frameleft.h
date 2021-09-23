@@ -25,6 +25,7 @@ public:
     void setRangeRings(qreal range_ring);
     void setRangeText(double range, bool match);
     void setAdsbStatus(int status);
+    void updateIffStatus();
     void setNavStatus(int status);
     void updateRadarStatus();
     void trigger_changeAntene();

@@ -167,7 +167,7 @@ void RadarGraphicView::updateSceneItems()
                     qDebug()<<Q_FUNC_INFO<<"remove adsb track"<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
                     scene()->removeItem(adsb_item);
                 }
-                qDebug()<<Q_FUNC_INFO<<"adsb_item"<<adsb_item<<"selected"<<adsb_item->getItemSelected();
+//                qDebug()<<Q_FUNC_INFO<<"adsb_item ptr"<<adsb_item->m_adsb_target<<"selected"<<adsb_item->getItemSelected();
 
 //                qDebug()<<Q_FUNC_INFO<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
 

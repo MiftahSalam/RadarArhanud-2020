@@ -10,6 +10,7 @@
 #include "adsb/adsbstream.h"
 #include "dialogselectedtrack.h"
 #include "trackmanager.h"
+#include "iff-arhnd/iff/iff.h"
 
 namespace Ui {
 class MainWindow;
@@ -42,7 +43,8 @@ signals:
                              double alt,
                              QString call_sign,
                              QString country,
-                             bool selected
+                             bool selected,
+                             quint8 identity
                              );
 
 private slots:
@@ -54,6 +56,8 @@ private slots:
     void trigger_reqCreateArpa(QPointF position);
     void trigger_reqUpdateADSB(QByteArray data);
     void trigger_ReqDelAdsb(quint32 icao);
+    void trigger_reqUpdateIff(IFFArhnd::IFFTargetData data);
+    void trigger_reqUpdateTrackIdentity(QString data);
     void trigger_updateTrackNumber(int id, int number);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
     void trigger_DrawSpoke1(int, u_int8_t*, size_t);
@@ -70,6 +74,7 @@ private:
 
     TrackManager *m_tm;
     AdsbArhnd::ADSBStream *adsb;
+    IFFArhnd::IFFService *iff;
     QSet<quint32> adsb_list;
 
     RadarScene *scene;

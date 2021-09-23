@@ -159,6 +159,9 @@ int main(int argc, char *argv[])
         gps_auto = config.value("nav_sensor/gps_auto",true).toBool();
         hdg_auto = config.value("nav_sensor/hdg_auto",true).toBool();
 
+        QStringList friendListCodeString = config.value("friend_list",QStringList()).toStringList();
+        friendListCode = QSet<QString>::fromList(friendListCodeString);
+
         adsb_settings.show_attr = true;
     }
     track_counter = 0;

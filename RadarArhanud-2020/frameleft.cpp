@@ -174,6 +174,32 @@ void FrameLeft::setAdsbStatus(int status)
 
 }
 
+void FrameLeft::updateIffStatus()
+{
+    QString status = dIFF->getStatus();
+
+    if(status == "Offline")
+    {
+        ui->labelIFFStatus->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelIFFStatus->setText(status);
+    }
+    else if(status.contains("Sys") || status.contains("Input"))
+    {
+        ui->labelIFFStatus->setStyleSheet("background-color: rgb(164,0,0);");
+        ui->labelIFFStatus->setText(status);
+    }
+    else if(status.contains("Stan"))
+    {
+        ui->labelIFFStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelIFFStatus->setText(status);
+    }
+    else
+    {
+        ui->labelIFFStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelIFFStatus->setText(status);
+    }
+}
+
 void FrameLeft::setRangeRings(qreal range)
 {
     ui->labelRingRange->setText(QString::number(range,'f',2)+" Km");
@@ -322,6 +348,8 @@ void FrameLeft::trigger_stateChange()
     qDebug()<<Q_FUNC_INFO<<(int)state_radar<<(int)state_radar1;
     qDebug()<<Q_FUNC_INFO<<&state_radar<<&state_radar1;
 
+//    state_radar = RADAR_TRANSMIT;//tes
+
     if((state_radar == RADAR_OFF || state_radar == RADAR_WAKING_UP))
     {
         antena_switch = 1;
@@ -376,6 +404,8 @@ void FrameLeft::trigger_stateChange()
 //        ui->horizontalSliderGain->setEnabled(true);
 //        ui->pushButtonTxStnb->setEnabled(true);
 //    }
+
+//    dIFF->updateLatLongHdt();
 
     if(socket.state() != QAbstractSocket::ConnectedState)
         socket.connectToHost(antene_switch_settings.ip,antene_switch_settings.port);
