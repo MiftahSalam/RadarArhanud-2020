@@ -269,7 +269,7 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
     qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
 
     RadarSceneItems *item = dynamic_cast<RadarSceneItems *>(itemAt(event->pos()));
-    bool create_arpa = true;
+    bool create_arpa = false;
 
     if (item)
     {
@@ -290,7 +290,6 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
         if(itemType->getRadarItemType() == RadarSceneItems::ARPA)
         {
             ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(itemType);
-            create_arpa = false;
             tn = arpa_item->m_arpa_target->m_target_number;
             arpa_item->m_arpa_target->selected = item_selected;
         }
@@ -305,7 +304,10 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
             emit signal_selectedChange(tn,item_selected);
     }
     else
+    {
+        create_arpa = true;
         qDebug("You didn't click on an item.");
+    }
 
     if(create_arpa)
     {

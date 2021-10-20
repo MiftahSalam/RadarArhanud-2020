@@ -52,7 +52,7 @@ private slots:
                                   double crs,
                                   double alt,
                                   QString call_sign,
-                                  QString country, bool selected, quint8 identity);
+                                  QString country, bool selected, quint8 identity, QString squawk, quint8 cat);
     void trigger_OSD_received(QString msg);
     void trigger_OSD_connected();
     void trigger_OSD_disconnected();
@@ -89,8 +89,10 @@ private:
                         double crs,
                         double alt,
                         QString call_sign,
-                        QString country);
+                        QString country, quint8 identity, QString squawk, quint8 cat);
 
+    QString int2Cat(const quint8 cat);
+    QString int2Identity(const quint8 ident);
 };
 
 #endif // FRAMEBOTTOM_H

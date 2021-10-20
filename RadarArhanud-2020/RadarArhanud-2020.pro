@@ -14,6 +14,7 @@ TEMPLATE = app
 DEFINES += UBUNTU16
 
 SOURCES += main.cpp\
+    dialogbit.cpp \
         mainwindow.cpp \
     frameleft.cpp \
     framebottom.cpp \
@@ -35,6 +36,7 @@ SOURCES += main.cpp\
     dialogselectedtrack.cpp
 
 HEADERS  += mainwindow.h \
+    dialogbit.h \
     frameleft.h \
     framebottom.h \
     radargraphicview.h \
@@ -55,6 +57,7 @@ HEADERS  += mainwindow.h \
     dialogselectedtrack.h
 
 FORMS    += mainwindow.ui \
+    dialogbit.ui \
     frameleft.ui \
     framebottom.ui \
     dialogradar.ui \

@@ -46,6 +46,7 @@ private slots:
 private:
     RadarEngine *m_ri,*m_ri1;
     QTimer *m_timer;
+    QTime rpm_time;
 
     struct Cursor
     {
@@ -64,7 +65,7 @@ private:
     QVector<GLfloat> vertData;
 
     float curScale,curAngle, curAngle1;
-    int ringPix;
+    int ringPix, first_sweep_counter, rpm;
 
     QImage mapImage;
 

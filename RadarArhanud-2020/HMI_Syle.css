@@ -22,6 +22,10 @@ QGroupBox {
 /*    border-bottom-right-radius: 15px;*/
 }
 
+QLineEdit {
+    border: 1px solid #FFFFFF;
+}
+
 QLineEdit::disabled {
     color:rgb(0, 0, 0);
 }

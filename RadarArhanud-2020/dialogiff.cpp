@@ -10,52 +10,73 @@ DialogIFF::DialogIFF(QWidget *parent) :
     ui(new Ui::DialogIFF)
 {
     ui->setupUi(this);
+    ui->tabWidget_4->hide(); //interrogator mode s settings
+    ui->groupBox_7->hide(); //track output settings
     ui->tabOperationalWhisper->setEnabled(false);
+    ui->tabOpCon2->setEnabled(false);
 
-    ui->lineEditIPData->setValidator(new QIntValidator(0,255,ui->lineEditIPData));
-    ui->lineEditPortData->setValidator(new QIntValidator(3000,65536,ui->lineEditPortData));
+    ui->lineEditOPPortCon2->setValidator(new QIntValidator(0,255,ui->lineEditOPPortCon2));
+    ui->lineEditOPPortCon1->setValidator(new QIntValidator(300,65536,ui->lineEditOPPortCon1));
 
-    qDebug()<<Q_FUNC_INFO<<iff_settings.ip<<friendListCode;
-    ui->lineEditIPData->setText(iff_settings.ip);
-    ui->lineEditPortData->setText(QString::number(iff_settings.port));
+    qDebug()<<Q_FUNC_INFO<<iff_settings.ip1<<friendListCode<<hostileListCode;
+    ui->lineEditOPIPCon1->setText(iff_settings.ip1);
+    ui->lineEditOPPortCon1->setText(QString::number(iff_settings.port1));
 
     QStandardItem *item1 = new QStandardItem("Code");
 
-    codeListModel = new QStandardItemModel(this);
-    codeListModel->setColumnCount(1);
-    codeListModel->setHorizontalHeaderItem(0,item1);
+    codeFriendListModel = new QStandardItemModel(this);
+    codeFriendListModel->setColumnCount(1);
+    codeFriendListModel->setHorizontalHeaderItem(0,item1);
+
+    codeHostileListModel = new QStandardItemModel(this);
+    codeHostileListModel->setColumnCount(1);
+    codeHostileListModel->setHorizontalHeaderItem(0,item1);
 
     foreach (QString code, friendListCode)
     {
-        qDebug()<<Q_FUNC_INFO<<code;
-        codeListModel->insertRow(codeListModel->rowCount(), QModelIndex());
-        codeListModel->setData(codeListModel->index(codeListModel->rowCount()-1,0,QModelIndex()),code);
-        codeListModel->item(codeListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    }
-    /*test
-    codeListModel->insertRow(codeListModel->rowCount(), QModelIndex());
-    codeListModel->setData(codeListModel->index(codeListModel->rowCount()-1,0,QModelIndex()),"1202");
-    codeListModel->item(codeListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    codeListModel->insertRow(codeListModel->rowCount(), QModelIndex());
-    codeListModel->setData(codeListModel->index(codeListModel->rowCount()-1,0,QModelIndex()),"1324");
-    codeListModel->item(codeListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-    */
+        qDebug()<<Q_FUNC_INFO<<"friend"<<code;
+        codeFriendListModel->insertRow(codeFriendListModel->rowCount(), QModelIndex());
+        codeFriendListModel->setData(codeFriendListModel->index(codeFriendListModel->rowCount()-1,0,QModelIndex()),code);
+        codeFriendListModel->item(codeFriendListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
-    ui->tableViewOpFriendList->setModel(codeListModel);
+        friendCodeReplyList.insert(code,QDateTime::currentSecsSinceEpoch());
+    }
+    foreach (QString code, hostileListCode)
+    {
+        qDebug()<<Q_FUNC_INFO<<"hostileListCode"<<code;
+        codeHostileListModel->insertRow(codeHostileListModel->rowCount(), QModelIndex());
+        codeHostileListModel->setData(codeHostileListModel->index(codeHostileListModel->rowCount()-1,0,QModelIndex()),code);
+        codeHostileListModel->item(codeHostileListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    }
+
+    ui->tableViewOpFriendList->setModel(codeFriendListModel);
     ui->tableViewOpFriendList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    //test
+    ui->tableViewOpHostileList->setModel(codeHostileListModel);
+    ui->tableViewOpHostileList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
     StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
-    iffSettingIn.config = "127.0.0.1;8090";
-    iffSettingIn.mode = StreamArhnd::In;
-    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
-    iffSettingOut.config = "192.168.1.7;23000";
-    iffSettingOut.mode = StreamArhnd::InOut;
-    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+    //test
+//    iffSettingIn.config = "127.0.0.1;8090";
+//    iffSettingIn.mode = StreamArhnd::In;
+//    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+//    iffSettingOut.config = "192.168.1.7;23000";
+//    iffSettingOut.mode = StreamArhnd::InOut;
+//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+//    iffSettingOut.config = "127.0.0.1;8070";
+//    iffSettingOut.mode = StreamArhnd::InOut;
+//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
 //    iffSettingOut.config = "/dev/ttyUSB0;230400";
 //    iffSettingOut.mode = StreamArhnd::InOut;
 //    iffSettingOut.type = (StreamArhnd::StreamType)0; //serial
 
+
+    iffSettingIn.config = iff_settings.ip2+";"+QString::number(iff_settings.port2);
+    iffSettingIn.mode = StreamArhnd::In;
+    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+    iffSettingOut.config = iff_settings.ip1+";"+QString::number(iff_settings.port1);
+    iffSettingOut.mode = StreamArhnd::InOut;
+    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
     toggleColor = true;
     input_required_count = 0;
 
@@ -84,9 +105,56 @@ QString DialogIFF::getStatus() const
     }
     else status = "Offline";
 
+
+    QHashIterator<QString,qint64> i(friendCodeReplyList);
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    const qint64 delta = 30;
+    QList<QStandardItem *> listTarget;
+
+    while (i.hasNext())
+    {
+        i.next();
+        if(now-i.value() > delta)
+        {
+            qDebug()<<Q_FUNC_INFO<<"no reply track. delta"<<delta<<"id"<<i.key();
+
+            listTarget = codeFriendListModel->findItems(i.key(),Qt::MatchExactly,0);
+            if(listTarget.size() > 0)
+            {
+                int row = listTarget.at(0)->row();
+
+                if(row >= 0)
+                {
+                    if(codeFriendListModel->item(row,0)->background() != Qt::NoBrush)
+                        codeFriendListModel->item(row,0)->setBackground(QBrush(Qt::NoBrush));
+                }
+            }
+        }
+    }
+
+
     return status;
 }
 
+void DialogIFF::trigger_interrogateReply(QString code)
+{
+    QList<QStandardItem *> listTarget;
+
+    listTarget = codeFriendListModel->findItems(code,Qt::MatchExactly,0);
+
+    if(listTarget.size() > 0)
+    {
+        int row = listTarget.at(0)->row();
+
+        if(row >= 0)
+        {
+            codeFriendListModel->item(row,0)->setBackground(QBrush(Qt::green,Qt::SolidPattern));
+            friendCodeReplyList.insert(code,QDateTime::currentSecsSinceEpoch());
+        }
+    }
+
+
+}
 void DialogIFF::trigger_InstallationResponse(QString source)
 {
     QStringList source_list = source.split(";");
@@ -160,16 +228,16 @@ void DialogIFF::trigger_BITDataHandle(IFFArhnd::BITResult bit)
         ui->labelGPSIn->setText("Fail");
         ui->labelGPSIn->setStyleSheet("background-color: rgb(164,0,0);");
     }
-    if(bit.gps_pps_valid)
-    {
-        ui->labelGPSPPS->setText("OK");
-        ui->labelGPSPPS->setStyleSheet("background-color: rgb(78, 154, 6);");
-    }
-    else
-    {
-        ui->labelGPSPPS->setText("Fail");
-        ui->labelGPSPPS->setStyleSheet("background-color: rgb(164,0,0);");
-    }
+//    if(bit.gps_pps_valid)
+//    {
+//        ui->labelGPSPPS->setText("OK");
+//        ui->labelGPSPPS->setStyleSheet("background-color: rgb(78, 154, 6);");
+//    }
+//    else
+//    {
+//        ui->labelGPSPPS->setText("Fail");
+//        ui->labelGPSPPS->setStyleSheet("background-color: rgb(164,0,0);");
+//    }
     if(bit.temperature_in_range)
     {
         ui->labelTemp->setText("OK");
@@ -280,16 +348,16 @@ void DialogIFF::trigger_BITDataHandle(IFFArhnd::BITResult bit)
         ui->labelCal->setText("Fail");
         ui->labelCal->setStyleSheet("background-color: rgb(164,0,0);");
     }
-    if(bit.power_on_pass)
-    {
-        ui->labelPowerOn->setText("OK");
-        ui->labelPowerOn->setStyleSheet("background-color: rgb(78, 154, 6);");
-    }
-    else
-    {
-        ui->labelPowerOn->setText("Fail");
-        ui->labelPowerOn->setStyleSheet("background-color: rgb(164,0,0);");
-    }
+//    if(bit.power_on_pass)
+//    {
+//        ui->labelPowerOn->setText("OK");
+//        ui->labelPowerOn->setStyleSheet("background-color: rgb(78, 154, 6);");
+//    }
+//    else
+//    {
+//        ui->labelPowerOn->setText("Fail");
+//        ui->labelPowerOn->setStyleSheet("background-color: rgb(164,0,0);");
+//    }
     if(bit.processor_test_pass)
     {
         ui->labelProcessor->setText("OK");
@@ -384,14 +452,6 @@ void DialogIFF::trigger_ackDataHandle(quint8 msg_type, quint8 msg_id, quint8 sta
 DialogIFF::~DialogIFF()
 {
     delete ui;
-}
-
-void DialogIFF::on_pushButtonApply_clicked()
-{
-    iff_settings.ip = ui->lineEditIPData->text().remove(" ");
-    iff_settings.port = ui->lineEditPortData->text().toUInt();
-
-    emit signal_settingChange();
 }
 
 void DialogIFF::on_pushButtonApplyFlightID_clicked()
@@ -549,15 +609,17 @@ void DialogIFF::on_pushButtonApplyOperatingUpdateGps_clicked()
 
 void DialogIFF::on_pushButtonOpFriendListRemove_clicked()
 {
-    int row_count = codeListModel->rowCount();
+    int row_count = codeFriendListModel->rowCount();
 
     if(row_count>0)
     {
         int row = ui->tableViewOpFriendList->currentIndex().row();
         QString row_data = ui->tableViewOpFriendList->currentIndex().data().toString();
 
-        codeListModel->removeRow(row);
+        codeFriendListModel->removeRow(row);
         friendListCode.remove(row_data);
+        friendCodeReplyList.remove(row_data);
+        emit signal_friendCodeRemoved(row_data);
 
         qDebug()<<Q_FUNC_INFO<<"remove code"<<row_data<<row_data;
     }
@@ -584,14 +646,75 @@ void DialogIFF::on_pushButtonOpFriendListAdd_clicked()
             if(!friendListCode.contains(code))
             {
                 friendListCode.insert(code);
+                friendCodeReplyList.insert(code,QDateTime::currentSecsSinceEpoch());
 
-                codeListModel->insertRow(codeListModel->rowCount(), QModelIndex());
-                codeListModel->setData(codeListModel->index(codeListModel->rowCount()-1,0,QModelIndex()),code);
-                codeListModel->item(codeListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                codeFriendListModel->insertRow(codeFriendListModel->rowCount(), QModelIndex());
+                codeFriendListModel->setData(codeFriendListModel->index(codeFriendListModel->rowCount()-1,0,QModelIndex()),code);
+                codeFriendListModel->item(codeFriendListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
             }
             else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode already exist",QMessageBox::Ok);
         }
         else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode must contains 4 digit",QMessageBox::Ok);
     } else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode must not empty",QMessageBox::Ok);
 
+}
+
+void DialogIFF::on_pushButtonOPCon1Apply_clicked()
+{
+    iff_settings.ip1 = ui->lineEditOPIPCon1->text().remove(" ");
+    iff_settings.port1 = ui->lineEditOPPortCon1->text().toUInt();
+
+    emit signal_settingChange();
+}
+
+void DialogIFF::on_pushButtonOpHostileListRemove_clicked()
+{
+    int row_count = codeHostileListModel->rowCount();
+
+    if(row_count>0)
+    {
+        int row = ui->tableViewOpHostileList->currentIndex().row();
+        QString row_data = ui->tableViewOpHostileList->currentIndex().data().toString();
+
+        codeHostileListModel->removeRow(row);
+        hostileListCode.remove(row_data);
+        emit signal_hostileCodeRemoved(row_data);
+
+        qDebug()<<Q_FUNC_INFO<<"remove code"<<row_data<<row_data;
+    }
+
+}
+
+void DialogIFF::on_pushButtonOpHostileListAdd_clicked()
+{
+    QString code = ui->lineEditHostileListCode->text();
+    if(!code.isEmpty())
+    {
+        if(code.size() == 4)
+        {
+            for(int i=0; i<code.size(); i++)
+            {
+                QChar digit =code.at(i);
+
+                if(!digit.isDigit())
+                {
+                    QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode must contains digit",QMessageBox::Ok);
+                    return;
+                }
+            }
+
+            if(!hostileListCode.contains(code))
+            {
+                hostileListCode.insert(code);
+
+                codeHostileListModel->insertRow(codeHostileListModel->rowCount(), QModelIndex());
+                codeHostileListModel->setData(codeHostileListModel->index(codeHostileListModel->rowCount()-1,0,QModelIndex()),code);
+                codeHostileListModel->item(codeHostileListModel->rowCount()-1,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+                emit signal_hostileCodeAdded(code);
+            }
+            else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode already exist",QMessageBox::Ok);
+        }
+        else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode must contains 4 digit",QMessageBox::Ok);
+    } else QMessageBox::critical(this,"Input Error","Invalid Code input.\nCode must not empty",QMessageBox::Ok);
 }

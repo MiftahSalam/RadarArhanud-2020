@@ -24,13 +24,17 @@ public:
     
 signals:
     void signal_settingChange();
+    void signal_friendCodeRemoved(QString code);
+    void signal_hostileCodeRemoved(QString code);
+    void signal_hostileCodeAdded(QString code);
+
+public slots:
+    void trigger_interrogateReply(QString code);
 
 private slots:
     void trigger_ackDataHandle(quint8 msg_type, quint8 msg_id, quint8 state);
     void trigger_BITDataHandle(IFFArhnd::BITResult bit);
     void trigger_InstallationResponse(QString data);
-
-    void on_pushButtonApply_clicked();
 
     void on_pushButtonApplyFlightID_clicked();
 
@@ -52,9 +56,16 @@ private slots:
 
     void on_pushButtonOpFriendListAdd_clicked();
 
+    void on_pushButtonOPCon1Apply_clicked();
+
+    void on_pushButtonOpHostileListRemove_clicked();
+
+    void on_pushButtonOpHostileListAdd_clicked();
+
 private:
     Ui::DialogIFF *ui;
-    QStandardItemModel *codeListModel;
+    QStandardItemModel *codeFriendListModel,*codeHostileListModel;
+    QHash<QString,qint64> friendCodeReplyList;
 
     IFFArhnd::IFFService *iff;
 

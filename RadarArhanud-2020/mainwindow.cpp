@@ -26,22 +26,30 @@ MainWindow::MainWindow(QWidget *parent) :
     adsb = NULL;
     adsb_list.clear();
 
-    //test
     StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
-    iffSettingIn.config = "127.0.0.1;8090";
-    iffSettingIn.mode = StreamArhnd::In;
-    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
-    iffSettingOut.config = "192.168.1.7;23000";
-    iffSettingOut.mode = StreamArhnd::InOut;
-    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+    //test
+//    iffSettingIn.config = "127.0.0.1;8090";
+//    iffSettingIn.mode = StreamArhnd::In;
+//    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+//    iffSettingOut.config = "192.168.1.7;23000";
+//    iffSettingOut.mode = StreamArhnd::InOut;
+//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
 //    iffSettingOut.config = "127.0.0.1;8070";
 //    iffSettingOut.mode = StreamArhnd::InOut;
 //    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
 //    iffSettingOut.config = "/dev/ttyUSB0;38400";
 //    iffSettingOut.mode = StreamArhnd::InOut;
 //    iffSettingOut.type = (StreamArhnd::StreamType)0; //serial
-    iff = IFFArhnd::IFFService::getIntance(iffSettingIn, iffSettingOut);
 
+
+    iffSettingIn.config = iff_settings.ip2+";"+QString::number(iff_settings.port2);
+    iffSettingIn.mode = StreamArhnd::In;
+    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+    iffSettingOut.config = iff_settings.ip1+";"+QString::number(iff_settings.port1);
+    iffSettingOut.mode = StreamArhnd::InOut;
+    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+
+    iff = IFFArhnd::IFFService::getIntance(iffSettingIn, iffSettingOut);
     cur_arpa_id_count = 0;
     curState = state_radar;
 
@@ -97,6 +105,14 @@ MainWindow::MainWindow(QWidget *parent) :
             m_ri1,SLOT(trigger_ReqRadarSetting()));
     connect(ui->frameLeft,SIGNAL(signal_adsbSettingChange()),
             this,SLOT(initADSB()));
+    connect(ui->frameLeft,SIGNAL(signal_iffSettingChange()),
+            this,SLOT(initIFF()));
+    connect(ui->frameLeft,SIGNAL(signal_friendCodeRemoved(QString)),
+            this,SLOT(trigger_reqFriendCodeRemoved(QString)));
+    connect(ui->frameLeft,SIGNAL(signal_hostileCodeRemoved(QString)),
+            this,SLOT(trigger_reqHostileCodeRemoved(QString)));
+    connect(ui->frameLeft,SIGNAL(signal_hostileCodeAdded(QString)),
+            this,SLOT(trigger_reqHostileCodeAdded(QString)));
     connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
             m_ri,SLOT(trigger_ReqControlChange(int,int)));
     connect(ui->frameLeft,SIGNAL(signal_req_control(int,int)),
@@ -104,6 +120,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->frameLeft,SIGNAL(signal_req_range()),this,SLOT(trigger_rangeChange()));
     connect(ui->frameLeft,SIGNAL(signal_clearTrail()),m_ri,SLOT(trigger_clearTrail()));
     connect(ui->frameLeft,SIGNAL(signal_clearTrail()),m_ri1,SLOT(trigger_clearTrail()));
+    connect(this,SIGNAL(signal_interrogateReply(QString)),ui->frameLeft,SIGNAL(signal_interrogateReply(QString)));
     connect(scene,&RadarScene::signal_zero_detect,ui->frameLeft,&FrameLeft::trigger_changeAntene);
 
     connect(ui->frameBottom,SIGNAL(signal_request_del_track(int)),
@@ -141,10 +158,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_ri1,SIGNAL(signal_state_change()),ui->frameLeft,SLOT(trigger_stateChange()));
 //    connect(m_ri1,SIGNAL(signal_updateReport()),ui->frameLeft,SLOT(trigger_reportChange()));
 
-    connect(m_tm,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)),
-            this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)));
-    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)),
-            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8)));
+    connect(m_tm,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8,QString,quint8)),
+            this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8,QString,quint8)));
+    connect(this,SIGNAL(signal_target_param(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8,QString,quint8)),
+            ui->frameBottom,SLOT(trigger_target_update(quint32,double,double,double,double,double,double,double,QString,QString,bool,quint8,QString,quint8)));
     connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri,SLOT(trigger_ReqRangeChange(int,int)));
     connect(this,SIGNAL(signal_reqRangeChange(int,int)),m_ri1,SLOT(trigger_ReqRangeChange(int,int)));
     connect(timer,SIGNAL(timeout()),this,SLOT(timeOut()));
@@ -299,15 +316,17 @@ void MainWindow::timeOut()
             {
                 ui->graphicsView->showAdsb(false);
                 disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
+                curState = state_radar;
             }
-            else if(state_radar == RADAR_TRANSMIT)
+            else if(state_radar == RADAR_TRANSMIT && !first_sweep)
 //            else if(cur_radar_state == RADAR_TRANSMIT)
             {
+                qDebug()<<Q_FUNC_INFO<<"init adsb first_sweep";
                 ui->graphicsView->showAdsb(adsb_settings.show_track);
                 connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
                         this,SLOT(trigger_reqUpdateADSB(QByteArray)),Qt::UniqueConnection);
+                curState = state_radar;
             }
-            curState = state_radar;
 //            curState = cur_radar_state;
         }
     }
@@ -342,6 +361,20 @@ void MainWindow::adjustRadarRange()
 
 }
 
+void MainWindow::initIFF()
+{
+    StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
+
+    iffSettingIn.config = iff_settings.ip2+";"+QString::number(iff_settings.port2);
+    iffSettingIn.mode = StreamArhnd::In;
+    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
+    iffSettingOut.config = iff_settings.ip1+";"+QString::number(iff_settings.port1);
+    iffSettingOut.mode = StreamArhnd::InOut;
+    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
+
+    iff->setSettings(iffSettingIn,iffSettingOut);
+
+}
 void MainWindow::initADSB()
 {
     AdsbArhnd::StreamSettings adsbSettingIn;
@@ -372,7 +405,7 @@ void MainWindow::initADSB()
         disconnect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),this,SLOT(trigger_reqUpdateADSB(QByteArray)));
     }
 //    else if(cur_radar_state == RADAR_TRANSMIT)
-        else if(state_radar == RADAR_TRANSMIT)
+        else if(state_radar == RADAR_TRANSMIT && !first_sweep)
     {
         ui->graphicsView->showAdsb(adsb_settings.show_track);
         connect(adsb,SIGNAL(signal_updateTargetData(QByteArray)),
@@ -390,12 +423,39 @@ void MainWindow::trigger_forceExit()
     close();
 }
 
+void MainWindow::trigger_reqFriendCodeRemoved(QString data)
+{
+    if(adsb) adsb->setTargetIdentityFromIFF(data,0); //unknown
+}
+
+void MainWindow::trigger_reqHostileCodeRemoved(QString data)
+{
+    if(adsb) adsb->setTargetIdentityFromIFF(data,0); //unknown
+}
+
+void MainWindow::trigger_reqHostileCodeAdded(QString data)
+{
+    if(adsb) adsb->setTargetIdentityFromIFF(data,2); //Hostile
+}
+
 void MainWindow::trigger_reqUpdateTrackIdentity(QString data)
 {
     QStringList squawk_list = data.split(",",QString::SkipEmptyParts);
 
-    foreach (QString squawk, squawk_list) {
-        if(adsb) adsb->setTargetIdentityFromIFF(squawk,1); //friend
+    qDebug()<<Q_FUNC_INFO<<"friendListCode"<<friendListCode;
+
+    foreach (QString squawk, squawk_list)
+    {
+        if(adsb)
+        {
+            qDebug()<<Q_FUNC_INFO<<"squawk"<<squawk;
+            if(friendListCode.contains(squawk))
+            {
+                adsb->setTargetIdentityFromIFF(squawk,1); //friend
+                emit signal_interrogateReply(squawk);
+            }
+            else adsb->setTargetIdentityFromIFF(squawk,0); //unknown
+        }
     }
 
 }
@@ -470,8 +530,8 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in.setFloatingPointPrecision(QDataStream::SinglePrecision);
     float lat,lon,alt,cog,sog;
     quint32 icao;
-    quint8 identity;
-    QString str_call_sign,str_country;
+    quint8 identity,cat;
+    QString str_call_sign,str_country, squawk;
     char chr_callsign[10],chr_country[10];
     int call_sign_index_sep = 0;
     int country_index_sep = 0;
@@ -487,6 +547,8 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
     stream_in.readRawData(chr_country,10);
     stream_in>>selected;
     stream_in>>identity;
+    stream_in>>squawk;
+    stream_in>>cat;
 
     str_call_sign = QString::fromLocal8Bit((const char*)&chr_callsign,10);
     str_country = QString::fromLocal8Bit((const char*)&chr_country,10);
@@ -533,7 +595,7 @@ void MainWindow::trigger_reqUpdateADSB(QByteArray data_in)
 //        qDebug()<<Q_FUNC_INFO<<"curTarget  course"<<adsb->getADSB().getTarget(icao)->course;
     }
 //    if(km<60.)
-    emit signal_target_param(icao,km+0.2,bearing+1.1,lat,lon,sog+1.3,cog+1.3,alt+(150.*0.3048),str_call_sign,str_country,selected,identity);
+    emit signal_target_param(icao,km+0.2,bearing+1.1,lat,lon,sog+1.3,cog+1.3,alt+(150.*0.3048),str_call_sign,str_country,selected,identity,squawk,cat);
 
 
         /*
@@ -693,8 +755,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     config.setValue("trail/enable",trail_settings.enable);
     config.setValue("trail/mode",trail_settings.trail);
 
-    config.setValue("iff/ip",iff_settings.ip);
-    config.setValue("iff/port",iff_settings.port);
+    config.setValue("iff/ip",iff_settings.ip1);
+    config.setValue("iff/port",iff_settings.port1);
+    config.setValue("iff/ip2",iff_settings.ip2);
+    config.setValue("iff/port2",iff_settings.port2);
     config.setValue("iff/show_track",iff_settings.show_track);
 
     config.setValue("adsb/config",adsb_settings.config);
@@ -715,6 +779,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     QStringList friendListCodeString = friendListCode.toList();
     config.setValue("friend_list",friendListCodeString);
+
+    QStringList hostileListCodeString = hostileListCode.toList();
+    config.setValue("hostile_list",hostileListCodeString);
 
     event->accept();
 }

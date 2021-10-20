@@ -85,7 +85,9 @@ signals:
                              QString call_sign,
                              QString country,
                              bool selected,
-                             quint8 identity
+                             quint8 identity,
+                             QString squawk,
+                             quint8 cat
                              );
 
 private:

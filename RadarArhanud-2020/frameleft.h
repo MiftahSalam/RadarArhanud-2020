@@ -9,6 +9,7 @@
 #include "dialogiff.h"
 #include "dialogadsb.h"
 #include "dialoglogging.h"
+#include "dialogbit.h"
 
 namespace Ui {
 class FrameLeft;
@@ -40,6 +41,11 @@ signals:
     void signal_req_range();
     void signal_req_control(int ct, int val);
     void signal_adsbSettingChange();
+    void signal_iffSettingChange();
+    void signal_interrogateReply(QString code);
+    void signal_friendCodeRemoved(QString code);
+    void signal_hostileCodeRemoved(QString code);
+    void signal_hostileCodeAdded(QString code);
     void signal_clearTrail();
 
 private slots:
@@ -96,6 +102,10 @@ private slots:
 
     void on_lineEditMTI_editingFinished();
 
+    void on_checkBoxShowSweep_clicked(bool checked);
+
+    void on_pushButtonBIT_clicked();
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
@@ -108,6 +118,7 @@ private:
     DialogIFF *dIFF;
     DialogADSB *dADSB;
     DialogLogging *dLog;
+    DialogBIT *dBit;
     QTcpSocket socket;
 
 //    int cur_antene;

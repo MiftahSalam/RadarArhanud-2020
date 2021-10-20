@@ -32,6 +32,7 @@ protected:
 
 signals:
     void signal_reqRangeChange(int rId, int range);
+    void signal_interrogateReply(QString code);
     void signal_trueLog(QString msg);
     void signal_target_param(quint32 id,
                              double rng,
@@ -44,7 +45,9 @@ signals:
                              QString call_sign,
                              QString country,
                              bool selected,
-                             quint8 identity
+                             quint8 identity,
+                             QString squawk,
+                             quint8 cat
                              );
 
 private slots:
@@ -58,6 +61,9 @@ private slots:
     void trigger_ReqDelAdsb(quint32 icao);
     void trigger_reqUpdateIff(IFFArhnd::IFFTargetData data);
     void trigger_reqUpdateTrackIdentity(QString data);
+    void trigger_reqFriendCodeRemoved(QString data);
+    void trigger_reqHostileCodeRemoved(QString data);
+    void trigger_reqHostileCodeAdded(QString data);
     void trigger_updateTrackNumber(int id, int number);
     void trigger_DrawSpoke(int, u_int8_t*, size_t);
     void trigger_DrawSpoke1(int, u_int8_t*, size_t);
@@ -66,6 +72,7 @@ private slots:
     void timeOut();
 
     void initADSB();
+    void initIFF();
 
 private:
     Ui::MainWindow *ui;

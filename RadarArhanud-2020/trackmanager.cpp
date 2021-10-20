@@ -10,7 +10,7 @@ TracksCluster::TracksCluster(
     track_counter++; //sementara. need to recheck later
     clusterTrackNumber = track_counter; //sementara. need to recheck later
 
-    for (int i = 0; i < ANTENE_COUNT; ++i)
+    for (int i = 0; i < ANTENE_COUNT; i++)
     {
         m_ri->radarArpa[i]->AcquireNewMARPATarget(clusterPosition);
         int tn = m_ri->radarArpa[i]->m_number_of_targets;
@@ -54,16 +54,16 @@ void TracksCluster::setLostClusteredTrack()
 //        m_ri->radarArpa[aId]->m_target[tId]->SetStatusLost();
     }
 
-    for (int var = 0; var < ANTENE_COUNT; ++var)
+    for (int var = 0; var < ANTENE_COUNT; var++)
         m_ri->radarArpa[var]->RefreshArpaTargets();
 }
 
 void TracksCluster::updateClusteredTrackPointer()
 {
-    for (int var = 0; var < ANTENE_COUNT; ++var)
+    for (int var = 0; var < ANTENE_COUNT; var++)
     {
         qDebug()<<Q_FUNC_INFO<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"awal"<<rTracks[0].value(var);
-        for (int var1 = 0; var1 < m_ri->radarArpa[var]->m_number_of_targets; ++var1)
+        for (int var1 = 0; var1 < m_ri->radarArpa[var]->m_number_of_targets; var1++)
         {
             if(m_ri->radarArpa[var]->m_target[var1]->m_target_number == clusterTrackNumber)
             {
@@ -165,13 +165,13 @@ TrackManager::TrackManager(
 
 void TrackManager::refreshTarget()
 {
-    for (int i = 0; i < ANTENE_COUNT; ++i)
+    for (int i = 0; i < ANTENE_COUNT; i++)
         m_ri->radarArpa[i]->RefreshArpaTargets();
 }
 
 void TrackManager::refreshTarget1()
 {
-    for (int i = 0; i < ANTENE_COUNT; ++i)
+    for (int i = 0; i < ANTENE_COUNT; i++)
         m_ri1->radarArpa[i]->RefreshArpaTargets();
 }
 
@@ -181,7 +181,7 @@ void TrackManager::reqDelTrack(int id)
     if(id>-10)
     {
         int i = 0;
-        for (i; i < tracks.size(); ++i)
+        for (i; i < tracks.size(); i++)
         {
             TracksCluster *track = tracks.at(i);
             qDebug()<<Q_FUNC_INFO<<"track id"<<track->getClusterTrackNumber()<<"at "<<i;
@@ -195,7 +195,7 @@ void TrackManager::reqDelTrack(int id)
             }
         }
 
-        for (i; i < tracks.size(); ++i)
+        for (i; i < tracks.size(); i++)
         {
             qDebug()<<Q_FUNC_INFO<<"update arpa pointer. track id"<<tracks.at(i)->getClusterTrackNumber()<<"at "<<i;
             tracks.at(i)->updateClusteredTrackPointer();
@@ -231,9 +231,9 @@ void TrackManager::reqDelTrack(int id)
         qDebug()<<Q_FUNC_INFO<<"delete all track";
 
         tracks.clear();
-        for (int i = 0; i < ANTENE_COUNT; ++i)
+        for (int i = 0; i < ANTENE_COUNT; i++)
             m_ri->radarArpa[i]->DeleteAllTargets();
-        for (int i = 0; i < ANTENE_COUNT; ++i)
+        for (int i = 0; i < ANTENE_COUNT; i++)
             m_ri1->radarArpa[i]->DeleteAllTargets();
     }
 }
@@ -242,15 +242,15 @@ void TrackManager::updateTracks()
 {
     int num_limit = 5;
     RadarEngineARND::ARPATarget *target;
-    QList<int> target_to_delete;
+    QList<TracksCluster*> target_to_delete;
 
-    qDebug()<<Q_FUNC_INFO<<"tracks"<<tracks.size()<<"cur_arpa_id_count"<<cur_arpa_id_count;
-    for (int var = 0; var < tracks.size(); ++var)
+    qDebug()<<Q_FUNC_INFO<<"tracks size"<<tracks.size()<<"cur_arpa_id_count"<<cur_arpa_id_count;
+    for (int var = 0; var < tracks.size(); var++)
     {
         qDebug()<<Q_FUNC_INFO<<"track id"<<tracks.at(var)->getClusterTrackNumber()<<"status"<<tracks.at(var)->getClusterTrackStatus();
     }
 
-    for (int h = 0; h < ANTENE_COUNT; ++h)
+    for (int h = 0; h < ANTENE_COUNT; h++)
     {
         if(state_radar != RADAR_TRANSMIT)
         {
@@ -264,17 +264,19 @@ void TrackManager::updateTracks()
 
     if(state_radar != RADAR_TRANSMIT) tracks.clear();
 
-    for (int var = 0; var < tracks.size(); ++var)
+    for (int var = 0; var < tracks.size(); var++)
     {
-        if(tracks.at(var)->getClusterTrackStatus() == LOST)
-            target_to_delete.append(var);
+        TracksCluster *track = tracks.at(var);
+        if(track->getClusterTrackStatus() == LOST)
+            target_to_delete.append(track);
     }
-    for (int var = 0; var < target_to_delete.size(); ++var)
+    for (int var = 0; var < target_to_delete.size(); var++)
     {
-        TracksCluster *track = tracks.at(target_to_delete.at(var));
+        qDebug()<<Q_FUNC_INFO<<"tracks size"<<tracks.size()<<"target_to_delete.at(var)"<<var<<target_to_delete.at(var);
+        TracksCluster *track = target_to_delete.at(var);
 //        track->setLostClusteredTrack();
         m_rs->reqDelArpa(track);
-        tracks.removeAt(target_to_delete.at(var));
+        tracks.removeAll(target_to_delete.at(var));
     }
 
     while ((cur_arpa_id_count < tracks.size()) && num_limit > 0)
@@ -293,7 +295,9 @@ void TrackManager::updateTracks()
                                      target->m_course,
                                      target->m_position.alt,
                                      "-","-",target->selected,
-                                     0 //unknown
+                                     0, //unknown
+                                     "0000",
+                                     3 //unknown
                                      );
         }
         cur_arpa_id_count++;
@@ -355,7 +359,7 @@ void TrackManager::reqCreateArpa(QPointF position)
 
 void TrackManager::setTrackRangeMeter(int meter)
 {
-    for (int i = 0; i < ANTENE_COUNT; ++i) {
+    for (int i = 0; i < ANTENE_COUNT; i++) {
         m_ri->radarArpa[i]->range_meters = meter;
         m_ri1->radarArpa[i]->range_meters = meter;
     }

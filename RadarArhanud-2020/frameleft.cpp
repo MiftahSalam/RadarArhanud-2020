@@ -27,6 +27,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->comboBoxMapMode->setCurrentIndex((int)map_settings.mode);
     ui->checkBoxShowHM->setChecked(radar_settings.show_heading_marker);
     ui->checkBoxShowCompass->setChecked(radar_settings.show_compass);
+    ui->checkBoxShowSweep->setChecked(radar_settings.show_sweep);
     ui->checkBoxMTI->setChecked(mti_settings.enable);
     ui->horizontalSliderMTI->setValue(mti_settings.threshold);
     ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
@@ -42,6 +43,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
     dADSB = new DialogADSB(this);
     dTrail = new TrailDialog(this);
     dLog = new DialogLogging(this);
+    dBit = new DialogBIT(this);
 
 //    dRadar->setModal(true);
 //    dIFF->setModal(true);
@@ -50,6 +52,7 @@ FrameLeft::FrameLeft(QWidget *parent) :
 //    dLog->setModal(true);
 
     cur_zoom_lvl = 10;
+//    cur_zoom_lvl = 0;
     antena_switch = 1;
     first_switch = 0;
 
@@ -61,6 +64,11 @@ FrameLeft::FrameLeft(QWidget *parent) :
 
     connect(dRadar,SIGNAL(signal_settingChange()),this,SIGNAL(signal_radarSettingChange()));
     connect(dADSB,SIGNAL(signal_settingChange()),this,SIGNAL(signal_adsbSettingChange()));
+    connect(dIFF,SIGNAL(signal_settingChange()),this,SIGNAL(signal_iffSettingChange()));
+    connect(dIFF,&DialogIFF::signal_friendCodeRemoved,this,&FrameLeft::signal_friendCodeRemoved);
+    connect(dIFF,&DialogIFF::signal_hostileCodeRemoved,this,&FrameLeft::signal_hostileCodeRemoved);
+    connect(dIFF,&DialogIFF::signal_hostileCodeAdded,this,&FrameLeft::signal_hostileCodeAdded);
+    connect(this,&FrameLeft::signal_interrogateReply,dIFF,&DialogIFF::trigger_interrogateReply);
     connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
 //    state_radar = RADAR_STANDBY; //temporary for test
 //    trigger_stateChange(); //temporary for test
@@ -78,13 +86,21 @@ void FrameLeft::setNavStatus(int status)
 
     switch (status)
     {
-    case 1:
-        ui->labelNavStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
-        ui->labelNavStatus->setText("Online");
-        break;
     case 0:
         ui->labelNavStatus->setStyleSheet("background-color: rgb(164,0,0);");
         ui->labelNavStatus->setText("Offline");
+        break;
+    case 1:
+        ui->labelNavStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelNavStatus->setText("Not Connect");
+        break;
+    case 2:
+        ui->labelNavStatus->setStyleSheet("background-color: rgb(196, 160, 0);");
+        ui->labelNavStatus->setText("Invalid");
+        break;
+    case 3:
+        ui->labelNavStatus->setStyleSheet("background-color: rgb(78, 154, 6);");
+        ui->labelNavStatus->setText("Online");
         break;
     default:
         break;
@@ -300,11 +316,15 @@ void FrameLeft::on_pushButtonTxStnb_clicked()
 {
     if(ui->pushButtonTxStnb->text() == "Transmit")
     {
+        first_sweep = true;
         emit signal_req_range();
         emit signal_Tx();
     }
     else if(ui->pushButtonTxStnb->text() == "Standby")
+    {
+        first_sweep = false;
         emit signal_Standby();
+    }
 }
 
 void FrameLeft::radarOffMode()
@@ -317,6 +337,7 @@ void FrameLeft::radarOffMode()
     ui->horizontalSliderRain->setEnabled(false);
     ui->horizontalSliderGain->setEnabled(false);
     ui->pushButtonTxStnb->setEnabled(false);
+    first_sweep = false;
 }
 
 void FrameLeft::radarStbyMode()
@@ -329,6 +350,7 @@ void FrameLeft::radarStbyMode()
     ui->horizontalSliderRain->setEnabled(true);
     ui->horizontalSliderGain->setEnabled(true);
     ui->pushButtonTxStnb->setEnabled(true);
+    first_sweep = false;
 }
 
 void FrameLeft::radarTxMode()
@@ -456,7 +478,7 @@ void FrameLeft::setRangeText(double range,bool match)
     ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 255, 0);"));
     if(!match)
     {
-        if(range < 50.)
+        if(range < 100.)
             ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
     }
 }
@@ -466,6 +488,9 @@ void FrameLeft::on_pushButtonZoomOut_clicked()
     cur_zoom_lvl--;
     if(cur_zoom_lvl < 8)
         cur_zoom_lvl = 8;
+
+//    if(cur_zoom_lvl < 0)
+//        cur_zoom_lvl = 0;
 
     emit signal_req_range();
 }
@@ -568,4 +593,14 @@ void FrameLeft::on_lineEditRain_editingFinished()
 void FrameLeft::on_lineEditMTI_editingFinished()
 {
     ui->horizontalSliderMTI->setValue(ui->lineEditMTI->text().toInt());
+}
+
+void FrameLeft::on_checkBoxShowSweep_clicked(bool checked)
+{
+    radar_settings.show_sweep = checked;
+}
+
+void FrameLeft::on_pushButtonBIT_clicked()
+{
+    dBit->show();
 }

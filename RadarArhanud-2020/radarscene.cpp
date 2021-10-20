@@ -31,18 +31,41 @@ RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr, Ra
     initGL();
 
     currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
+    first_sweep_counter = 0.;
+    rpm = 0;
 
     m_timer = new QTimer(this);
     m_timer->setInterval(100);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(update()));
     m_timer->start();
 
+    rpm_time.start();
 }
 
 void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
     if(angle == 2046)
+    {
+        int time_circle = rpm_time.elapsed();
+//        qDebug()<<Q_FUNC_INFO<<"time_circle"<<time_circle;
+        if(time_circle > 0)
+        {
+            rpm = 60000/time_circle;
+            rpm_time.restart();
+        }
+
+        if(first_sweep)
+        {
+            first_sweep_counter++;
+            if(first_sweep_counter > 2)
+            {
+                qDebug()<<Q_FUNC_INFO<<"first_sweep end";
+                first_sweep = false;
+                first_sweep_counter = 0;
+            }
+        }
         emit signal_zero_detect();
+    }
 
     curAngle = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
@@ -54,6 +77,7 @@ void RadarScene::DrawSpoke1(int angle, u_int8_t *data, size_t len)
 //    if(angle == 2046 && state_radar != RADAR_TRANSMIT)
 //        emit signal_zero_detect();
 
+//    qDebug()<<Q_FUNC_INFO;
     curAngle1 = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri1->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
@@ -128,12 +152,15 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         m_ri->radarDraw->DrawRadarImage();
         glDisable(GL_BLEND);
 
-        glBegin(GL_LINES);
-        glColor3f(0,0.6,0);
-        glVertex2f(0,0);
-        glVertex2f(sin(static_cast<float>(deg2rad(curAngle))),
-                   cos(static_cast<float>(deg2rad(curAngle))));
-        glEnd();
+        if(radar_settings.show_sweep)
+        {
+            glBegin(GL_LINES);
+            glColor3f(0,1,0);
+            glVertex2f(0,0);
+            glVertex2f(sin(static_cast<float>(deg2rad(curAngle))),
+                       cos(static_cast<float>(deg2rad(curAngle))));
+            glEnd();
+        }
     }
 
 //    RadarState cur_radar_state = decideRadarState(state_radar, state_radar1);
@@ -157,12 +184,17 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         m_ri1->radarDraw->DrawRadarImage();
         glDisable(GL_BLEND);
 
-        glBegin(GL_LINES);
-        glColor3f(0,1,0);
-        glVertex2f(0,0);
-        glVertex2f(sin(static_cast<float>(deg2rad(curAngle1))),
-                   cos(static_cast<float>(deg2rad(curAngle1))));
-        glEnd();
+        /*
+        */
+        if(radar_settings.show_sweep)
+        {
+            glBegin(GL_LINES);
+            glColor3f(0,0.6,0);
+            glVertex2f(0,0);
+            glVertex2f(sin(static_cast<float>(deg2rad(curAngle1))),
+                       cos(static_cast<float>(deg2rad(curAngle1))));
+            glEnd();
+        }
     }
 
     QFont font;
@@ -188,6 +220,13 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     triangle.lineTo(triangle_ref.x()-10.,triangle_ref.y()+50.);
     painter->fillPath(triangle,QBrush(Qt::yellow,Qt::SolidPattern));
     painter->drawText(triangle_ref+QPointF(-5.,-10),"N");
+
+    //calc rpm
+    if(state_radar == RADAR_TRANSMIT)
+    {
+        QPointF rpm_ref((width/2)-80,10+(-height/2));
+        painter->drawText(rpm_ref+QPointF(5.,10),"RPM: "+QString::number(rpm));
+    }
 
 
     //compass ring text
@@ -442,7 +481,7 @@ void RadarScene::reqDelArpa(TracksCluster *arpa_cluster_ptr)
     QList<QGraphicsItem*> item_list = items();
     RadarSceneItems *item;
 
-    qDebug()<<Q_FUNC_INFO<<item_list.size();
+//    qDebug()<<Q_FUNC_INFO<<item_list.size();
 
     for(int i=0; i<item_list.size(); i++)
     {
@@ -454,6 +493,7 @@ void RadarScene::reqDelArpa(TracksCluster *arpa_cluster_ptr)
 
             if(arpa_item->m_cluster_track == arpa_cluster_ptr)
             {
+                qDebug()<<Q_FUNC_INFO<<"arpa_item";
 //                qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"status"<<arpa_item->m_arpa_target->getStatus();
                 removeItem(arpa_item);
                 break;
