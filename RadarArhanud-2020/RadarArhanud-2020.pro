@@ -15,6 +15,7 @@ DEFINES += UBUNTU16
 
 SOURCES += main.cpp\
     dialogbit.cpp \
+    dialogradarspec.cpp \
         mainwindow.cpp \
     frameleft.cpp \
     framebottom.cpp \
@@ -37,6 +38,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     dialogbit.h \
+    dialogradarspec.h \
     frameleft.h \
     framebottom.h \
     radargraphicview.h \
@@ -58,6 +60,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     dialogbit.ui \
+    dialogradarspec.ui \
     frameleft.ui \
     framebottom.ui \
     dialogradar.ui \

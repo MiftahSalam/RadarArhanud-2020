@@ -19,8 +19,10 @@ TracksCluster::TracksCluster(
 //        rTracks[0].insert(i,m_ri->radarArpa[i]->m_number_of_targets-1);
 //        m_ri->radarArpa[i]->m_target[rTracks[0].value(i)]->m_target_number = clusterTrackNumber; //sementara
 
-//        m_ri1->radarArpa[i]->AcquireNewMARPATarget(clusterPosition);
-//        rTracks[1].insert(i,m_ri1->radarArpa[i]->m_number_of_targets-1);
+        m_ri1->radarArpa[i]->AcquireNewMARPATarget(clusterPosition);
+        tn = m_ri1->radarArpa[i]->m_number_of_targets;
+        m_ri1->radarArpa[i]->m_target[tn-1]->m_target_number = clusterTrackNumber;
+        rTracks[1].insert(i,m_ri1->radarArpa[i]->m_target[tn-1]);
     }
     refSource.first = 0;
     refSource.second = 0;
@@ -37,32 +39,39 @@ Track TracksCluster::getClusterTrack() const
 
 void TracksCluster::setLostClusteredTrack()
 {
-    QMapIterator<int, ARPATarget*> i(rTracks[0]);
-//    QMapIterator<int, int> i(rTracks[0]);
-    clusterTrackStatus = LOST;
-
-    qDebug()<<Q_FUNC_INFO<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks size"<<rTracks[0].size();
-
-    while (i.hasNext())
+    for (int var = 0; var < 2; var++)
     {
-        i.next();
-        int aId = i.key();
-//        int tId = i.value();
-        ARPATarget *t_ptr = i.value();
-        qDebug()<<Q_FUNC_INFO<<"radar 0"<<"anthene"<<aId<<"t_ptr"<<t_ptr;
-        t_ptr->SetStatusLost();
-//        m_ri->radarArpa[aId]->m_target[tId]->SetStatusLost();
+        QMapIterator<int, ARPATarget*> i(rTracks[var]);
+    //    QMapIterator<int, int> i(rTracks[0]);
+        clusterTrackStatus = LOST;
+
+        qDebug()<<Q_FUNC_INFO<<"radar"<<var<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks size"<<rTracks[var].size();
+
+        while (i.hasNext())
+        {
+            i.next();
+            int aId = i.key();
+    //        int tId = i.value();
+            ARPATarget *t_ptr = i.value();
+            qDebug()<<Q_FUNC_INFO<<"anthene"<<aId<<"t_ptr"<<t_ptr;
+            t_ptr->SetStatusLost();
+    //        m_ri->radarArpa[aId]->m_target[tId]->SetStatusLost();
+        }
     }
 
     for (int var = 0; var < ANTENE_COUNT; var++)
+    {
         m_ri->radarArpa[var]->RefreshArpaTargets();
+        m_ri1->radarArpa[var]->RefreshArpaTargets();
+    }
+
 }
 
 void TracksCluster::updateClusteredTrackPointer()
 {
     for (int var = 0; var < ANTENE_COUNT; var++)
     {
-        qDebug()<<Q_FUNC_INFO<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"awal"<<rTracks[0].value(var);
+//        qDebug()<<Q_FUNC_INFO<<"radar 0"<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"awal"<<rTracks[0].value(var);
         for (int var1 = 0; var1 < m_ri->radarArpa[var]->m_number_of_targets; var1++)
         {
             if(m_ri->radarArpa[var]->m_target[var1]->m_target_number == clusterTrackNumber)
@@ -72,51 +81,67 @@ void TracksCluster::updateClusteredTrackPointer()
 //                rTracks[0].insert(var,var1);
             }
         }
-        qDebug()<<Q_FUNC_INFO<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"akhir"<<rTracks[0].value(var);
+//        qDebug()<<Q_FUNC_INFO<<"radar 0"<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"akhir"<<rTracks[0].value(var);
+    }
+    for (int var = 0; var < ANTENE_COUNT; var++)
+    {
+//        qDebug()<<Q_FUNC_INFO<<"radar 1"<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"awal"<<rTracks[1].value(var);
+        for (int var1 = 0; var1 < m_ri1->radarArpa[var]->m_number_of_targets; var1++)
+        {
+            if(m_ri1->radarArpa[var]->m_target[var1]->m_target_number == clusterTrackNumber)
+            {
+                ARPATarget *t_ptr = m_ri1->radarArpa[var]->m_target[var1];
+                rTracks[1].insert(var,t_ptr);
+//                rTracks[0].insert(var,var1);
+            }
+        }
+//        qDebug()<<Q_FUNC_INFO<<"radar 1"<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks at"<<var<<"akhir"<<rTracks[1].value(var);
     }
 }
 void TracksCluster::updateClusteredTrackStatus()
 {
-    QMapIterator<int, ARPATarget*> i(rTracks[0]);
-    QList<int> aId_to_delete;
-    bool found = false;
-//    QMapIterator<int, int> i(rTracks[0]);
     clusterTrackStatus = LOST;
+    bool found = false;
+    refSource.second = -1;
 
-//    qDebug()<<Q_FUNC_INFO<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks"<<rTracks[0].size();
-
-    while (i.hasNext())
+    for (int var = 0; var < 2; var++)
     {
-        i.next();
-        int aId = i.key();
-        ARPATarget* t_ptr = i.value();
-        refSource.second = -1;
-//        int tId = i.value();
-//        target_status tStat = m_ri->radarArpa[aId]->m_target[tId]->getStatus();
-        target_status tStat = t_ptr->getStatus();
+        QMapIterator<int, ARPATarget*> i(rTracks[var]);
+        QList<int> aId_to_delete;
 
-//        qDebug()<<Q_FUNC_INFO<<"radar 0"<<"anthene"<<aId<<"tId"<<tId<<"tStat"<<tStat;
+//        qDebug()<<Q_FUNC_INFO<<"radar"<<var<<"clusterTrackNumber"<<clusterTrackNumber<<"rTracks"<<rTracks[var].size();
 
-        if((tStat > LOST) && !found)
+        while (i.hasNext())
         {
-            refSource.first = 0; //radar 1
-            refSource.second = aId;
-            clusterTrackStatus = tStat;
-            found = true;
-        }
-        else if (tStat > LOST)
-            aId_to_delete.append(aId);
-    }
+            i.next();
+            int aId = i.key();
+            ARPATarget* t_ptr = i.value();
+            target_status tStat = t_ptr->getStatus();
 
-    i.toFront();
-    foreach (int cur_aId, aId_to_delete) {
-        rTracks[0].remove(cur_aId); //radar 1
+//            qDebug()<<Q_FUNC_INFO<<"radar"<<var<<"anthene"<<aId<<"tStat"<<tStat;
+
+            if((tStat > LOST) && !found)
+            {
+                refSource.first = var;
+                refSource.second = aId;
+                clusterTrackStatus = tStat;
+                found = true;
+            }
+            else if (tStat <= LOST)
+                aId_to_delete.append(aId);
+        }
+
+        i.toFront();
+        foreach (int cur_aId, aId_to_delete) {
+            rTracks[var].remove(cur_aId);
+        }
     }
 }
 
 target_status TracksCluster::getClusterTrackStatus()
 {
     updateClusteredTrackStatus();
+//    qDebug()<<Q_FUNC_INFO<<clusterTrackStatus;
     return clusterTrackStatus;
 }
 
@@ -285,7 +310,10 @@ void TrackManager::updateTracks()
         if(tracks.at(cur_arpa_id_count)->getClusterTrackStatus() > 4)
 //            if(target->m_target_id > 0)
         {
-            emit signal_target_param(/*target->m_target_id,*/
+//            bool pass = target->m_position.rng < 100. && target->m_position.alt <= 8000.;
+
+//            if(pass)
+                emit signal_target_param(/*target->m_target_id,*/
                                      tracks.at(cur_arpa_id_count)->getClusterTrackNumber(),
                                      target->m_position.rng,
                                      target->m_position.brn,
@@ -294,9 +322,11 @@ void TrackManager::updateTracks()
                                      target->m_speed_kn,
                                      target->m_course,
                                      target->m_position.alt,
-                                     "-","-",target->selected,
+                                     "-",
+                                     "-",
+                                     target->selected,
                                      0, //unknown
-                                     "0000",
+                                     "-",
                                      3 //unknown
                                      );
         }

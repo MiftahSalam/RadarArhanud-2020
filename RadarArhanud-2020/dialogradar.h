@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QResizeEvent>
 
+#include "dialogradarspec.h"
+
 namespace Ui {
 class DialogRadar;
 }
@@ -31,8 +33,12 @@ private slots:
 
     void on_pushButtonApply_2_clicked();
 
+    void on_pushButtonAbout_clicked();
+
 private:
     Ui::DialogRadar *ui;
+    DialogRadarSpec *dRSpec;
+
     int halfHeight, fullHeight;
 };
 

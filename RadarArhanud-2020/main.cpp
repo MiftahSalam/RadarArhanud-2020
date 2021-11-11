@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 
         config.setValue("antene_switch/ip","192.168.1.100");
         config.setValue("antene_switch/port",80);
+        config.setValue("antene_switch/enable",true);
 
         config.setValue("trail/enable",true);
         config.setValue("trail/mode",0);
@@ -110,13 +111,14 @@ int main(int argc, char *argv[])
         radar_settings.port_data1 = config.value("radar/port_data1",6635).toUInt();
 
         for (int var = 0; var < 2; ++var) {
-            arpa_settings[var].create_arpa_by_click = config.value(QString("arpa%1/create_arpa_by_click").arg(var),true).toBool();
-            arpa_settings[var].show_track = config.value(QString("arpa%1/show").arg(var),true).toBool();
-            arpa_settings[var].min_contour_length = config.value(QString("arpa%1/min_contour_len").arg(var),3).toInt();
-            arpa_settings[var].search_radius1 = config.value(QString("arpa%1/search_radius1").arg(var),10).toInt();
-            arpa_settings[var].search_radius2 = config.value(QString("arpa%1/search_radius2").arg(var),20).toInt();
-            arpa_settings[var].max_target_size = config.value(QString("arpa%1/max_target_size").arg(var),50).toInt();
+            arpa_settings[var].create_arpa_by_click = config.value(QString("arpa/create_arpa_by_click"),true).toBool();
+            arpa_settings[var].show_track = config.value(QString("arpa/show"),true).toBool();
+            arpa_settings[var].min_contour_length = config.value(QString("arpa/min_contour_len"),3).toInt();
+            arpa_settings[var].search_radius1 = config.value(QString("arpa/search_radius1"),10).toInt();
+            arpa_settings[var].search_radius2 = config.value(QString("arpa/search_radius2"),20).toInt();
+            arpa_settings[var].max_target_size = config.value(QString("arpa/max_target_size"),50).toInt();
             arpa_settings[var].show_attr = true;
+            qDebug()<<Q_FUNC_INFO<<arpa_settings[var].search_radius1<<arpa_settings[var].search_radius2;
         }
 
         trail_settings.enable = config.value("trail/enable",true).toBool();
@@ -152,6 +154,7 @@ int main(int argc, char *argv[])
         antene_switch_settings.port = config.value("antene_switch/port",80).toUInt();
         antene_switch_settings.ip2 = config.value("antene_switch/ip","192.168.1.101").toString();
         antene_switch_settings.port2 = config.value("antene_switch/port",80).toUInt();
+        antene_switch_settings.enable = config.value("antene_switch/enable",true).toBool();
 
         currentHeading = config.value("nav_sensor/heading",0.0).toDouble();
         currentOwnShipLat = config.value("nav_sensor/latitude",0.0).toDouble();

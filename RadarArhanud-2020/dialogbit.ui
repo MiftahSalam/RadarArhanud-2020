@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Subsitems BIT</string>
+   <string>Subsitems BiTE</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -135,7 +135,7 @@
        <item>
         <widget class="QPushButton" name="pushButtonBITRadar">
          <property name="text">
-          <string>Start BIT Radar</string>
+          <string>Start BiTE Radar</string>
          </property>
         </widget>
        </item>
@@ -252,7 +252,7 @@
        <item>
         <widget class="QPushButton" name="pushButtonBITTilting">
          <property name="text">
-          <string>Start BIT Tilting</string>
+          <string>Start BiTE Tilting</string>
          </property>
         </widget>
        </item>
@@ -369,7 +369,7 @@
        <item>
         <widget class="QPushButton" name="pushButtonBITAnthenaSW">
          <property name="text">
-          <string>Start BIT Anthena</string>
+          <string>Start BiTE Anthena</string>
          </property>
         </widget>
        </item>
@@ -486,7 +486,7 @@
        <item>
         <widget class="QPushButton" name="pushButtonBITLora">
          <property name="text">
-          <string>Start BIT LoRa</string>
+          <string>Start BiTE LoRa</string>
          </property>
         </widget>
        </item>
@@ -663,7 +663,7 @@
        <item>
         <widget class="QPushButton" name="pushButtonBITNav">
          <property name="text">
-          <string>Start BIT Nav</string>
+          <string>Start BiTE Nav</string>
          </property>
         </widget>
        </item>

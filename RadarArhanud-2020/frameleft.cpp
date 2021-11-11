@@ -32,6 +32,10 @@ FrameLeft::FrameLeft(QWidget *parent) :
     ui->horizontalSliderMTI->setValue(mti_settings.threshold);
     ui->lineEditMTI->setText(QString::number(mti_settings.threshold));
 
+    ui->checkBoxShowMap->hide();
+    ui->comboBoxMapMode->hide();
+    ui->label->hide(); //label "Map Mode"
+
     if(qApp->desktop()->height() < 1000)
     {
         ui->groupBoxSubSistemStatus->hide();
@@ -51,8 +55,8 @@ FrameLeft::FrameLeft(QWidget *parent) :
 //    dTrail->setModal(true);
 //    dLog->setModal(true);
 
-    cur_zoom_lvl = 10;
-//    cur_zoom_lvl = 0;
+//    cur_zoom_lvl = 10;
+    cur_zoom_lvl = 0;
     antena_switch = 1;
     first_switch = 0;
 
@@ -70,8 +74,8 @@ FrameLeft::FrameLeft(QWidget *parent) :
     connect(dIFF,&DialogIFF::signal_hostileCodeAdded,this,&FrameLeft::signal_hostileCodeAdded);
     connect(this,&FrameLeft::signal_interrogateReply,dIFF,&DialogIFF::trigger_interrogateReply);
     connect(dTrail,&TrailDialog::signal_clearTrailReq,this,&FrameLeft::signal_clearTrail);
-//    state_radar = RADAR_STANDBY; //temporary for test
-//    trigger_stateChange(); //temporary for test
+//    state_radar = RADAR_STANDBY; // tes
+//    trigger_stateChange(); //tes
 
     QSettings config(QSettings::IniFormat,QSettings::UserScope,"arhanud3_config");
 
@@ -244,7 +248,11 @@ void FrameLeft::trigger_changeOpMode(bool checked)
     ui->pushButtonZoomIn->setEnabled(!checked);
     dRadar->trigger_fixRangeMode(checked);
 
-    if(checked) dRadar->resize(dRadar->width(),dRadar->height()/2);
+    if(checked)
+    {
+        dRadar->resize(dRadar->width(),dRadar->height()/2);
+        cur_zoom_lvl = 0; //tes no map
+    }
     else dRadar->resize(dRadar->width(),dRadar->height());
 
     emit signal_changeOpMode(checked);
@@ -437,9 +445,12 @@ void FrameLeft::trigger_changeAntene()
 {
     if(first_switch)
     {
-        antena_switch++;
-        if(antena_switch>2)
-            antena_switch = 0;
+        if(antene_switch_settings.enable)
+            antena_switch++; //tes no antena switch
+        else
+            antena_switch = 1; //tes no antena switch
+
+        if(antena_switch > (ANTENE_COUNT-1)) antena_switch = 0;
         socket.write(QString::number(antena_switch+1).toUtf8());
     }
     else
@@ -460,6 +471,11 @@ void FrameLeft::trigger_reportChange()
 
 void FrameLeft::on_pushButtonZoomIn_clicked()
 {
+    /*
+    cur_zoom_lvl++;
+    if(cur_zoom_lvl > distanceList.size()-1)
+        cur_zoom_lvl = distanceList.size()-1;
+    */
     cur_zoom_lvl++;
     if(cur_zoom_lvl > distanceList.size()-1)
         cur_zoom_lvl = distanceList.size()-1;
@@ -471,26 +487,29 @@ void FrameLeft::setRangeText(double range,bool match)
 {
     qDebug()<<Q_FUNC_INFO<<"range"<<range<<"match"<<match;
     if(range > 1)
-        ui->labelRange->setText(QString::number((int)range)+" Km");
+        ui->labelRange->setText(QString::number(range,'f',1)+" Km");
     else
-        ui->labelRange->setText(QString::number((int)(range*1000.))+" m");
+        ui->labelRange->setText(QString::number(range*1000.,'f',1)+" m");
 
     ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 255, 0);"));
     if(!match)
     {
-        if(range < 100.)
+//        if(range < 100.)
             ui->labelRange->setStyleSheet(QStringLiteral("color: rgb(255, 0, 0);"));
     }
 }
 
 void FrameLeft::on_pushButtonZoomOut_clicked()
 {
+    /*
     cur_zoom_lvl--;
     if(cur_zoom_lvl < 8)
         cur_zoom_lvl = 8;
+    */
 
-//    if(cur_zoom_lvl < 0)
-//        cur_zoom_lvl = 0;
+    cur_zoom_lvl--;
+    if(cur_zoom_lvl < 0)
+        cur_zoom_lvl = 0;
 
     emit signal_req_range();
 }

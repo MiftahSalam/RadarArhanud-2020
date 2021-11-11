@@ -33,7 +33,6 @@ public:
     void setMapZoomLevel(int index);
     void setCurretRange(int range);
     void showAdsb(bool show);
-    void tesCreateItem(); //temporary
 
 signals:
     void signal_mapChange(QImage img);

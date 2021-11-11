@@ -15,6 +15,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    /*
     mc = new MapControl(QSize(width(),height()), MapControl::None, false, false, this);
     mc->showCrosshairs(true);
     mc->enablePersistentCache();
@@ -26,7 +27,6 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     l = new MapLayer("MapLayerView", mapadapter);
 
-//    mapCenter = QPointF(108.6090623,-5.88818);
     mapCenter = QPointF(currentOwnShipLon,currentOwnShipLat);
 
     map_settings.loading = true;
@@ -39,6 +39,7 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
     qDebug()<<Q_FUNC_INFO<<mc->loadingQueueSize();
     qDebug()<<Q_FUNC_INFO<<"map image size is"<<mapImage.size()<<mc->getLayerManager()->getImage().size();
+    */
 
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeOut()));
@@ -47,8 +48,8 @@ RadarGraphicView::RadarGraphicView(QWidget *parent) :
 
 void RadarGraphicView::setMapZoomLevel(int index)
 {
-    mc->setZoom(index);
-    map_settings.loading = true;
+//    mc->setZoom(index);
+//    map_settings.loading = true;
 }
 
 void RadarGraphicView::onTimeOut()
@@ -56,6 +57,7 @@ void RadarGraphicView::onTimeOut()
 //    qDebug()<<Q_FUNC_INFO<<mc->loadingQueueSize()<<curLoadingMapSize<<mc->getLayerManager()->getImage().size()<<size();
 
 //    qDebug()<<Q_FUNC_INFO<<"lat diff"<<fabs(currentOwnShipLat - curLat)<<"lon diff"<<fabs(currentOwnShipLon - curLon);
+    /*
     if((fabs(currentOwnShipLat - mapCenter.y()) > 0.000001) || (fabs(currentOwnShipLon - mapCenter.x()) > 0.000001))
     {
         qDebug()<<Q_FUNC_INFO<<"map update view"<<currentOwnShipLat<<currentOwnShipLon;
@@ -82,7 +84,7 @@ void RadarGraphicView::onTimeOut()
             qDebug()<<Q_FUNC_INFO<<"map display change";
         }
     }
-
+    */
     updateSceneItems();
 }
 
@@ -118,7 +120,7 @@ void RadarGraphicView::updateSceneItems()
 
         RadarSceneItems *item;
         QPoint screen_middle(width()/2,height()/2);
-        QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
+//        QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
         QPoint displayToImage;
         QPoint pixelPos;
 
@@ -139,18 +141,32 @@ void RadarGraphicView::updateSceneItems()
                 qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"status"<<arpa_item->m_arpa_target->getStatus();
                 qDebug()<<Q_FUNC_INFO<<"arpa_item"<<arpa_item->m_arpa_target->m_target_id<<"selected"<<arpa_item->getItemSelected();
 
+                /*
                 displayToImage = mc->layer("MapLayerView")->mapadapter()
                         ->coordinateToDisplay(arpa_item->m_arpa_target->blobPixelPosition());
 
                 QPointF displayToImage_f = displayToImage-map_middle;
-//                qDebug()<<Q_FUNC_INFO<<"init displayToImage_f"<<displayToImage_f;
                 displayToImage_f *= (3./2.);
-//                qDebug()<<Q_FUNC_INFO<<"last displayToImage_f"<<displayToImage_f;
 
                 displayToImage = displayToImage_f.toPoint()+screen_middle;
                 pixelPos = displayToImage;
-//                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->blobPixelPosition()<<pixelPos<<displayToImage<<screen_middle<<map_middle;
                 arpa_item->setPos(pixelPos);
+                */
+
+//                PosPixel arpa_pos = gpsToPix(arpa_item->m_arpa_target->m_position.lat,
+//                                          arpa_item->m_arpa_target->m_position.lon); //tes
+                PosPixel arpa_pos = gpsToPix(arpa_item->m_arpa_target->blobPixelPosition().y(),
+                                          arpa_item->m_arpa_target->blobPixelPosition().x());
+                displayToImage.setX(arpa_pos.x);
+                displayToImage.setY(-arpa_pos.y);
+
+                QPointF displayToImage_f = displayToImage;
+//                displayToImage_f *= (3./2.);
+
+                displayToImage = displayToImage_f.toPoint()+screen_middle;
+                pixelPos = displayToImage;
+                arpa_item->setPos(pixelPos);
+                qDebug()<<Q_FUNC_INFO<<arpa_item->m_arpa_target->blobPixelPosition()<<pixelPos<<displayToImage<<screen_middle;
             }
             else if(item->getRadarItemType() == RadarSceneItems::IFF)
             {
@@ -171,10 +187,20 @@ void RadarGraphicView::updateSceneItems()
 
 //                qDebug()<<Q_FUNC_INFO<<time.toTime_t() - adsb_item->m_adsb_target->time_stamp;
 
+                /*
                 displayToImage = mc->layer("MapLayerView")->mapadapter()
                         ->coordinateToDisplay(QPointF(adsb_item->m_adsb_target->lon,adsb_item->m_adsb_target->lat));
                 pixelPos = QPoint(displayToImage.x()+screen_middle.x()-map_middle.x(),
                                   displayToImage.y()+screen_middle.y()-map_middle.y());
+                adsb_item->setPos(pixelPos);
+                */
+
+                PosPixel adsb_pos = gpsToPix(adsb_item->m_adsb_target->lat,adsb_item->m_adsb_target->lon);
+
+                displayToImage.setX(adsb_pos.x);
+                displayToImage.setY(-adsb_pos.y);
+                displayToImage += screen_middle;
+                pixelPos = displayToImage;
                 adsb_item->setPos(pixelPos);
             }
         }
@@ -184,6 +210,7 @@ void RadarGraphicView::updateSceneItems()
 
 void RadarGraphicView::trigger_mapChange(quint8 id, quint8 val)
 {
+    /*
     if(id)
     {
         int zoom = mapadapter->adaptedZoom();
@@ -202,10 +229,12 @@ void RadarGraphicView::trigger_mapChange(quint8 id, quint8 val)
 
         map_settings.loading = true;
     }
+    */
 }
 
 int RadarGraphicView::calculateRangePixel() const
 {
+    /*
     QPoint screen_middle(width()/2,height()/2);
     QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
     QPoint ref = (width() >= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
@@ -222,14 +251,21 @@ int RadarGraphicView::calculateRangePixel() const
     double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
     double ref_pix = (width() >= height()) ? fabs(ref.x()) : fabs(ref.y());
     int tenth_pix = int(10.*ref_pix/km);
+    */
 
-    qDebug()<<Q_FUNC_INFO<<km<<tenth_pix;
+    const int MAX_PIX = qMin(width()/2,height()/2)-20; //test
+//    const int MAX_PIX = qMin(width()/2,height()/2);
+    const double KM = 10000.;
+    double tenth_pix = KM*(double)MAX_PIX/currentRange;
 
-    return tenth_pix;
+    qDebug()<<Q_FUNC_INFO<<KM<<tenth_pix<<currentRange<<MAX_PIX;
+
+    return (int)tenth_pix;
 
 }
 qreal RadarGraphicView::calculateRangeRing() const
 {
+    /*
     QPoint screen_middle(width()/2,height()/2);
     QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
     QPoint ref = (width() <= height()) ? QPoint(-screen_middle.x(),0) : QPoint(0,-screen_middle.y());
@@ -248,6 +284,7 @@ qreal RadarGraphicView::calculateRangeRing() const
     qDebug()<<Q_FUNC_INFO<<km<<map_middle<<screen_middle;
 
     return km/10.0;
+    */
 }
 
 void RadarGraphicView::resizeEvent(QResizeEvent *event)
@@ -259,7 +296,7 @@ void RadarGraphicView::resizeEvent(QResizeEvent *event)
         scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
     }
 
-    mc->resize(event->size());
+//    mc->resize(event->size());
 
     QGraphicsView::resizeEvent(event);
 }
@@ -290,14 +327,20 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
         if(itemType->getRadarItemType() == RadarSceneItems::ARPA)
         {
             ArpaTrackItem *arpa_item = dynamic_cast<ArpaTrackItem *>(itemType);
-            tn = arpa_item->m_arpa_target->m_target_number;
-            arpa_item->m_arpa_target->selected = item_selected;
+            if(arpa_item->m_arpa_target)
+            {
+                tn = arpa_item->m_arpa_target->m_target_number;
+                arpa_item->m_arpa_target->selected = item_selected;
+            }
         }
         else if(itemType->getRadarItemType() == RadarSceneItems::ADSB)
         {
             AdsbTrackItem *adsb_item = dynamic_cast<AdsbTrackItem *>(itemType);
-            tn = adsb_item->m_adsb_target->number;
-            adsb_item->m_adsb_target->selected = item_selected;
+            if(adsb_item->m_adsb_target)
+            {
+                tn = adsb_item->m_adsb_target->number;
+                adsb_item->m_adsb_target->selected = item_selected;
+            }
         }
 
         if(tn > 0)
@@ -313,6 +356,7 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
     {
         qDebug("create_arpa");
 
+        /*
         QPoint screen_middle(width()/2,height()/2);
         QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
         QPoint event_pos_scaled(event->pos().x(),event->pos().y());
@@ -323,6 +367,23 @@ void RadarGraphicView::mouseReleaseEvent(QMouseEvent *event)
         qDebug()<<Q_FUNC_INFO<<"last event_pos_scaled"<<event_pos_scaled_f;
         QPoint displayToImage = event_pos_scaled_f.toPoint()+map_middle;
         QPointF displayToCoordinat = mc->layer("MapLayerView")->mapadapter()->displayToCoordinate(displayToImage);
+        */
+
+        QPoint screen_middle(width()/2,height()/2);
+        QPoint event_pos_scaled(event->pos().x(),event->pos().y());
+        event_pos_scaled.setX(event_pos_scaled.x()-screen_middle.x());
+        event_pos_scaled.setY(-event_pos_scaled.y()+screen_middle.y());
+
+        QPointF event_pos_scaled_f((qreal)event_pos_scaled.x(),(qreal)event_pos_scaled.y());
+        QPointF displayToCoordinat;
+
+        qDebug()<<Q_FUNC_INFO<<"init event_pos_scaled"<<event_pos_scaled_f;
+//        event_pos_scaled_f *= (2./3.);
+        qDebug()<<Q_FUNC_INFO<<"last event_pos_scaled"<<event_pos_scaled_f;
+
+        PosGps gps_pos = pixToGps(event_pos_scaled_f.x(),event_pos_scaled_f.y());
+        displayToCoordinat.setX(gps_pos.lon);
+        displayToCoordinat.setY(gps_pos.lat);
 
         emit signal_reqCreateArpa(displayToCoordinat);
     }
@@ -337,7 +398,8 @@ RadarGraphicView::PosGps RadarGraphicView::pixToGps(const int x, const int y)
     Position own_pos;
     Position pos;
     double angle = line.angle()+90.;
-    const int MAX_PIX = qMin(width()/2,height()/2);
+    const int MAX_PIX = qMin(width()/2,height()/2)-20; //tes
+//    const int MAX_PIX = qMin(width()/2,height()/2);
 
     while (angle >=360. || angle < 0. ) {
         if(angle >= 360.)
@@ -373,7 +435,7 @@ RadarGraphicView::PosGps RadarGraphicView::pixToGps(const int x, const int y)
 
 RadarGraphicView::PosPixel RadarGraphicView::gpsToPix(const double lat, const double lon)
 {
-    QPoint screen_middle(width()/2,height()/2);
+    QPoint screen_middle(0,0);
     QPointF event_pos_scaled(1,1);
     QLineF line(screen_middle,event_pos_scaled);
     Polar pol;
@@ -382,7 +444,8 @@ RadarGraphicView::PosPixel RadarGraphicView::gpsToPix(const double lat, const do
     double angle;
     double dif_lat = lat;
     double dif_lon;
-    const int MAX_PIX = qMin(width()/2,height()/2);
+    const int MAX_PIX = qMin(width()/2,height()/2)-20; //tes
+//    const int MAX_PIX = qMin(width()/2,height()/2);
 
     own_pos.lat = currentOwnShipLat;
     own_pos.lon = currentOwnShipLon;
@@ -417,6 +480,9 @@ RadarGraphicView::PosPixel RadarGraphicView::gpsToPix(const double lat, const do
 //    pos.x = static_cast<int>(dif_lon);
 //    pos.y = static_cast<int>(dif_lat);
 
+    pos_to_convert.x = line.p2().x();
+    pos_to_convert.y = line.p2().y();
+
     return pos_to_convert;
 }
 
@@ -426,8 +492,7 @@ void RadarGraphicView::setCurretRange(int range)
 }
 void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
 {
-//    qDebug()<<Q_FUNC_INFO<<event->pos()<<mapToScene(event->pos());
-
+    /*
     QPoint screen_middle(width()/2,height()/2);
     QPoint map_middle = mc->layer("MapLayerView")->mapadapter()->coordinateToDisplay(mapCenter);
 
@@ -454,40 +519,33 @@ void RadarGraphicView::mouseMoveEvent(QMouseEvent *event)
     }
 
     emit signal_cursorPosition(latitude,longitude,km,bearing);
+    */
 //    qDebug()<<Q_FUNC_INFO<<displayToImage<<screen_middle<<map_middle<<displayToCoordinat<<km<<bearing;
-    qDebug()<<Q_FUNC_INFO<<"map control"<<latitude<<longitude<<km<<bearing;
+//    qDebug()<<Q_FUNC_INFO<<"map control"<<latitude<<longitude<<km<<bearing;
 
+
+    QPoint screen_middle(width()/2,height()/2);
     PosGps gps = pixToGps(event->pos().x()-screen_middle.x(), -event->pos().y()+screen_middle.y());
-//    PosPixel pix = gpsToPix(latitude,longitude);
+    double const R = 6371.;
 
-    dif_lat = deg2rad(gps.lat);
-    dif_lon = (deg2rad(gps.lon) - deg2rad(mapCenter.x()))
-            * cos(deg2rad((mapCenter.y()+gps.lat)/2.));
-    dif_lat =  dif_lat - (deg2rad(mapCenter.y()));
+    double dif_lat = deg2rad(gps.lat);
+    double dif_lon = (deg2rad(gps.lon) - deg2rad(currentOwnShipLon))
+            * cos(deg2rad((currentOwnShipLat+gps.lat)/2.));
+    dif_lat =  dif_lat - (deg2rad(currentOwnShipLat));
 
-    km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
-    bearing = atan2(dif_lon,dif_lat)*180./M_PI;
+    double km = sqrt(dif_lat * dif_lat + dif_lon * dif_lon)*R;
+    double bearing = atan2(dif_lon,dif_lat)*180./M_PI;
 
     while(bearing < 0.0)
     {
         bearing += 360.0;
     }
 
-//    emit signal_cursorPosition(gps.lat,gps.lon,km,bearing);
+    emit signal_cursorPosition(gps.lat,gps.lon,km,bearing);
 
-    qDebug()<<Q_FUNC_INFO<<"create own"<<gps.lat<<gps.lon<<km<<bearing<<currentRange;
+//    qDebug()<<Q_FUNC_INFO<<"create own"<<gps.lat<<gps.lon<<km<<bearing<<currentRange;
 //    qDebug()<<Q_FUNC_INFO<<"gpsToPix x"<<pix.x<<"y"<<pix.y;
 //    qDebug()<<Q_FUNC_INFO<<"pixToGps lat"<<gps.lat<<"lon"<<gps.lon;
-}
-
-void RadarGraphicView::tesCreateItem()
-{
-    if (scene())
-    {
-//        scene()->addItem(new IFFTrackItem()); //temporary
-//        scene()->addItem(new AdsbTrackItem()); //temporary
-    }
-
 }
 
 RadarGraphicView::~RadarGraphicView()

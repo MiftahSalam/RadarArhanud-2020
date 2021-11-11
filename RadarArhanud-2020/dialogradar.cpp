@@ -42,6 +42,8 @@ DialogRadar::DialogRadar(QWidget *parent) :
     ui->lineEditIPcmd_2->setText(radar_settings.ip_command1);
     ui->lineEditPortcmd_2->setText(QString::number(radar_settings.port_command1));
 
+    dRSpec = new DialogRadarSpec(this);
+
     fullHeight = height();
     halfHeight = height()/2;
 
@@ -108,4 +110,9 @@ void DialogRadar::on_pushButtonApply_2_clicked()
     state_radar1 = RADAR_STANDBY;
 
     emit signal_settingChange();
+}
+
+void DialogRadar::on_pushButtonAbout_clicked()
+{
+    dRSpec->show();
 }

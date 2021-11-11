@@ -65,7 +65,9 @@ private:
     QVector<GLfloat> vertData;
 
     float curScale,curAngle, curAngle1;
+    quint16 curAngleRaw;
     int ringPix, first_sweep_counter, rpm;
+    bool grabProcessing; //tes
 
     QImage mapImage;
 

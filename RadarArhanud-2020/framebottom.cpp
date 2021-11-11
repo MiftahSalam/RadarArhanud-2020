@@ -40,18 +40,20 @@ FrameBottom::FrameBottom(QWidget *parent) :
     trackModel->setColumnCount(12);
     trackModel->setHorizontalHeaderItem(0,item1);
     trackModel->setHorizontalHeaderItem(1,item2);
-    trackModel->setHorizontalHeaderItem(2,item10);
-    trackModel->setHorizontalHeaderItem(3,item3);
-    trackModel->setHorizontalHeaderItem(4,item4);
-    trackModel->setHorizontalHeaderItem(5,item5);
-    trackModel->setHorizontalHeaderItem(6,item6);
-    trackModel->setHorizontalHeaderItem(7,item7);
-    trackModel->setHorizontalHeaderItem(8,item8);
-    trackModel->setHorizontalHeaderItem(9,item9);
-    trackModel->setHorizontalHeaderItem(10,item11);
-    trackModel->setHorizontalHeaderItem(11,item12);
+    trackModel->setHorizontalHeaderItem(11,item10);
+    trackModel->setHorizontalHeaderItem(2,item3);
+    trackModel->setHorizontalHeaderItem(3,item4);
+    trackModel->setHorizontalHeaderItem(4,item5);
+    trackModel->setHorizontalHeaderItem(5,item6);
+    trackModel->setHorizontalHeaderItem(6,item7);
+    trackModel->setHorizontalHeaderItem(7,item8);
+    trackModel->setHorizontalHeaderItem(8,item9);
+    trackModel->setHorizontalHeaderItem(9,item11);
+    trackModel->setHorizontalHeaderItem(10,item12);
+
 
     ui->tableViewTrack->setModel(trackModel);
+    ui->tableViewTrack->setColumnHidden(11,true);
 
     ui->lineEditLat->setValidator(new QDoubleValidator(-90,90,6,ui->lineEditLat));
     ui->lineEditLon->setValidator(new QDoubleValidator(-180,180,6,ui->lineEditLon));
@@ -149,6 +151,7 @@ void FrameBottom::trigger_OSD_received(QString msg)
     {
         gps_status.gps_online = true;
         gps_status.hdt_online = true;
+        gps_status.gps_valid = true; //tes sementara fix dulu
         no_osd_count = 0;
 
         qDebug()<<Q_FUNC_INFO<<"osd"<<msg.remove("gps>");
@@ -181,7 +184,8 @@ void FrameBottom::trigger_OSD_received(QString msg)
                     }
                     else
                     {
-                        gps_status.gps_valid = false;
+//                        gps_status.gps_valid = false;
+                        gps_status.gps_valid = true; //tes sementara fix dulu
                         gps_status.hdt_valid = false;
                         qDebug()<<Q_FUNC_INFO<<"osd invalid";
                     }
@@ -331,55 +335,55 @@ void FrameBottom::trigger_target_update(
         int row = listTarget.at(0)->row();
 
         trackModel->setData(trackModel->index(row,0,QModelIndex()),id_track);
-        trackModel->setData(trackModel->index(row,2,QModelIndex()),squawk);
+        trackModel->setData(trackModel->index(row,11,QModelIndex()),squawk);
 
         if(rng == NAN || rng == INFINITY)
         {
+            trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
             trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
-            trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
         }
         else
         {
-            trackModel->setData(trackModel->index(row,3,QModelIndex()),
+            trackModel->setData(trackModel->index(row,2,QModelIndex()),
                                 QString::number(rng,'f',1));
-            trackModel->setData(trackModel->index(row,4,QModelIndex()),
+            trackModel->setData(trackModel->index(row,3,QModelIndex()),
                                 QString::number(brn,'f',1));
         }
 
         if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
         {
+            trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
             trackModel->setData(trackModel->index(row,5,QModelIndex()),"-");
-            trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
         }
         else
         {
-            trackModel->setData(trackModel->index(row,5,QModelIndex()),
+            trackModel->setData(trackModel->index(row,4,QModelIndex()),
                                 QString::number(lat,'f',6));
-            trackModel->setData(trackModel->index(row,6,QModelIndex()),
+            trackModel->setData(trackModel->index(row,5,QModelIndex()),
                                 QString::number(lon,'f',6));
         }
 
         if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-            trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
         else
-            trackModel->setData(trackModel->index(row,7,QModelIndex()),
+            trackModel->setData(trackModel->index(row,6,QModelIndex()),
                                 QString::number(alt,'f',1));
 
         if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
         {
+            trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
             trackModel->setData(trackModel->index(row,8,QModelIndex()),"-");
-            trackModel->setData(trackModel->index(row,9,QModelIndex()),"-");
         }
         else
         {
-            trackModel->setData(trackModel->index(row,8,QModelIndex()),
+            trackModel->setData(trackModel->index(row,7,QModelIndex()),
                                 QString::number(spd,'f',1));
-            trackModel->setData(trackModel->index(row,9,QModelIndex()),
+            trackModel->setData(trackModel->index(row,8,QModelIndex()),
                                 QString::number(crs,'f',1));
         }
 
-        trackModel->setData(trackModel->index(row,10,QModelIndex()),int2Identity(identity));
-        trackModel->setData(trackModel->index(row,11,QModelIndex()),int2Cat(cat));
+        trackModel->setData(trackModel->index(row,9,QModelIndex()),int2Identity(identity));
+        trackModel->setData(trackModel->index(row,10,QModelIndex()),int2Cat(cat));
 
     }
     else
@@ -429,55 +433,55 @@ void FrameBottom::insertTrackList(quint32 icao,
     }
 
 
-    trackModel->setData(trackModel->index(row,2,QModelIndex()),squawk);
+    trackModel->setData(trackModel->index(row,11,QModelIndex()),squawk);
 
     if(rng == NAN || rng == INFINITY)
     {
+        trackModel->setData(trackModel->index(row,2,QModelIndex()),"-");
         trackModel->setData(trackModel->index(row,3,QModelIndex()),"-");
-        trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
     }
     else
     {
-        trackModel->setData(trackModel->index(row,3,QModelIndex()),
+        trackModel->setData(trackModel->index(row,2,QModelIndex()),
                            QString::number(rng,'f',1));
-        trackModel->setData(trackModel->index(row,4,QModelIndex()),
+        trackModel->setData(trackModel->index(row,3,QModelIndex()),
                            QString::number(brn,'f',1));
     }
 
     if(lat == NAN || lat == INFINITY || fabs(lat) > 90.)
     {
+        trackModel->setData(trackModel->index(row,4,QModelIndex()),"-");
         trackModel->setData(trackModel->index(row,5,QModelIndex()),"-");
-        trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
     }
     else
     {
-        trackModel->setData(trackModel->index(row,5,QModelIndex()),
+        trackModel->setData(trackModel->index(row,4,QModelIndex()),
                            QString::number(lat,'f',5));
-        trackModel->setData(trackModel->index(row,6,QModelIndex()),
+        trackModel->setData(trackModel->index(row,5,QModelIndex()),
                            QString::number(lon,'f',5));
     }
 
     if(alt == NAN || alt == INFINITY || alt == MAX_FLOAT)
-        trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),"-");
     else
-        trackModel->setData(trackModel->index(row,7,QModelIndex()),
+        trackModel->setData(trackModel->index(row,6,QModelIndex()),
                            QString::number(alt,'f',1));
 
     if(spd == NAN || spd == INFINITY || spd == MAX_FLOAT)
     {
+        trackModel->setData(trackModel->index(row,7,QModelIndex()),"-");
         trackModel->setData(trackModel->index(row,8,QModelIndex()),"-");
-        trackModel->setData(trackModel->index(row,9,QModelIndex()),"-");
     }
     else
     {
-        trackModel->setData(trackModel->index(row,8,QModelIndex()),
+        trackModel->setData(trackModel->index(row,7,QModelIndex()),
                            QString::number(spd,'f',1));
-        trackModel->setData(trackModel->index(row,9,QModelIndex()),
+        trackModel->setData(trackModel->index(row,8,QModelIndex()),
                            QString::number(crs,'f',1));
     }
 
-    trackModel->setData(trackModel->index(row,10,QModelIndex()),int2Identity(identity));
-    trackModel->setData(trackModel->index(row,11,QModelIndex()),int2Cat(cat));
+    trackModel->setData(trackModel->index(row,9,QModelIndex()),int2Identity(identity));
+    trackModel->setData(trackModel->index(row,10,QModelIndex()),int2Cat(cat));
 
     trackModel->item(row,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     trackModel->item(row,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
@@ -616,25 +620,25 @@ void FrameBottom::timeoutUpdate()
             index = trackModel->index(dataCount_mqtt_track,1);
             num = trackModel->data(index).toString();
             index = trackModel->index(dataCount_mqtt_track,2);
-            squawk = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,3);
             rng = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,4);
+            index = trackModel->index(dataCount_mqtt_track,3);
             brn = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,5);
+            index = trackModel->index(dataCount_mqtt_track,4);
             lat = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,6);
+            index = trackModel->index(dataCount_mqtt_track,5);
             lon = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,7);
+            index = trackModel->index(dataCount_mqtt_track,6);
             alt = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,8);
+            index = trackModel->index(dataCount_mqtt_track,7);
             spd = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,9);
+            index = trackModel->index(dataCount_mqtt_track,8);
             crs = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,10);
+            index = trackModel->index(dataCount_mqtt_track,9);
             identity = trackModel->data(index).toString();
-            index = trackModel->index(dataCount_mqtt_track,11);
+            index = trackModel->index(dataCount_mqtt_track,10);
             cat = trackModel->data(index).toString();
+            index = trackModel->index(dataCount_mqtt_track,11);
+            squawk = trackModel->data(index).toString();
 
             mq_data = id+"#"+num+"#"+rng+"#"+brn+"#"+lat+"#"+lon+"#"+alt+"#"+spd+"#"+crs+"#"+squawk+"#"+identity+"#"+cat;
             mq_databyte = mq_data.toUtf8();
@@ -671,19 +675,19 @@ void FrameBottom::timeoutUpdate()
                 id = trackModel->data(index).toString();
                 index = trackModel->index(row,1);
                 num = trackModel->data(index).toString();
-                index = trackModel->index(row,3);
+                index = trackModel->index(row,2);
                 rng = trackModel->data(index).toString();
-                index = trackModel->index(row,4);
+                index = trackModel->index(row,3);
                 brn = trackModel->data(index).toString();
-                index = trackModel->index(row,5);
+                index = trackModel->index(row,4);
                 lat = trackModel->data(index).toString();
-                index = trackModel->index(row,6);
+                index = trackModel->index(row,5);
                 lon = trackModel->data(index).toString();
-                index = trackModel->index(row,7);
+                index = trackModel->index(row,6);
                 alt = trackModel->data(index).toString();
-                index = trackModel->index(row,8);
+                index = trackModel->index(row,7);
                 spd = trackModel->data(index).toString();
-                index = trackModel->index(row,9);
+                index = trackModel->index(row,8);
                 crs = trackModel->data(index).toString();
 
                 emit signal_target_select_update(id,cur_selected_track,rng,brn,lat,lon,spd,crs,alt);
@@ -717,13 +721,18 @@ void FrameBottom::timeoutUpdate()
             else
             {
                 gps_status.hdt_valid = false;
-                gps_status.gps_valid = false;
+//                gps_status.gps_valid = false;
+                gps_status.gps_valid = true; //tes sementara fix dulu
                 gps_status.hdt_online = false;
-                gps_status.gps_online = false;
+//                gps_status.gps_online = false;
+                gps_status.gps_online = true; //tes sementara fix dulu
 
-                ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
-                ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
-                ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+                ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
+                ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
+                ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
+//                ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+//                ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+//                ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
                 qWarning()<<"nav source not available";
             }
         }
@@ -827,8 +836,10 @@ void FrameBottom::on_checkBoxGPS_clicked(bool checked)
     {
         ui->lineEditLat->setReadOnly(true);
         ui->lineEditLon->setReadOnly(true);
-        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
-        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
+        ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
 
         if(m_mqtt->isConnected())
         {
@@ -874,7 +885,8 @@ void FrameBottom::on_checkBoxHDG_clicked(bool checked)
     if(hdg_auto)
     {
         ui->lineEditHDG->setReadOnly(true);
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
 
         if(m_mqtt->isConnected())
         {
@@ -942,17 +954,23 @@ void FrameBottom::trigger_OSD_disconnected()
     no_osd_count = 40;
 
     gps_status.hdt_online = false;
-    gps_status.gps_online = false;
+//    gps_status.gps_online = false;
+    gps_status.gps_online = true; //tes sementara fix dulu
+    gps_status.gps_valid = true; //tes sementara fix dulu
+
 
     if(gps_auto)
     {
-        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
-        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditLat->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditLon->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditLat->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
+        ui->lineEditLon->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
     }
 
     if(hdg_auto)
     {
-        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+//        ui->lineEditHDG->setStyleSheet("color: rgb(255,0,0);");
+        ui->lineEditHDG->setStyleSheet("color: rgb(0,255,0);"); //tes sementara fix dulu
     }
 
     qWarning()<<"Disconnect from nav data server";
@@ -971,6 +989,7 @@ int FrameBottom::getNavStatus() const
         else status = 1; //gps offline
     }
 
+    status = 3; //tes fix dulu sementara
     return status;
 //    return mqtt->isConnected();
 //    return (no_osd_count < 20) ? 0 : 1;

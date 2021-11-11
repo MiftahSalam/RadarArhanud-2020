@@ -56,20 +56,6 @@ DialogIFF::DialogIFF(QWidget *parent) :
     ui->tableViewOpHostileList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
-    //test
-//    iffSettingIn.config = "127.0.0.1;8090";
-//    iffSettingIn.mode = StreamArhnd::In;
-//    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "192.168.1.7;23000";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "127.0.0.1;8070";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "/dev/ttyUSB0;230400";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)0; //serial
-
 
     iffSettingIn.config = iff_settings.ip2+";"+QString::number(iff_settings.port2);
     iffSettingIn.mode = StreamArhnd::In;
@@ -439,6 +425,8 @@ void DialogIFF::trigger_ackDataHandle(quint8 msg_type, quint8 msg_id, quint8 sta
         toggleColor ^= true;
         */
     }
+    //tes sementara fix dulu
+    /*
     else
     {
         ui->labelOperationalStatusError->setText("");
@@ -448,6 +436,7 @@ void DialogIFF::trigger_ackDataHandle(quint8 msg_type, quint8 msg_id, quint8 sta
         ui->labelOperationalStatusMode->setStyleSheet("background-color: rgb(164,0,0);");
         ui->labelStatusConnection->setStyleSheet("background-color: rgb(164,0,0);");
     }
+    */
 }
 DialogIFF::~DialogIFF()
 {

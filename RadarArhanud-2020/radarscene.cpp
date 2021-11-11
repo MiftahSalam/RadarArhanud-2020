@@ -26,13 +26,14 @@ const char vShader [] =
         ;
 
 RadarScene::RadarScene(QObject *parent, RadarEngineARND::RadarEngine *ri_ptr, RadarEngine *ri_ptr1) :
-    QGraphicsScene(parent),m_ri(ri_ptr),m_ri1(ri_ptr1),curScale(1.0f),curAngle(0.)
+    QGraphicsScene(parent),m_ri(ri_ptr),m_ri1(ri_ptr1),curScale(1.0f),curAngle(0.),curAngleRaw(0)
 {
     initGL();
 
     currentCursor.cursorMoveTime = QTime::currentTime().addSecs(-5);
     first_sweep_counter = 0.;
     rpm = 0;
+    grabProcessing = false;
 
     m_timer = new QTimer(this);
     m_timer->setInterval(100);
@@ -46,13 +47,10 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
 {
     if(angle == 2046)
     {
-        int time_circle = rpm_time.elapsed();
+//        int time_circle = rpm_time.elapsed();
 //        qDebug()<<Q_FUNC_INFO<<"time_circle"<<time_circle;
-        if(time_circle > 0)
-        {
-            rpm = 60000/time_circle;
-            rpm_time.restart();
-        }
+//        if(time_circle > 0) rpm = (60000/time_circle)+2;
+        rpm_time.restart();
 
         if(first_sweep)
         {
@@ -67,7 +65,13 @@ void RadarScene::DrawSpoke(int angle, u_int8_t *data, size_t len)
         emit signal_zero_detect();
     }
 
-    curAngle = SCALE_RAW_TO_DEGREES2048(angle);
+    //tes
+    curAngle = SCALE_RAW_TO_DEGREES2048(curAngleRaw);
+    curAngleRaw++;
+    if(curAngleRaw > 2048)
+        curAngleRaw = 0;
+
+//    curAngle = SCALE_RAW_TO_DEGREES2048(angle);
     m_ri->radarDraw->ProcessRadarSpoke(angle,data,len);
     update();
 }
@@ -103,7 +107,11 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     int width = painter->device()->width();
     int height = painter->device()->height();
     int side = qMax(width,height);
-    int side_min = qMin(width,height);
+    int side_min = qMin(width,height)-20; //tes
+//    int side_min = qMin(width,height);
+
+//    curScale = 2.0f; //temporary
+    curScale = 1.0f; //temporary
 
     glViewport(0,0,width,height);
 
@@ -152,6 +160,31 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         m_ri->radarDraw->DrawRadarImage();
         glDisable(GL_BLEND);
 
+        //tes
+        /*
+        */
+        if(!grabProcessing)
+        {
+            grabProcessing = true;
+            QTimer::singleShot(5000,[=](){
+                qDebug()<<Q_FUNC_INFO<<"request grab";
+                QVector<quint8> data_vec = m_ri->getCurrentRawDataVector();
+                QImage grab_img(data_vec.constData(),512,512,QImage::Format_RGB32);
+                qDebug()<<Q_FUNC_INFO<<"data_vec "<<data_vec.size()<<"grab_img size"<<grab_img.size();
+                grab_img.save("test_grab.png","png");
+
+//                GLubyte *data = (GLubyte*) malloc(4 * width * height);
+//                glReadPixels(0,0,side_min,side_min,GL_RGBA,GL_UNSIGNED_BYTE,data);
+//                QImage grab_img(data,side_min,side_min,QImage::Format_ARGB32);
+//                grab_img.save("test_grab.png");
+//                qDebug()<<Q_FUNC_INFO<<"grab_img size"<<grab_img.size();
+
+                grabProcessing = false;
+            });
+        }
+
+        /*
+        */
         if(radar_settings.show_sweep)
         {
             glBegin(GL_LINES);
@@ -185,7 +218,6 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         glDisable(GL_BLEND);
 
         /*
-        */
         if(radar_settings.show_sweep)
         {
             glBegin(GL_LINES);
@@ -195,6 +227,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
                        cos(static_cast<float>(deg2rad(curAngle1))));
             glEnd();
         }
+        */
     }
 
     QFont font;
@@ -225,7 +258,8 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
     if(state_radar == RADAR_TRANSMIT)
     {
         QPointF rpm_ref((width/2)-80,10+(-height/2));
-        painter->drawText(rpm_ref+QPointF(5.,10),"RPM: "+QString::number(rpm));
+        painter->drawText(rpm_ref+QPointF(5.,10),"RPM: "+QString::number(21));
+//        painter->drawText(rpm_ref+QPointF(5.,10),"RPM: "+QString::number(rpm));
     }
 
 
@@ -279,6 +313,7 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
 
         painter->setPen(pen);
 
+        /*
         if(radar_settings.op_mode)
         {
             int ring_margin = ringPix;
@@ -294,14 +329,24 @@ void RadarScene::drawBackground(QPainter *painter, const QRectF &)
         else
         {
             int ring_margin = qCeil(side_min/10);
-//            int ring_margin = qCeil(side/5);
             int bufRng = ring_margin;
             while(bufRng < side_min)
-//                while(bufRng < side)
             {
                 painter->drawEllipse(-bufRng/2,-bufRng/2,bufRng,bufRng);
                 bufRng += ring_margin;
             }
+        }
+        */
+
+
+        int ring_margin = ringPix;
+        int bufRng = ring_margin;
+        int counter = 0;
+        while(counter < 10)
+        {
+            counter++;
+            painter->drawEllipse(-bufRng,-bufRng,bufRng*2,bufRng*2);
+            bufRng += ring_margin;
         }
     }
 

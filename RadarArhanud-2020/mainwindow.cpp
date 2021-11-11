@@ -27,20 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     adsb_list.clear();
 
     StreamArhnd::StreamSettings iffSettingIn, iffSettingOut;
-    //test
-//    iffSettingIn.config = "127.0.0.1;8090";
-//    iffSettingIn.mode = StreamArhnd::In;
-//    iffSettingIn.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "192.168.1.7;23000";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "127.0.0.1;8070";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)1; //tcp
-//    iffSettingOut.config = "/dev/ttyUSB0;38400";
-//    iffSettingOut.mode = StreamArhnd::InOut;
-//    iffSettingOut.type = (StreamArhnd::StreamType)0; //serial
-
 
     iffSettingIn.config = iff_settings.ip2+";"+QString::number(iff_settings.port2);
     iffSettingIn.mode = StreamArhnd::In;
@@ -52,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     iff = IFFArhnd::IFFService::getIntance(iffSettingIn, iffSettingOut);
     cur_arpa_id_count = 0;
     curState = state_radar;
+    m_range_meters = 100000.;
 
     QGLWidget *glw = new QGLWidget(QGLFormat(QGL::SampleBuffers));
     glw->makeCurrent();
@@ -83,8 +70,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(true);
     installEventFilter(ui->graphicsView);
-
-    ui->graphicsView->tesCreateItem(); // temporary
 
     first = true;
     initADSB();
@@ -255,8 +240,6 @@ void MainWindow::timeOut()
 {
 //    qDebug()<<Q_FUNC_INFO<<"adsb_list"<<adsb_list;
 
-//    filter.wakingup_time++; //tes
-
     m_tm->updateTracks();
 //    for (int h = 0; h < ANTENE_COUNT; ++h)
 //    {
@@ -296,7 +279,7 @@ void MainWindow::timeOut()
     {
         adjustRadarRange();
     }
-//    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters<<"m_range_meters"<<m_radar_range;
+    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters<<"m_radar_range"<<m_radar_range;
 
     ui->frameLeft->setAdsbStatus((int)adsb->getCurrentSensorStatus());
     ui->frameLeft->updateIffStatus();
@@ -334,6 +317,7 @@ void MainWindow::timeOut()
 
 void MainWindow::adjustRadarRange()
 {
+    /*
     qDebug()<<Q_FUNC_INFO<<"state_radar == RADAR_TRANSMIT"
            <<"m_range_meters"<<m_range_meters<<"m_radar_range"<<m_radar_range
           <<"100000./1.5"<<100000./1.5;
@@ -358,7 +342,12 @@ void MainWindow::adjustRadarRange()
     }
 
     if(fabs(m_radar_range1-m_radar_range) > 10) emit signal_reqRangeChange(1,(int)m_range_to_send);
+    */
+    if(radar_settings.op_mode) m_range_to_send = 100000.;
+    else m_range_to_send = m_range_meters;
 
+    if(m_ri->getCurrentRadarRange() != (uint)m_range_meters) emit signal_reqRangeChange(0,m_range_to_send);
+    if(m_ri1->getCurrentRadarRange() != (uint)m_range_meters) emit signal_reqRangeChange(1,m_range_to_send);
 }
 
 void MainWindow::initIFF()
@@ -629,12 +618,13 @@ void MainWindow::trigger_reqCreateArpa(QPointF position)
 //    }
 }
 
-void MainWindow::trigger_radarFeedbackRangeChange(int rId, int rng) //test again later
+void MainWindow::trigger_radarFeedbackRangeChange(int rId, int rng)
 {
     qDebug()<<Q_FUNC_INFO<<"rId"<<rId<<"rng"<<rng;
     if(!rId)
     {
-        m_radar_range = 1.5*(double)rng;
+//        m_radar_range = 1.5*(double)rng;
+        m_radar_range = (double)rng;
         calculateRadarScale();
     }
 }
@@ -649,19 +639,22 @@ void MainWindow::trigger_rangeChange()
         adjustRadarRange();
 
         m_range_to_send = m_range_meters > 100000. ? 100000 : m_range_meters;
-        m_range_to_send /= 1.5;
+//        m_range_to_send /= 1.5;
         emit signal_reqRangeChange(0,(int)m_range_to_send);
         emit signal_reqRangeChange(1,(int)m_range_to_send);
     }
 
+    /*
     if(radar_settings.op_mode)
         ui->frameLeft->setRangeRings(10.);
     else
         ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+    */
 }
 
 void MainWindow::calculateRadarScale()
 {
+    /*
     int cur_map_scale = distanceList.at(cur_zoom_lvl);
     double line_per_cur_scale = cur_map_scale / pow(2.0, 18-cur_zoom_lvl ) / 0.597164;
     double map_meter_per_pixel =  ((double)cur_map_scale)/line_per_cur_scale;
@@ -696,9 +689,6 @@ void MainWindow::calculateRadarScale()
     ui->graphicsView->setCurretRange(m_range_meters);
 
     m_tm->setTrackRangeMeter((int)(m_radar_range/1.5));
-//    for (int i = 0; i < ANTENE_COUNT; ++i) {
-//        m_ri->radarArpa[i]->range_meters = (int)(m_radar_range/1.5);
-//    }
 
     if(radar_settings.op_mode)
         ui->frameLeft->setRangeText(100.,true);
@@ -709,18 +699,19 @@ void MainWindow::calculateRadarScale()
     scene->setRadarScale(cur_radar_scale);
     if(radar_settings.op_mode)
         scene->setRings(ui->graphicsView->calculateRangePixel());
+    */
 
-    //QPointF(-244,120) QPointF(-367,176) --> rasio = (0.6648,0.6818)
-    //QPointF(156,-75) QPointF(238,-108) --> rasio = (0.6555,0.6944)
-    //QPointF(-75,-82) QPointF(-115,-118) --> rasio = (0.6522,0.6949)
-    //QPointF(85,93) QPointF(132,141) --> rasio = (0.6439,0.6595)
 
-    qDebug()<<Q_FUNC_INFO<<"m_range_meters"<<m_range_meters;
-    qDebug()<<Q_FUNC_INFO<<"m_range_pixel"<<m_range_pixel;
-    qDebug()<<Q_FUNC_INFO<<"cur_zoom_lvl"<<cur_zoom_lvl;
-    qDebug()<<Q_FUNC_INFO<<"cur_map_scale"<<cur_map_scale;
-    qDebug()<<Q_FUNC_INFO<<"line_per_cur_scale"<<line_per_cur_scale;
-    qDebug()<<Q_FUNC_INFO<<"map_meter_per_pixel"<<map_meter_per_pixel;
+    m_range_meters = (double)distanceList.at(cur_zoom_lvl);
+//    m_range_meters = m_radar_range/1.5;
+    ui->graphicsView->setCurretRange(m_range_meters);
+    scene->setRings(ui->graphicsView->calculateRangePixel());
+    m_tm->setTrackRangeMeter((int)m_range_meters);
+
+    if(radar_settings.op_mode)
+        ui->frameLeft->setRangeText(100.,true);
+    else
+        ui->frameLeft->setRangeText(m_radar_range/1000.,fabs(m_radar_range-m_range_meters) < 10);
 }
 
 void MainWindow::trigger_opModeChange(bool checked)
@@ -791,12 +782,12 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     Q_UNUSED(event);
     Log4Qt::Logger::rootLogger()->trace()<<Q_FUNC_INFO<<ui->graphicsView->size().width()<<ui->graphicsView->size().height();
     m_range_pixel = qMin(ui->graphicsView->width(),ui->graphicsView->height());
-//    m_range_pixel = qMax(ui->graphicsView->width(),ui->graphicsView->height());
     calculateRadarScale();
-    if(radar_settings.op_mode)
+
+    //    if(radar_settings.op_mode)
         ui->frameLeft->setRangeRings(10.);
-    else
-        ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
+//    else
+//        ui->frameLeft->setRangeRings(ui->graphicsView->calculateRangeRing());
 }
 
 void MainWindow::trigger_logEvent(QString msg)

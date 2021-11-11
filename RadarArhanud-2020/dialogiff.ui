@@ -1492,7 +1492,7 @@ border: 1px solid #FFFF00</string>
            <item>
             <widget class="QTabWidget" name="tabWidget">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -2084,7 +2084,7 @@ border: 1px solid #FFFF00</string>
              </widget>
              <widget class="QWidget" name="tab_3">
               <attribute name="title">
-               <string>BIT</string>
+               <string>BiTE</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
@@ -2510,7 +2510,7 @@ border: 1px solid #FFFF00</string>
                <item>
                 <widget class="QPushButton" name="pushButtonBITSendReq">
                  <property name="text">
-                  <string>Start BIT</string>
+                  <string>Start BiTE</string>
                  </property>
                 </widget>
                </item>

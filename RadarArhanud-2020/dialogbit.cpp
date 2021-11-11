@@ -152,6 +152,9 @@ void DialogBIT::on_pushButtonBITLora_clicked()
 
 void DialogBIT::on_pushButtonBITNav_clicked()
 {
+    gps_status.gps_online = true; //tes sementara fix dulu
+    gps_status.gps_valid = true; //tes sementara fix dulu
+
     if(gps_status.gps_online)
     {
         ui->labelNavPowerTest->setText("OK");
